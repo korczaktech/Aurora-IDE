@@ -468,7 +468,9 @@ mod tests {
             .write(&session.id, b"stty -echo\n")
             .expect("desativar eco do terminal");
         thread::sleep(Duration::from_millis(50));
-        let _ = manager.read_output(&session.id, 256).expect("limpar eco inicial");
+        let _ = manager
+            .read_output(&session.id, 256)
+            .expect("limpar eco inicial");
 
         manager
             .write(
