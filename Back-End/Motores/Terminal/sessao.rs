@@ -428,7 +428,9 @@ mod tests {
             let info = manager.list_sessions().expect("listar");
             state = info[0].status;
             exit_code = info[0].exit_code;
-            if state == TerminalSessionStatus::Exited {\n                break;\n            }
+            if state == TerminalSessionStatus::Exited {
+                break;
+            }
             thread::sleep(Duration::from_millis(20));
         }
         assert_eq!(state, TerminalSessionStatus::Exited);
@@ -441,18 +443,26 @@ mod tests {
     fn saida_intensa_nao_bloqueia_o_leitor_do_pty() {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
-        manager.write(&session.id, b"yes AURORA_FLOOD | head -c 2000000 >/dev/null; echo AURORA_FLOOD_DONE\n").expect("comando");
+        manager
+            .write(&session.id, b"yes AURORA_FLOOD | head -c 2000000; echo AURORA_FLOOD_DONE\n")
+            .expect("comando");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut completed = false;
         while Instant::now() < deadline {
             let chunks = manager.read_output(&session.id, 256).expect("saída");
-            if chunks\n                .iter()\n                .any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE"))\n            {
+            if chunks
+                .iter()
+                .any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE"))
+            {
                 completed = true;
                 break;
             }
             thread::sleep(Duration::from_millis(20));
         }
-        assert!(\n            completed,\n            "o leitor do PTY deve continuar drenando saída intensa"\n        );
+        assert!(
+            completed,
+            "o leitor do PTY deve continuar drenando saída intensa"
+        );
         manager.close_session(&session.id).expect("fechar");
     }
 
