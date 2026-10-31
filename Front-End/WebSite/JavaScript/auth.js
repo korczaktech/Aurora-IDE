@@ -5,7 +5,7 @@
   const TOKEN_KEY = "aurora-access-token";
   const ACCOUNT_KEY = "aurora-account";
   const page = window.location.pathname.split("/").pop() || "index.html";
-  const isEditor = page === "editor.html" || page === "terminal.html";
+  const isEditor = page === "editor.html";
   const isProfile = page === "perfil.html";
 
   if (isEditor || isProfile) document.documentElement.style.visibility = "hidden";
