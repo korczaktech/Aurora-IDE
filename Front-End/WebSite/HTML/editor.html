@@ -64,7 +64,9 @@
       const middleTargetX = (firstX + targetX) / 2;
       const middleOffset = middleTargetX - middleX;
       const originalLength = 15 * svgScale;
-      const expandedLength = Math.max(originalLength, targetX - firstX);
+      // Compensa a espessura dos dois traços verticais: a barra termina nas bordas internas, sem ultrapassá-los.
+      const verticalStrokeWidth = 1.7 * svgScale;
+      const expandedLength = Math.max(originalLength, targetX - firstX - verticalStrokeWidth);
       const lengthScale = expandedLength / originalLength;
 
       // O centro da barra percorre exatamente do topo à base dos traços verticais.
