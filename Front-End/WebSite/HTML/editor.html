@@ -6,9 +6,37 @@
   <meta name="theme-color" content="#080d0f">
   <meta name="description" content="Aurora EDS — ambiente de desenvolvimento.">
   <title>Aurora EDS — Editor</title>
-  <link rel="stylesheet" href="CSS/editor.css">
+  <link rel="stylesheet" href="../CSS/editor.css">
 </head>
 <body>
-  <main aria-label="Área de desenvolvimento"></main>
+  <header class="editor-header" aria-label="Cabeçalho do editor">
+    <div class="header-start">
+      <button class="icon-button menu-button" type="button" aria-label="Abrir ou recolher painel lateral" title="Painel lateral">
+        <img src="../SVG/editor-menu.svg" alt="">
+      </button>
+    </div>
+
+    <form class="search-area" role="search" onsubmit="return false">
+      <label class="visually-hidden" for="editor-search">Pesquisar no Aurora</label>
+      <input id="editor-search" type="search" placeholder="Pesquisar" autocomplete="off" spellcheck="false">
+    </form>
+
+    <nav class="header-actions" aria-label="Ferramentas do editor">
+      <button class="icon-button" type="button" aria-label="Layout" title="Layout">
+        <img src="../SVG/editor-layout.svg" alt="">
+      </button>
+      <button class="icon-button" type="button" aria-label="Anotações" title="Anotações">
+        <img src="../SVG/editor-notes.svg" alt="">
+      </button>
+      <button class="icon-button" type="button" aria-label="Repositórios" title="Repositórios">
+        <img src="../SVG/editor-repositories.svg" alt="">
+      </button>
+      <button class="icon-button" type="button" aria-label="Configurações" title="Configurações">
+        <img src="../SVG/editor-settings.svg" alt="">
+      </button>
+    </nav>
+  </header>
+
+  <main class="editor-workspace" aria-label="Área de desenvolvimento"></main>
 </body>
 </html>
