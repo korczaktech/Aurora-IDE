@@ -6,3 +6,4 @@ license.workspace = true
 
 [dependencies]
 mongodb.workspace = true
+uuid.workspace = true
