@@ -183,6 +183,7 @@
       if (loginLink) loginLink.hidden = true;
       if (createLink) createLink.hidden = true;
       accountArea.hidden = false;
+      accountArea.style.display = "flex";
       if (accountName) accountName.textContent = account.name;
       if (initial) initial.textContent = (account.name || "A").trim().charAt(0).toUpperCase();
       if (avatar) {
