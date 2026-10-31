@@ -11,6 +11,7 @@ members = [
     "crates/aurora-github",
     "crates/aurora-security",
     "crates/aurora-storage-mongodb",
+    "Motores/Terminal",
 ]
 
 [workspace.package]

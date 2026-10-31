@@ -1,0 +1,13 @@
+[package]
+name = "aurora-terminal"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "biblioteca.rs"
+
+[dependencies]
+portable-pty = "0.9"
+thiserror = "2"
+uuid = { version = "1", features = ["v4"] }

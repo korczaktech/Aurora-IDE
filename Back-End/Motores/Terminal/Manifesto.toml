@@ -1,0 +1,7 @@
+# Parâmetros documentais do motor; Cargo.toml é o manifesto executável.
+[terminal]
+shell = "/bin/bash"
+max_sessions = 8
+columns = 120
+rows = 30
+term = "xterm-256color"
