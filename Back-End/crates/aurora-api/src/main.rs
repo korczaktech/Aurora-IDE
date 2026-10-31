@@ -37,7 +37,8 @@ async fn main() {
     let database = match config.mongodb_uri.as_deref() {
         Some(uri) => match aurora_storage_mongodb::MongoStorage::connect(
             uri,
-            config.mongodb_database.clone(),
+            config.accounts_database.clone(),
+            config.sessions_database.clone(),
         )
         .await
         {
