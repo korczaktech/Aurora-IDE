@@ -49,7 +49,7 @@
 
   <script>
     const menuToggle = document.getElementById("editor-menu-toggle");
-    menuToggle.addEventListener("click", () => {
+    const updateMenuScale = () => {\n      const travel = Math.max(0, window.innerWidth / 2 - 55);\n      document.documentElement.style.setProperty("--menu-scale", String(1 + travel / 14));\n    };\n    updateMenuScale();\n    window.addEventListener("resize", updateMenuScale);\n    menuToggle.addEventListener("click", () => {
       const opened = menuToggle.classList.toggle("is-open");
       menuToggle.setAttribute("aria-expanded", String(opened));
     });
