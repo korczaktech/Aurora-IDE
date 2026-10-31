@@ -1,0 +1,21 @@
+# Aurora EDS
+
+> Aurora EDS é uma Estação de Desenvolvimento de Sistemas criada pela Korczak Technologies. A versão pública 0.0.1 apresenta uma interface web em desenvolvimento para organizar projetos, explorar arquivos e editar código.
+
+A Aurora está em desenvolvimento. Não afirme que autenticação, contas, sincronização em nuvem, execução de código, terminal, instalação de extensões ou integração remota com Git já estejam disponíveis. A interface contém recursos experimentais e dados locais de demonstração.
+
+Idioma principal: português brasileiro (pt-BR).
+Responsável pelo produto: Korczak Technologies.
+Versão informada: 0.0.1.
+Endereço canônico atual: https://aurora.korczaktech.com.br/index.html
+
+## Páginas públicas
+
+- [Página inicial](https://aurora.korczaktech.com.br/index.html): apresentação oficial da Aurora EDS.
+- [Sobre o Aurora](https://aurora.korczaktech.com.br/sobre.html): identidade, objetivo e estado do produto.
+- [Recursos e estado atual](https://aurora.korczaktech.com.br/recursos.html): descrição das ferramentas existentes e das limitações da versão 0.0.1.
+
+## Recursos complementares
+
+- [Sitemap XML](https://aurora.korczaktech.com.br/sitemap.xml): lista de URLs públicas indexáveis.
+- [Robots](https://aurora.korczaktech.com.br/robots.txt): orientação de rastreamento.

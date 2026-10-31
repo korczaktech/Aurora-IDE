@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#050708">
+<meta name="description" content="Consulte as informações da sua conta Aurora EDS."><meta name="robots" content="noindex,nofollow">
+<title>Meu perfil — Aurora EDS</title><link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/home.css"><script src="JavaScript/auth.js"></script>
+</head>
+<body><div class="aurora-app">
+    <header class="top-header">
+      <a class="wordmark" href="./index.html" aria-label="Aurora EDS início"><span class="wordmark-name">Aurora</span><span class="wordmark-point">.</span><span class="wordmark-category">EDS</span></a>
+      <div class="header-actions">
+        <a class="header-link" href="entrar.html" id="loginLink">Entrar</a>
+        <a class="create-account" href="criar-conta.html" id="createLink">Criar Conta</a>
+        <div class="account-area" id="accountArea" hidden>
+          <span class="account-name" id="accountName"></span>
+          <button class="account-avatar" id="accountAvatar" aria-label="Perfil da conta"><span id="avatarInitial">A</span></button>
+        </div>
+      </div>
+    </header>
+<div class="workspace">
+      <aside class="left-rail" id="leftRail" aria-label="Navegação principal">
+        <button class="rail-toggle" id="railToggle" aria-label="Recolher barra lateral" aria-expanded="true" title="Recolher barra lateral">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/></svg>
+        </button>
+        <nav class="rail-nav" aria-label="Seções do Aurora">
+          <button class="rail-item is-active" data-page="inicio" type="button" aria-label="Início" title="Início">
+            <img src="SVG/inicio.svg" alt="" aria-hidden="true"><span>Início</span>
+          </button>
+          <button class="rail-item" data-page="projetos" type="button" aria-label="Projetos" title="Projetos">
+            <img src="SVG/projetos.svg" alt="" aria-hidden="true"><span>Projetos</span>
+          </button>
+          <button class="rail-item" data-page="mentoria" type="button" aria-label="Mentoria" title="Mentoria">
+            <img src="SVG/mentoria.svg" alt="" aria-hidden="true"><span>Mentoria</span>
+          </button>
+          <button class="rail-item" data-page="anotacoes" type="button" aria-label="Anotações" title="Anotações">
+            <img src="SVG/anotacoes.svg" alt="" aria-hidden="true"><span>Anotações</span>
+          </button>
+          <button class="rail-item" data-page="extensoes" type="button" aria-label="Extensões" title="Extensões">
+            <img src="SVG/extensoes.svg" alt="" aria-hidden="true"><span>Extensões</span>
+          </button>
+          <button class="rail-item" data-page="repositorios" type="button" aria-label="Repositórios" title="Repositórios">
+            <img src="SVG/repositorios.svg" alt="" aria-hidden="true"><span>Repositórios</span>
+          </button>
+          <button class="rail-item" data-page="aparencia" type="button" aria-label="Aparência" title="Aparência">
+            <img src="SVG/aparencia.svg" alt="" aria-hidden="true"><span>Aparência</span>
+          </button>
+          <button class="rail-item" data-page="atividade" type="button" aria-label="Atividade" title="Atividade">
+            <img src="SVG/atividade.svg" alt="" aria-hidden="true"><span>Atividade</span>
+          </button>
+          <button class="rail-item" data-page="sobre" type="button" aria-label="Sobre o Aurora" title="Sobre o Aurora">
+            <img src="SVG/sobre-aurora.svg" alt="" aria-hidden="true"><span>Sobre o Aurora</span>
+          </button>
+          <button class="rail-item" data-page="configuracoes" type="button" aria-label="Configurações" title="Configurações">
+            <img src="SVG/configuracoes.svg" alt="" aria-hidden="true"><span>Configurações</span>
+          </button>
+        </nav>
+        <div class="rail-bottom"><span class="rail-version">A / 01</span></div>
+      </aside>
+      <button class="rail-reopen" id="railReopen" aria-label="Expandir barra lateral" title="Expandir barra lateral"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5 7 7-7 7"/></svg></button>
+
+<main class="home-main app-page aurora-content-page" id="pageMain">
+<div class="main-atmosphere" aria-hidden="true"><span class="star star-a"></span><span class="star star-b"></span><span class="star star-c"></span><span class="star star-d"></span><span class="star star-e"></span><span class="star star-f"></span><div class="aurora-ribbon ribbon-one"></div><div class="aurora-ribbon ribbon-two"></div><div class="aurora-ribbon ribbon-three"></div></div>
+<div class="page-shell">
+<div class="page-eyebrow">ESPAÇO PESSOAL · AURORA EDS</div>
+<h1 class="page-title">Meu perfil<span class="page-title-point">.</span></h1>
+<p class="page-lead">Sua identidade e os dados vinculados à sua conta Korczak, em um só lugar.</p>
+<section class="profile-overview" aria-labelledby="profileName">
+<div class="profile-overview-top"><div class="profile-avatar" id="profileAvatar" aria-hidden="true">A</div><div class="profile-overview-copy"><span class="micro-label">CONTA CONECTADA</span><h2 id="profileName">Carregando perfil...</h2><p id="profileEmail">Verificando sua sessão</p></div><span class="profile-live"><i></i> SESSÃO PRIVADA</span></div>
+<div class="profile-divider"></div><div class="profile-section-head"><span>IDENTIFICAÇÃO</span><span>01 / CONTA</span></div>
+<div id="profileDetails" class="profile-details" aria-live="polite"></div>
+<div class="profile-footer"><span>GERENCIAMENTO DE IDENTIDADE KORCZAK</span><a href="index.html">VOLTAR AO AURORA <span aria-hidden="true">↗</span></a></div>
+</section>
+<div class="profile-note"><span class="profile-note-mark">✳</span><p>Seus dados de conta são centralizados pela Korczak Technologies e utilizados para identificar seu acesso aos serviços.</p></div>
+</div></main></div></div>
+<script>(()=>{const rail=document.getElementById("leftRail"),workspace=document.querySelector(".workspace"),collapse=document.getElementById("railToggle"),expand=document.getElementById("railReopen");const setCollapsed=value=>{rail.classList.toggle("is-collapsed",value);workspace.classList.toggle("rail-collapsed",value);collapse.setAttribute("aria-expanded",String(!value));};collapse?.addEventListener("click",()=>setCollapsed(true));expand?.addEventListener("click",()=>setCollapsed(false));document.querySelectorAll(".rail-item[data-page]").forEach(item=>item.addEventListener("click",()=>{const page=item.dataset.page;location.href=page==="inicio"?"index.html":"index.html#"+page;}));})();</script>
+</body></html>
