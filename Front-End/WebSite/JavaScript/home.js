@@ -110,8 +110,16 @@
     collapseButton.setAttribute("aria-expanded", String(!collapsed));
     expandButton.setAttribute("aria-expanded", String(collapsed));
   };
-  collapseButton.addEventListener("click", () => setCollapsed(true));
-  expandButton.addEventListener("click", () => setCollapsed(false));
+  rail.addEventListener("click", event => {
+    const toggle = event.target.closest("#railToggle");
+    if (toggle) { event.preventDefault(); setCollapsed(true); return; }
+    const item = event.target.closest(".rail-item[data-page]");
+    if (item && rail.contains(item)) {
+      event.preventDefault();
+      showPage(item.dataset.page);
+    }
+  }, true);
+  expandButton.addEventListener("click", event => { event.preventDefault(); setCollapsed(false); });
 
   const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[char]));
   const notify = message => {
@@ -163,7 +171,6 @@
     if (key === "repositorios") renderRepos();
     main.scrollTop = 0;
   };
-  navItems.forEach(item => item.addEventListener("click", () => showPage(item.dataset.page)));
   workspace.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
