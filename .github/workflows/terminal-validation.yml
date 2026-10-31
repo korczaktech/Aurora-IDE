@@ -1,0 +1,36 @@
+name: Validação temporária do terminal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Back-End/**"
+      - ".github/workflows/terminal-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: Formatação, análise, testes e build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Back-End
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Back-End
+      - name: Verificar formatação
+        run: cargo fmt --all -- --check
+      - name: Executar Clippy
+        run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: Executar todos os testes
+        run: cargo test --workspace
+      - name: Build de release
+        run: cargo build --release --workspace
