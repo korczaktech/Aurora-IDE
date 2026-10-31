@@ -143,7 +143,7 @@ jobs:
           root = Path("_site")
           required = [
               "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt",
-              "humans.txt", "favicon.svg", "og-image.svg", "site.webmanifest",
+              "humans.txt", "favicon.svg", "og-image.svg", "site.webmanifest", "CNAME",
               "sobre.html", "recursos.html", "404.html", "CSS/seo.css"
           ]
           missing = [name for name in required if not (root / name).is_file()]
@@ -153,6 +153,9 @@ jobs:
           manifest = json.loads((root / "site.webmanifest").read_text(encoding="utf-8"))
           if manifest.get("name") != "Aurora EDS":
               raise SystemExit("Manifesto inválido: nome inesperado.")
+
+          if (root / "CNAME").read_text(encoding="utf-8").strip() != "aurora.korczaktech.com.br":
+              raise SystemExit("CNAME não corresponde ao domínio personalizado.")
 
           sitemap = ET.parse(root / "sitemap.xml").getroot()
           ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
@@ -169,14 +172,20 @@ jobs:
           if "https://aurora.korczaktech.com.br/sitemap.xml" not in robots:
               raise SystemExit("robots.txt não referencia o sitemap publicado.")
 
-          for filename in ["index.html", "sobre.html", "recursos.html"]:
+          canonical_expected = {
+              "index.html": "https://aurora.korczaktech.com.br/index.html",
+              "sobre.html": "https://aurora.korczaktech.com.br/sobre.html",
+              "recursos.html": "https://aurora.korczaktech.com.br/recursos.html",
+          }
+          for filename, canonical in canonical_expected.items():
               html = (root / filename).read_text(encoding="utf-8")
               if not re.search(r"<title>[^<]+</title>", html, re.I):
                   raise SystemExit(f"{filename}: title ausente.")
               if not re.search(r'<meta name="description" content="[^"]+"', html, re.I):
                   raise SystemExit(f"{filename}: meta description ausente.")
-              if 'rel="canonical"' not in html:
-                  raise SystemExit(f"{filename}: canonical ausente.")
+              match = re.search(r'<link rel="canonical" href="([^"]+)"', html, re.I)
+              if not match or match.group(1) != canonical:
+                  raise SystemExit(f"{filename}: canonical incorreto.")
               blocks = re.findall(r'<script type="application/ld\+json">\s*(.*?)\s*</script>', html, re.S | re.I)
               if not blocks:
                   raise SystemExit(f"{filename}: JSON-LD ausente.")
