@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b10">
+  <meta name="description" content="Aurora IDE — entre no seu ambiente de desenvolvimento.">
+  <title>Entrar — Aurora IDE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="CSS/login.css">
+</head>
+<body>
+  <div class="app-frame">
+    <header class="window-bar">
+      <a class="brand" href="./index.html" aria-label="Aurora IDE"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-name">AURORA<span> IDE</span></span></a>
+      <div class="window-context"><span class="context-pulse"></span> AMBIENTE DE DESENVOLVIMENTO</div>
+      <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
+    </header>
+    <main class="login-layout">
+      <section class="login-side" aria-labelledby="login-title">
+        <div class="login-content">
+          <div class="eyebrow"><span class="eyebrow-line"></span> SEU ESPAÇO DE CRIAÇÃO</div>
+          <h1 id="login-title">Tudo começa<br>com uma <em>ideia.</em></h1>
+          <p class="intro">Entre no Aurora e continue construindo o que ainda não existe.</p>
+          <form id="loginForm" novalidate>
+            <label class="field-label" for="email">E-MAIL</label>
+            <div class="input-wrap"><span class="input-symbol" aria-hidden="true">✳</span><input id="email" name="email" type="email" placeholder="voce@exemplo.com" autocomplete="username" required></div>
+            <div class="password-heading"><label class="field-label" for="password">SENHA</label><button class="text-link" type="button" id="forgotPassword">Esqueceu a senha?</button></div>
+            <div class="input-wrap"><span class="input-symbol lock-symbol" aria-hidden="true">⌑</span><input id="password" name="password" type="password" placeholder="Sua senha" autocomplete="current-password" required minlength="8"><button class="visibility-button" type="button" id="togglePassword" aria-label="Mostrar senha" aria-pressed="false">◉</button></div>
+            <label class="remember-row"><input type="checkbox" id="remember"><span class="custom-check"></span><span>Manter sessão iniciada</span></label>
+            <button class="submit-button" type="submit"><span>Entrar no Aurora</span><span class="button-arrow">↗</span></button>
+            <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+          </form>
+          <div class="signup-line">Ainda não tem uma conta? <button type="button" class="text-link" id="createAccount">Criar conta</button></div>
+        </div>
+        <footer class="login-footer"><span>© 2026 AURORA IDE</span><span class="footer-separator">/</span><span>FEITO PARA IR ALÉM</span><span class="footer-version">PREVIEW 0.0.2</span></footer>
+      </section>
+      <aside class="visual-side" aria-label="Identidade visual Aurora">
+        <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+        <div class="visual-topline"><span>01 — 03</span><span>ENGINEERED FOR POSSIBILITY</span></div>
+        <div class="aurora-art" aria-hidden="true"><div class="art-grid"></div><div class="orbit orbit-outer"></div><div class="orbit orbit-middle"></div><div class="orbit orbit-inner"></div><div class="core-glow"></div><div class="core-shape"><span>✳</span></div><span class="orbit-point point-one"></span><span class="orbit-point point-two"></span><span class="orbit-point point-three"></span><span class="art-coordinate coordinate-one">−23.5505° S</span><span class="art-coordinate coordinate-two">46.6333° W</span></div>
+        <div class="visual-caption"><div class="caption-index">A / 001</div><div><h2>Crie sem limites.</h2><p>Um ambiente. Todas as possibilidades.</p></div><div class="caption-mark">✳</div></div>
+        <div class="visual-bottom"><span>CORE SYSTEM / INITIALIZING</span><span><i></i> ALL SYSTEMS READY</span></div>
+      </aside>
+    </main>
+    <footer class="system-bar"><span><i></i> SISTEMA OPERACIONAL</span><span>CONEXÃO SEGURA</span><span>PT-BR</span></footer>
+  </div>
+  <script src="JavaScript/login.js"></script>
+</body>
+</html>
