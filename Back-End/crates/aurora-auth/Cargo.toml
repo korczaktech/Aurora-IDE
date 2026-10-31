@@ -11,3 +11,4 @@ uuid.workspace = true
 bcrypt.workspace = true
 sha2.workspace = true
 aurora-storage-mongodb = { path = "../aurora-storage-mongodb" }
+aurora-users = { path = "../aurora-users" }
