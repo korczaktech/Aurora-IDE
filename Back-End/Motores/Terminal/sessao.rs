@@ -465,7 +465,7 @@ mod tests {
         let session = manager.create_session(None).expect("Bash real");
 
         manager
-            . write(&session.id, b"stty -echo\\n")
+            .write(&session.id, b"stty -echo\n")
             .expect("desativar eco do terminal");
         thread::sleep(Duration::from_millis(50));
         let _ = manager.read_output(&session.id, 256).expect("limpar eco inicial");
@@ -473,7 +473,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
+                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\n",
             )
             .expect("comando de saída intensa");
 
