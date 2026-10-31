@@ -1,27 +1,24 @@
-use axum::{http::HeaderValue, routing::get, Json, Router};
-use serde_json::{json, Value};
-use std::{env, net::SocketAddr};
+mod config;
+mod routes;
+mod state;
+
+use axum::http::{header, HeaderValue, Method};
+use config::AppConfig;
+use state::AppState;
+use std::{net::SocketAddr, str::FromStr};
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::EnvFilter;
 
-async fn health() -> Json<Value> {
-    Json(json!({ "status": "ok", "service": "aurora-api" }))
-}
-
-async fn index() -> Json<Value> {
-    Json(json!({ "service": "Aurora API", "status": "online" }))
-}
-
-fn cors_layer() -> CorsLayer {
-    let origins = env::var("CORS_ALLOWED_ORIGINS").unwrap_or_default();
+fn cors_layer(origins: &[String]) -> CorsLayer {
     let allowed_origins: Vec<HeaderValue> = origins
-        .split(',')
-        .map(str::trim)
-        .filter(|origin| !origin.is_empty())
-        .filter_map(|origin| origin.parse::<HeaderValue>().ok())
+        .iter()
+        .filter_map(|origin| HeaderValue::from_str(origin).ok())
         .collect();
 
-    CorsLayer::new().allow_origin(allowed_origins)
+    CorsLayer::new()
+        .allow_origin(allowed_origins)
+        .allow_methods([Method::GET, Method::OPTIONS])
+        .allow_headers([header::CONTENT_TYPE, header::AUTHORIZATION])
 }
 
 #[tokio::main]
@@ -32,23 +29,49 @@ async fn main() {
         )
         .init();
 
-    let app = Router::new()
-        .route("/", get(index))
-        .route("/health", get(health))
-        .layer(cors_layer())
+    let config = AppConfig::from_env().unwrap_or_else(|error| {
+        tracing::error!(%error, "Configuração inválida");
+        std::process::exit(1);
+    });
+
+    let database = match config.mongodb_uri.as_deref() {
+        Some(uri) => match aurora_storage_mongodb::MongoStorage::connect(
+            uri,
+            config.mongodb_database.clone(),
+        )
+        .await
+        {
+            Ok(storage) => {
+                tracing::info!("Conexão com MongoDB estabelecida");
+                Some(storage)
+            }
+            Err(error) => {
+                tracing::error!(%error, "Não foi possível conectar ao MongoDB");
+                None
+            }
+        },
+        None => {
+            tracing::warn!("MONGODB_URI não configurada; API iniciará sem persistência");
+            None
+        }
+    };
+
+    let state = AppState { database };
+    let app = routes::router(state)
+        .layer(cors_layer(&config.cors_allowed_origins))
         .layer(TraceLayer::new_for_http());
 
-    let port = env::var("PORT")
-        .unwrap_or_else(|_| "10000".to_owned())
-        .parse::<u16>()
-        .expect("PORT precisa ser uma porta TCP válida");
-    let address = SocketAddr::from(([0, 0, 0, 0], port));
+    let address = SocketAddr::from(([0, 0, 0, 0], config.port));
     let listener = tokio::net::TcpListener::bind(address)
         .await
-        .expect("Não foi possível abrir a porta HTTP");
+        .unwrap_or_else(|error| {
+            tracing::error!(%error, %address, "Não foi possível abrir a porta HTTP");
+            std::process::exit(1);
+        });
 
     tracing::info!(%address, "Aurora API iniciada");
-    axum::serve(listener, app)
-        .await
-        .expect("O servidor HTTP foi encerrado com erro");
+    if let Err(error) = axum::serve(listener, app).await {
+        tracing::error!(%error, "Servidor HTTP encerrado com erro");
+        std::process::exit(1);
+    }
 }
