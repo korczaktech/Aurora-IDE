@@ -139,3 +139,9 @@
 .rail-toggle:hover{color:#d0e9e2;background:rgba(24,68,65,.55);border-color:rgba(112,181,165,.28)}
 .rail-version{color:#587c76}
 .rail-reopen{border-color:rgba(92,160,145,.25);background:#0b1918;color:#9bc9bd}
+
+
+/* Ícones SVG próprios da navegação */
+.rail-item img{width:18px;height:18px;flex:none;display:block;opacity:.88;transition:opacity .2s,transform .2s;}
+.rail-item:hover img,.rail-item.is-active img{opacity:1;}
+.rail-item:hover img{transform:translateY(-1px);}

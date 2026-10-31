@@ -67,7 +67,7 @@ jobs:
         run: |
           mkdir -p _site
           cp -a Front-End/WebSite/HTML/. _site/
-          for directory in CSS JavaScript TypeScript; do
+          for directory in CSS JavaScript TypeScript SVG; do
             if [ -d "Front-End/WebSite/$directory" ]; then
               mkdir -p "_site/$directory"
               cp -a "Front-End/WebSite/$directory/." "_site/$directory/"
