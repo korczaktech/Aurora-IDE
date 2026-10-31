@@ -471,7 +471,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"stty -echo -ixon; printf 'AURORA_ECHO_DISABLED\\n'\\n",
+                b"stty -echo -ixon; printf 'AURORA_ECHO_DISABLED\\n'\n",
             )
             .expect("desativar eco do terminal");
 
@@ -499,7 +499,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
+                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\n",
             )
             .expect("comando de saída intensa");
 
