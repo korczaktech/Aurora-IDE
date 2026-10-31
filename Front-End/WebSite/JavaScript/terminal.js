@@ -15,7 +15,7 @@
   function send(message){if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(message));}
   function current(){return sessions.find(s=>s.id===activeId);}
   function status(text){const n=root?.querySelector("[data-terminal-status]");if(n)n.textContent=text;}
-  function stopSocket(){if(socket){socket.onclose=null;socket.close();socket=null;}}
+  function stopSocket(){if(socket){socket.onopen=null;socket.onmessage=null;socket.onerror=null;socket.onclose=null;socket.close();socket=null;}}
   function detachTerminal(){if(resizeObserver){resizeObserver.disconnect();resizeObserver=null;}terminal=null;fitAddon=null;}
   function disposeSessionTerminal(id){const instance=terminals.get(id);if(instance){instance.terminal.dispose();terminals.delete(id);}if(activeId===id)detachTerminal();}
   function fit(){if(!terminal||!fitAddon||!socket||socket.readyState!==WebSocket.OPEN)return;try{fitAddon.fit();send({type:"resize",columns:terminal.cols,rows:terminal.rows});}catch(_){}}
@@ -27,8 +27,10 @@
       if(closed||activeId!==session.id)return;
       const wsUrl=API.replace(/^http/,"ws")+"/terminal/ws";
       socket=new WebSocket(wsUrl,["aurora-terminal","aurora-ticket."+grant.ticket]);
+      socket.binaryType="arraybuffer";
       socket.onopen=()=>{status("Conectado · Bash real");fit();terminal?.focus();};
       socket.onmessage=event=>{
+        if(event.data instanceof ArrayBuffer){terminal?.write(new Uint8Array(event.data));return;}
         let message;try{message=JSON.parse(event.data);}catch(_){return;}
         if(message.type==="ready"){status("Conectado · Bash real");}
         else if(message.type==="output"){terminal?.write(message.data||"");}

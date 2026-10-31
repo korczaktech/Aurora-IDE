@@ -479,7 +479,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\n",
+                b"yes Z | head -c 1048576; printf '\\n\\101\\125\\122\\117\\122\\101\\137\\106\\114\\117\\117\\104\\137\\104\\117\\116\\105\\n'\n",
             )
             .expect("comando de saída intensa");
 
