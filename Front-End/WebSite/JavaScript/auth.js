@@ -198,10 +198,22 @@
             <span class="account-menu-identity"><strong>${String(account.name || "Conta Aurora").replace(/[&<>"]/g, "")}</strong><small>Conta Korczak</small></span>
           </div>
           <div class="account-menu-divider"></div>
-          <a class="account-menu-item" role="menuitem" href="https://vault.korczaktech.com.br/"><span class="account-menu-icon">▣</span><span>Korczak Vault</span><span class="account-menu-arrow">↗</span></a>
-          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/contato"><span class="account-menu-icon">✳</span><span>FeedBack</span><span class="account-menu-arrow">↗</span></a>
-          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/planos"><span class="account-menu-icon">◇</span><span>Planos do EDS</span><span class="account-menu-arrow">↗</span></a>
-          <button class="account-menu-item" type="button" role="menuitem" data-account-profile><span class="account-menu-icon">◎</span><span>Meu perfil</span><span class="account-menu-arrow">→</span></button>
+          <a class="account-menu-item" role="menuitem" href="https://vault.korczaktech.com.br/">
+            <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 3.75h16a1.75 1.75 0 0 1 1.75 1.75v13A1.75 1.75 0 0 1 20 20.25H4A1.75 1.75 0 0 1 2.25 18.5v-13A1.75 1.75 0 0 1 4 3.75Z"/><path d="M6.5 6.5h11v11h-11z"/><circle cx="12" cy="12" r="2.1"/><path d="M12 8.1v1.7m0 4.4v1.7m3.9-3.9h-1.7m-4.4 0H8.1"/></svg></span>
+            <span>Korczak Vault</span><span class="account-menu-arrow">↗</span>
+          </a>
+          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/contato">
+            <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5.25h16A1.75 1.75 0 0 1 21.75 7v9A1.75 1.75 0 0 1 20 17.75H10l-5.5 3v-3H4A1.75 1.75 0 0 1 2.25 16V7A1.75 1.75 0 0 1 4 5.25Z"/><path d="m12 7.8 1.25 2.55 2.82.41-2.04 1.99.48 2.81L12 14.23l-2.51 1.33.48-2.81-2.04-1.99 2.82-.41L12 7.8Z"/></svg></span>
+            <span>FeedBack</span><span class="account-menu-arrow">↗</span>
+          </a>
+          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/planos">
+            <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3.75h14A1.75 1.75 0 0 1 20.75 5.5v13A1.75 1.75 0 0 1 19 20.25H5A1.75 1.75 0 0 1 3.25 18.5v-13A1.75 1.75 0 0 1 5 3.75Z"/><path d="m7 8 1.55 1.55L11 7.1m2 1.15h3.5M7 14h10m-10 3h7"/><path d="m12 2 1.05 1.4 1.7-.12.4 1.65 1.55.7-.7 1.55"/></svg></span>
+            <span>Planos do EDS</span><span class="account-menu-arrow">↗</span>
+          </a>
+          <button class="account-menu-item" type="button" role="menuitem" data-account-profile>
+            <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="10" cy="8" r="3.25"/><path d="M3.75 19.25a6.25 6.25 0 0 1 12.5 0"/><path d="m18.2 12.1.7 1.25 1.45.25-1.02 1 .24 1.45-1.37-.68-1.3.68.25-1.45-1.05-1 1.46-.25.64-1.25Z"/></svg></span>
+            <span>Meu perfil</span><span class="account-menu-arrow">→</span>
+          </button>
         `;
         accountArea.appendChild(menu);
         avatar.title = "Abrir menu da conta";
