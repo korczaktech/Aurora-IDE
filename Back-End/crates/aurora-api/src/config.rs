@@ -21,7 +21,10 @@ impl AppConfig {
             .map(|value| value.trim().to_owned())
             .filter(|value| !value.is_empty());
 
-        let mongodb_database = env::var("MONGODB_DATABASE").unwrap_or_else(|_| "Aurora".to_owned());
+        let accounts_database =
+            env::var("MONGODB_ACCOUNTS_DATABASE").unwrap_or_else(|_| "Contas".to_owned());
+        let sessions_database =
+            env::var("MONGODB_SESSIONS_DATABASE").unwrap_or_else(|_| "Aurora".to_owned());
 
         let cors_allowed_origins = env::var("CORS_ALLOWED_ORIGINS")
             .unwrap_or_default()
