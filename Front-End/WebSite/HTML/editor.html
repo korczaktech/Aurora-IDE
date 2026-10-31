@@ -12,9 +12,10 @@
   <header class="editor-header" aria-label="Cabeçalho do editor">
     <div class="header-start">
       <div class="menu-mark">
-      <button class="menu-back-button" id="editor-menu-back" type="button" aria-label="Voltar à animação inicial" title="Voltar" disabled>
+      <button class="menu-back-button" id="editor-menu-back" type="button" aria-label="Voltar ao menu" title="Voltar" disabled>
         <img src="../SVG/editor-back.svg" alt="">
       </button>
+      <button class="menu-open-button" id="editor-menu-open" type="button" aria-label="Abrir ferramentas" title="Abrir ferramentas" disabled></button>
       <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
         <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
         <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
@@ -52,6 +53,7 @@
     const middleLine = document.querySelector(".menu-line-middle");
     const thirdLine = document.querySelector(".menu-line-third");
     const backButton = document.getElementById("editor-menu-back");
+    const openButton = document.getElementById("editor-menu-open");
     const searchField = document.querySelector(".search-field");
 
     function measureMenuMotion() {
@@ -99,6 +101,9 @@
 
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         menuMark.classList.remove("is-open", "is-returning");
+        menuMark.classList.add("is-returned");
+        backButton.hidden = true;
+        openButton.disabled = false;
         toolRail.classList.remove("is-visible", "is-closing");
         return;
       }
@@ -107,9 +112,24 @@
 
     backButton.addEventListener("click", returnToInitialMark);
 
+    openButton.addEventListener("click", () => {
+      if (openButton.disabled) return;
+      openButton.disabled = true;
+      backButton.hidden = false;
+      menuMark.classList.remove("is-returned");
+      menuMark.classList.remove("is-returning");
+      // Reinicia a sequência original do símbolo para abrir a barra novamente.
+      menuMark.classList.remove("is-open");
+      void menuMark.offsetWidth;
+      menuMark.classList.add("is-open");
+    });
+
     thirdLine.addEventListener("animationend", (event) => {
       if (event.animationName !== "menu-third-travel" || !menuMark.classList.contains("is-returning")) return;
       menuMark.classList.remove("is-open", "is-returning");
+      menuMark.classList.add("is-returned");
+      backButton.hidden = true;
+      openButton.disabled = false;
       toolRail.classList.remove("is-visible", "is-closing");
     });
 
