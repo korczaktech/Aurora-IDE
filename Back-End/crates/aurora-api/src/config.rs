@@ -4,7 +4,8 @@ use std::env;
 pub struct AppConfig {
     pub port: u16,
     pub mongodb_uri: Option<String>,
-    pub mongodb_database: String,
+    pub accounts_database: String,
+    pub sessions_database: String,
     pub cors_allowed_origins: Vec<String>,
 }
 
@@ -33,7 +34,8 @@ impl AppConfig {
         Ok(Self {
             port,
             mongodb_uri,
-            mongodb_database,
+            accounts_database,
+            sessions_database,
             cors_allowed_origins,
         })
     }
