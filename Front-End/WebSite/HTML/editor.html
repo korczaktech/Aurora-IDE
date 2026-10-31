@@ -15,7 +15,7 @@
       <button class="menu-back-button" id="editor-menu-back" type="button" aria-label="Voltar ao menu" title="Voltar" disabled>
         <img src="../SVG/editor-back.svg" alt="">
       </button>
-      <button class="menu-open-button" id="editor-menu-open" type="button" aria-label="Abrir ferramentas" title="Abrir ferramentas" disabled>
+      <button class="menu-open-button" id="editor-menu-open" type="button" aria-label="Abrir ferramentas" title="Abrir ferramentas" aria-expanded="false">
         <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
           <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
@@ -49,119 +49,116 @@
   <main class="editor-workspace" aria-label="Área de desenvolvimento"></main>
 
   <script>
-    const menuMark = document.querySelector(".menu-mark");
-    const toolRail = document.getElementById("editor-tool-rail");
-    const middleLine = document.querySelector(".menu-line-middle");
-    const thirdLine = document.querySelector(".menu-line-third");
-    const backButton = document.getElementById("editor-menu-back");
-    const openButton = document.getElementById("editor-menu-open");
-    const searchField = document.querySelector(".search-field");
+    (() => {
+      const menuMark = document.querySelector(".menu-mark");
+      const toolRail = document.getElementById("editor-tool-rail");
+      const middleLine = document.querySelector(".menu-line-middle");
+      const thirdLine = document.querySelector(".menu-line-third");
+      const backButton = document.getElementById("editor-menu-back");
+      const openButton = document.getElementById("editor-menu-open");
+      const searchField = document.querySelector(".search-field");
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let menuState = "button";
 
-    function measureMenuMotion() {
-      const searchRect = searchField.getBoundingClientRect();
-      const svgRect = menuMark.querySelector(".menu-motion-icon").getBoundingClientRect();
-      const svgScale = svgRect.width / 24;
+      function measureMenuMotion() {
+        const searchRect = searchField.getBoundingClientRect();
+        const svgRect = menuMark.querySelector(".menu-motion-icon").getBoundingClientRect();
+        const svgScale = svgRect.width / 24;
+        const firstX = svgRect.left + 5 * svgScale;
+        const middleX = svgRect.left + 12 * svgScale;
+        const thirdX = svgRect.left + 19 * svgScale;
+        const targetX = searchRect.left + 12;
+        const middleTargetX = (firstX + targetX) / 2;
+        const originalLength = 15 * svgScale;
+        const expandedLength = Math.max(originalLength, targetX - firstX - 1.7 * svgScale);
+        const verticalSweep = 7.5 * svgScale;
+        document.documentElement.style.setProperty("--menu-travel", Math.max(0, targetX - thirdX) + "px");
+        document.documentElement.style.setProperty("--middle-offset", (middleTargetX - middleX) + "px");
+        document.documentElement.style.setProperty("--middle-length-scale", String(expandedLength / originalLength));
+        document.documentElement.style.setProperty("--middle-sweep-up", (-verticalSweep) + "px");
+        document.documentElement.style.setProperty("--middle-sweep-down", verticalSweep + "px");
+      }
 
-      const firstX = svgRect.left + 5 * svgScale;
-      const middleX = svgRect.left + 12 * svgScale;
-      const thirdX = svgRect.left + 19 * svgScale;
-      const targetX = searchRect.left + 12;
-      const travel = Math.max(0, targetX - thirdX);
-      const middleTargetX = (firstX + targetX) / 2;
-      const middleOffset = middleTargetX - middleX;
-      const originalLength = 15 * svgScale;
-      // Compensa a espessura dos dois traços verticais: a barra termina nas bordas internas, sem ultrapassá-los.
-      const verticalStrokeWidth = 1.7 * svgScale;
-      const expandedLength = Math.max(originalLength, targetX - firstX - verticalStrokeWidth);
-      const lengthScale = expandedLength / originalLength;
+      function setState(state) {
+        menuState = state;
+        const isButton = state === "button";
+        const isTools = state === "tools";
+        openButton.disabled = !isButton;
+        openButton.setAttribute("aria-expanded", String(isTools));
+        backButton.hidden = !isTools;
+        backButton.disabled = !isTools;
+        toolRail.classList.toggle("is-visible", isTools);
+        toolRail.classList.remove("is-closing");
+        toolRail.setAttribute("aria-hidden", String(!isTools));
+      }
 
-      // O centro da barra percorre exatamente do topo à base dos traços verticais.
-      const verticalSweep = 7.5 * svgScale;
+      function revealToolRail() {
+        if (menuState !== "opening") return;
+        menuMark.classList.remove("is-open");
+        setState("tools");
+      }
 
-      document.documentElement.style.setProperty("--menu-travel", travel + "px");
-      document.documentElement.style.setProperty("--middle-offset", middleOffset + "px");
-      document.documentElement.style.setProperty("--middle-length-scale", String(lengthScale));
-      document.documentElement.style.setProperty("--middle-sweep-up", (-verticalSweep) + "px");
-      document.documentElement.style.setProperty("--middle-sweep-down", verticalSweep + "px");
-    }
-
-    measureMenuMotion();
-    window.addEventListener("resize", measureMenuMotion);
-
-    function revealToolRail() {
-      toolRail.classList.add("is-visible");
-      toolRail.setAttribute("aria-hidden", "false");
-      backButton.disabled = false;
-    }
-
-    function returnToInitialMark() {
-      if (backButton.disabled) return;
-      backButton.disabled = true;
-      backButton.hidden = true;
-      openButton.disabled = true;
-      toolRail.classList.add("is-closing");
-      toolRail.setAttribute("aria-hidden", "true");
-
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      function finishMenuReturn() {
+        if (menuState !== "returning") return;
         menuMark.classList.remove("is-open", "is-returning");
         menuMark.classList.add("is-returned");
-        backButton.hidden = true;
-        openButton.disabled = false;
-        toolRail.classList.remove("is-visible", "is-closing");
-        return;
+        setState("button");
+        openButton.setAttribute("aria-label", "Abrir ferramentas");
+        openButton.title = "Abrir ferramentas";
       }
-      menuMark.classList.add("is-returning");
-    }
 
-    backButton.addEventListener("click", returnToInitialMark);
+      function openTools() {
+        if (menuState !== "button") return;
+        setState("opening");
+        backButton.hidden = false;
+        menuMark.classList.remove("is-returned", "is-returning", "is-open");
+        void menuMark.offsetWidth;
+        menuMark.classList.add("is-open");
+        if (reducedMotion.matches) revealToolRail();
+      }
 
-    openButton.addEventListener("click", () => {
-      if (openButton.disabled) return;
-      openButton.disabled = true;
-      backButton.hidden = false;
-      menuMark.classList.remove("is-returned");
-      menuMark.classList.remove("is-returning");
-      // Reinicia a sequência original do símbolo para abrir a barra novamente.
-      menuMark.classList.remove("is-open");
-      void menuMark.offsetWidth;
-      menuMark.classList.add("is-open");
-    });
+      function returnToButton() {
+        if (menuState !== "tools") return;
+        menuState = "returning";
+        backButton.disabled = true;
+        toolRail.classList.add("is-closing");
+        toolRail.setAttribute("aria-hidden", "true");
+        if (reducedMotion.matches) {
+          finishMenuReturn();
+          return;
+        }
+        menuMark.classList.add("is-returning");
+      }
 
-    function finishMenuReturn() {
-      if (!menuMark.classList.contains("is-returning")) return;
-      menuMark.classList.remove("is-open", "is-returning");
-      menuMark.classList.add("is-returned");
-      toolRail.classList.remove("is-visible", "is-closing");
-      backButton.hidden = true;
-      backButton.disabled = true;
-      openButton.disabled = false;
-      openButton.setAttribute("aria-label", "Abrir ferramentas");
-      openButton.title = "Abrir ferramentas";
-    }
+      measureMenuMotion();
+      window.addEventListener("resize", measureMenuMotion);
+      openButton.addEventListener("click", openTools);
+      backButton.addEventListener("click", returnToButton);
 
-    // O listener fica diretamente no terceiro traço, que encerra a última etapa do retorno.
-    thirdLine.addEventListener("animationend", (event) => {
-      if (event.animationName === "menu-third-travel") finishMenuReturn();
-    });
-    thirdLine.addEventListener("animationcancel", finishMenuReturn);
-
-    middleLine.addEventListener("animationend", (event) => {
-      if (event.animationName === "menu-middle-journey" && !menuMark.classList.contains("is-returning")) revealToolRail();
-    });
-
-    // A sequência é automática: o símbolo se desfaz e libera a barra de ferramentas.
-    menuMark.classList.add("is-open");
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) revealToolRail();
-
-    toolRail.addEventListener("click", (event) => {
-      const selected = event.target.closest("[data-tool]");
-      if (!selected) return;
-      toolRail.querySelectorAll("[data-tool]").forEach((button) => {
-        const active = button === selected;
-        button.classList.toggle("is-active", active);
-        button.setAttribute("aria-pressed", String(active));
+      middleLine.addEventListener("animationend", event => {
+        if (event.animationName === "menu-middle-journey" && menuState === "opening") revealToolRail();
       });
-    });
+      thirdLine.addEventListener("animationend", event => {
+        if (event.animationName === "menu-third-travel" && menuState === "returning") finishMenuReturn();
+      });
+      thirdLine.addEventListener("animationcancel", () => {
+        if (menuState === "returning") finishMenuReturn();
+      });
+
+      toolRail.addEventListener("click", event => {
+        const selected = event.target.closest("[data-tool]");
+        if (!selected) return;
+        toolRail.querySelectorAll("[data-tool]").forEach(button => {
+          const active = button === selected;
+          button.classList.toggle("is-active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+      });
+
+      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
+      menuMark.classList.remove("is-open", "is-returning", "is-returned");
+      setState("button");
+    })();
   </script>
 </body>
 </html>
