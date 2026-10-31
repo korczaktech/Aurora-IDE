@@ -158,15 +158,15 @@ jobs:
           ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
           urls = [node.text for node in sitemap.findall("sm:url/sm:loc", ns)]
           expected = {
-              "https://korczaktech.github.io/Aurora-IDE/",
-              "https://korczaktech.github.io/Aurora-IDE/sobre.html",
-              "https://korczaktech.github.io/Aurora-IDE/recursos.html",
+              "https://aurora.korczaktech.com.br/index.html",
+              "https://aurora.korczaktech.com.br/sobre.html",
+              "https://aurora.korczaktech.com.br/recursos.html",
           }
           if set(urls) != expected or len(urls) != len(expected):
               raise SystemExit("Sitemap contém URLs inesperadas ou ausentes: " + repr(urls))
 
           robots = (root / "robots.txt").read_text(encoding="utf-8")
-          if "https://korczaktech.github.io/Aurora-IDE/sitemap.xml" not in robots:
+          if "https://aurora.korczaktech.com.br/sitemap.xml" not in robots:
               raise SystemExit("robots.txt não referencia o sitemap publicado.")
 
           for filename in ["index.html", "sobre.html", "recursos.html"]:
