@@ -370,7 +370,13 @@
       recordActivity("Anotação salva: " + (title || "Sem título"), "Uma anotação foi criada nesta estação.", "ANOTAÇÃO");
       renderNotes(); notify(getSetting("local") ? "Anotação salva neste navegador." : "Anotação disponível nesta sessão.");
     }
-    if (action === "extension") { event.target.closest("button").textContent = "Solicitada"; event.target.closest("button").disabled = true; notify("Extensão marcada para instalação futura."); }
+    if (action === "extension") {
+      const button = event.target.closest("button");
+      button.textContent = "Solicitada";
+      button.disabled = true;
+      recordActivity("Extensão solicitada", "Uma extensão foi marcada para instalação futura.", "EXTENSÃO");
+      notify("Extensão marcada para instalação futura.");
+    }
   });
   main.addEventListener("keydown", event => {
     if (event.target.matches("[data-tree-folder]") && (event.key === "Enter" || event.key === " ")) {
@@ -423,7 +429,9 @@
     const name = document.getElementById("repo-name").value.trim();
     const url = document.getElementById("repo-url").value.trim();
     if (!/^https:\/\//i.test(url) && !/^git@/i.test(url)) { notify("Informe uma URL HTTPS ou SSH válida."); return; }
-    repos.push({ name, url }); renderRepos(); event.target.reset(); notify("Endereço registrado nesta sessão.");
+    repos.push({ name, url }); renderRepos();
+    recordActivity("Repositório registrado: " + name, "Um endereço de repositório foi adicionado à sessão.", "REPOSITÓRIO");
+    event.target.reset(); notify("Endereço registrado nesta sessão.");
   });
   renderProjectSidebar();
   recordActivity("Ambiente Aurora aberto", "A estação foi iniciada neste navegador.", "SISTEMA");
