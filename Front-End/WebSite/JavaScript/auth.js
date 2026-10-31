@@ -320,7 +320,7 @@
       });
     }
 
-    if (page === "index.html" || page === "") initializeHome();
+    if (page === "index.html" || page === "" || isProfile) initializeHome();
     if (isEditor) protectEditor();
     if (isProfile) protectProfile();
   });
