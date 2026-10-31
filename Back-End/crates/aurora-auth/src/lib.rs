@@ -219,7 +219,6 @@ pub async fn logout(storage: &MongoStorage, token: &str) -> Result<(), AuthError
     Ok(())
 }
 
-
 /// Bloqueia operações administrativas para contas comuns.
 pub fn require_admin(account: &AuthenticatedAccount) -> Result<(), AuthError> {
     if account.role == UserRole::Admin {
