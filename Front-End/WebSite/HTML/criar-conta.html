@@ -12,6 +12,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../CSS/auth.css">
+  <script src="../JavaScript/auth.js"></script>
 </head>
 <body>
   <div class="auth-app">
@@ -23,15 +24,14 @@
       <div class="auth-kicker"><i></i> SEU ESPAÇO DE CRIAÇÃO</div>
       <h1>Comece a<br><span>construir.</span></h1>
       <p class="auth-description">Crie sua conta Aurora e prepare seu espaço para desenvolver novas ideias.</p>
-      <form class="auth-form">
+      <form class="auth-form" id="register-form">
         <label class="auth-field">Nome completo<input type="text" name="name" placeholder="Como podemos chamar você?" autocomplete="name"></label>
         <label class="auth-field">E-mail<input type="email" name="email" placeholder="voce@exemplo.com" autocomplete="email"></label>
         <label class="auth-field">Senha<input type="password" name="password" placeholder="Crie uma senha" autocomplete="new-password"></label>
         <label class="auth-field">Confirmar senha<input type="password" name="password-confirm" placeholder="Digite a senha novamente" autocomplete="new-password"></label>
-        <button class="auth-submit" type="button">Criar conta</button>
+        <button class="auth-submit" type="submit">Criar conta</button>
       </form>
       <p class="auth-switch">Já possui uma conta? <a href="entrar.html">Entrar</a></p>
-      <p class="auth-note">CADASTRO EM PREPARAÇÃO · ESTA TELA AINDA NÃO ENVIA DADOS</p>
     </main>
   </div>
 </body>
