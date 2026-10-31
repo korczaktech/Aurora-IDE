@@ -13,7 +13,11 @@ use std::{
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TerminalSessionStatus { Running, Exited, Closed }
+pub enum TerminalSessionStatus {
+    Running,
+    Exited,
+    Closed,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionInfo {
@@ -99,8 +103,12 @@ impl TerminalSession {
     }
 
     fn close(&mut self) {
-        if self.status == TerminalSessionStatus::Closed { return; }
-        if self.status == TerminalSessionStatus::Running && self.child.try_wait().ok().flatten().is_none() {
+        if self.status == TerminalSessionStatus::Closed {
+            return;
+        }
+        if self.status == TerminalSessionStatus::Running
+            && self.child.try_wait().ok().flatten().is_none()
+        {
             let _ = self.child.kill();
         }
         let _ = self.child.wait();
@@ -147,9 +155,20 @@ impl TerminalManager {
             .lock()
             .map_err(|_| TerminalError::InternalState)?;
         for session in sessions.values() {
-            session.lock().map_err(|_| TerminalError::InternalState)?.refresh_status()?;
+            session
+                .lock()
+                .map_err(|_| TerminalError::InternalState)?
+                .refresh_status()?;
         }
-        let running = sessions.values().filter(|session| session.lock().map(|s| s.status == TerminalSessionStatus::Running).unwrap_or(false)).count();
+        let running = sessions
+            .values()
+            .filter(|session| {
+                session
+                    .lock()
+                    .map(|session| session.status == TerminalSessionStatus::Running)
+                    .unwrap_or(false)
+            })
+            .count();
         if running >= self.config.max_sessions {
             return Err(TerminalError::SessionLimitReached);
         }
@@ -183,7 +202,12 @@ impl TerminalManager {
 
         let reader = match pair.master.try_clone_reader() {
             Ok(reader) => reader,
-            Err(error) => { let mut child = child; let _ = child.kill(); let _ = child.wait(); return Err(TerminalError::Pty(error.to_string())); }
+            Err(error) => {
+                let mut child = child;
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(TerminalError::Pty(error.to_string()));
+            }
         };
         let writer = match pair.master.take_writer() {
             Ok(writer) => writer,
@@ -320,12 +344,10 @@ fn spawn_reader(mut reader: Box<dyn Read + Send>, tx: SyncSender<Vec<u8>>) {
             loop {
                 match reader.read(&mut buffer) {
                     Ok(0) | Err(_) => break,
-                    Ok(count) => {
-                        match tx.try_send(buffer[..count].to_vec()) {
-                            Ok(()) | Err(TrySendError::Full(_)) => {},
-                            Err(TrySendError::Disconnected(_)) => break,
-                        }
-                    }
+                    Ok(count) => match tx.try_send(buffer[..count].to_vec()) {
+                        Ok(()) | Err(TrySendError::Full(_)) => {}
+                        Err(TrySendError::Disconnected(_)) => break,
+                    },
                 }
             }
         });
@@ -406,7 +428,7 @@ mod tests {
             let info = manager.list_sessions().expect("listar");
             state = info[0].status;
             exit_code = info[0].exit_code;
-            if state == TerminalSessionStatus::Exited { break; }
+            if state == TerminalSessionStatus::Exited {\n                break;\n            }
             thread::sleep(Duration::from_millis(20));
         }
         assert_eq!(state, TerminalSessionStatus::Exited);
@@ -424,13 +446,13 @@ mod tests {
         let mut completed = false;
         while Instant::now() < deadline {
             let chunks = manager.read_output(&session.id, 256).expect("saída");
-            if chunks.iter().any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE")) {
+            if chunks\n                .iter()\n                .any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE"))\n            {
                 completed = true;
                 break;
             }
             thread::sleep(Duration::from_millis(20));
         }
-        assert!(completed, "o leitor do PTY deve continuar drenando saída intensa");
+        assert!(\n            completed,\n            "o leitor do PTY deve continuar drenando saída intensa"\n        );
         manager.close_session(&session.id).expect("fechar");
     }
 
