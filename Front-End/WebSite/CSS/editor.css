@@ -56,13 +56,14 @@ body {
   display: grid;
   place-items: center;
   width: 20px;
-  height: 20px;
+  height: 38px;
   padding: 0;
   border: 0;
   border-radius: 2px;
   background: transparent;
   cursor: pointer;
 }
+.menu-open-button:not(:disabled):hover { background: var(--aurora-surface); }
 .menu-open-button:focus-visible { outline: 1px solid var(--header-line); outline-offset: 2px; }
 .menu-open-button:disabled { cursor: default; }
 .menu-open-button:not(:disabled) { cursor: pointer; }
