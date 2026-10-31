@@ -69,7 +69,9 @@ fn sessao_usa_diretorio_e_ambiente_independentes() {
 fn ctrl_c_interrompe_comando_e_preserva_shell() {
     let manager = manager();
     let session = manager.create_session(None).expect("criar sessão");
-    manager.write(&session.id, b"sleep 30\n").expect("iniciar sleep");
+    manager
+        .write(&session.id, b"sleep 30\n")
+        .expect("iniciar sleep");
     thread::sleep(Duration::from_millis(200));
     manager.write(&session.id, b"\x03").expect("enviar Ctrl+C");
     thread::sleep(Duration::from_millis(200));
@@ -121,8 +123,8 @@ fn historico_e_gravado_com_permissao_restrita() {
         assert!(Instant::now() < deadline, "Bash não encerrou");
         thread::sleep(Duration::from_millis(20));
     }
-    let history = std::fs::read_to_string(directory.join(".aurora_history"))
-        .expect("arquivo de histórico");
+    let history =
+        std::fs::read_to_string(directory.join(".aurora_history")).expect("arquivo de histórico");
     assert!(history.contains("AURORA_HISTORY_IT"));
     #[cfg(unix)]
     {
@@ -150,7 +152,6 @@ fn rejeita_sobrescrita_de_variaveis_de_sistema() {
         .is_err());
 }
 
-
 #[test]
 fn saida_emitida_durante_desconexao_permanece_disponivel_apos_reconexao() {
     let manager = manager();
@@ -163,4 +164,3 @@ fn saida_emitida_durante_desconexao_permanece_disponivel_apos_reconexao() {
     assert!(output.contains("AURORA_RECONNECT_BUFFERED"));
     manager.close_session(&session.id).expect("encerrar");
 }
-

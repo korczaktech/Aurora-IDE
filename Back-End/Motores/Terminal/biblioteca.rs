@@ -4,4 +4,7 @@ mod erro;
 mod sessao;
 pub use configuracao::TerminalConfig;
 pub use erro::{TerminalError, TerminalResult};
-pub use sessao::{TerminalManager, TerminalOutput, TerminalSessionInfo, TerminalSessionOptions, TerminalSessionStatus};
+pub use sessao::{
+    TerminalManager, TerminalOutput, TerminalSessionInfo, TerminalSessionOptions,
+    TerminalSessionStatus,
+};

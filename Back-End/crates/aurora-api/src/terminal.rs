@@ -107,7 +107,11 @@ impl TerminalRuntime {
         let candidate = match requested {
             Some(value) if !value.trim().is_empty() => {
                 let supplied = PathBuf::from(value);
-                if supplied.is_absolute() { supplied } else { root.join(supplied) }
+                if supplied.is_absolute() {
+                    supplied
+                } else {
+                    root.join(supplied)
+                }
             }
             _ => root.clone(),
         };
@@ -337,9 +341,13 @@ async fn create_session(
         })
         .map_err(|error| {
             let status = match &error {
-                aurora_terminal::TerminalError::SessionLimitReached => StatusCode::TOO_MANY_REQUESTS,
+                aurora_terminal::TerminalError::SessionLimitReached => {
+                    StatusCode::TOO_MANY_REQUESTS
+                }
                 aurora_terminal::TerminalError::InvalidConfiguration(_)
-                | aurora_terminal::TerminalError::InvalidWorkingDirectory(_) => StatusCode::BAD_REQUEST,
+                | aurora_terminal::TerminalError::InvalidWorkingDirectory(_) => {
+                    StatusCode::BAD_REQUEST
+                }
                 _ => StatusCode::INTERNAL_SERVER_ERROR,
             };
             (status, Json(json!({"error":error.to_string()})))
@@ -639,16 +647,16 @@ mod tests {
         assert!(runtime.account_workspace("conta/../../etc").is_err());
     }
 
-
     #[test]
     fn sessao_permite_emitir_novo_ticket_apos_desconexao() {
         let runtime = TerminalRuntime::new(vec![]).unwrap();
         let directory = runtime.account_workspace("reconnect-account").unwrap();
         let session = runtime.manager.create_session(Some(directory)).unwrap();
-        runtime.owners.lock().unwrap().insert(
-            session.id.clone(),
-            "reconnect-account".to_owned(),
-        );
+        runtime
+            .owners
+            .lock()
+            .unwrap()
+            .insert(session.id.clone(), "reconnect-account".to_owned());
 
         let first = runtime.ticket("reconnect-account", &session.id).unwrap();
         let first_grant = runtime.consume(&first).expect("primeiro ticket");

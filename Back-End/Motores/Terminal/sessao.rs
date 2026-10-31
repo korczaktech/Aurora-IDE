@@ -380,13 +380,14 @@ impl Drop for TerminalManager {
     }
 }
 
-
-
 fn prepare_history(directory: &std::path::Path) -> TerminalResult<(PathBuf, PathBuf)> {
     use std::fs::OpenOptions;
     let history = directory.join(".aurora_history");
     let rc = directory.join(".aurora-bashrc");
-    let history_handle = OpenOptions::new().create(true).append(true).open(&history)?;
+    let history_handle = OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&history)?;
     drop(history_handle);
     let rc_contents = concat!(
         "umask 077\n",
@@ -410,8 +411,19 @@ fn prepare_history(directory: &std::path::Path) -> TerminalResult<(PathBuf, Path
 
 fn validate_session_environment(environment: &BTreeMap<String, String>) -> TerminalResult<()> {
     const RESERVED: &[&str] = &[
-        "PATH", "HOME", "TERM", "COLORTERM", "LANG", "HISTFILE", "HISTSIZE",
-        "HISTFILESIZE", "HISTCONTROL", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS",
+        "PATH",
+        "HOME",
+        "TERM",
+        "COLORTERM",
+        "LANG",
+        "HISTFILE",
+        "HISTSIZE",
+        "HISTFILESIZE",
+        "HISTCONTROL",
+        "BASH_ENV",
+        "ENV",
+        "SHELLOPTS",
+        "BASHOPTS",
     ];
     if environment.len() > 64 {
         return Err(TerminalError::InvalidConfiguration(
@@ -421,7 +433,9 @@ fn validate_session_environment(environment: &BTreeMap<String, String>) -> Termi
     for (key, value) in environment {
         let valid_key = !key.is_empty()
             && key.len() <= 128
-            && key.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+            && key
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
             && !key.as_bytes()[0].is_ascii_digit();
         if !valid_key || RESERVED.contains(&key.as_str()) || key.starts_with("LD_") {
             return Err(TerminalError::InvalidConfiguration(format!(
@@ -467,7 +481,8 @@ mod tests {
     };
 
     fn manager(limit: usize) -> TerminalManager {
-        let directory = std::env::temp_dir().join(format!("aurora-terminal-tests-{}", Uuid::new_v4()));
+        let directory =
+            std::env::temp_dir().join(format!("aurora-terminal-tests-{}", Uuid::new_v4()));
         std::fs::create_dir_all(&directory).expect("workspace de teste");
         let config = TerminalConfig {
             max_sessions: limit,
@@ -628,7 +643,9 @@ mod tests {
         let mut state = TerminalSessionStatus::Running;
         while Instant::now() < deadline {
             state = manager.list_sessions().expect("listar")[0].status;
-            if state == TerminalSessionStatus::Exited { break; }
+            if state == TerminalSessionStatus::Exited {
+                break;
+            }
             thread::sleep(Duration::from_millis(20));
         }
         assert_eq!(state, TerminalSessionStatus::Exited);
@@ -638,18 +655,26 @@ mod tests {
     fn ctrl_c_interrompe_processo_sem_encerrar_shell() {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
-        manager.write(&session.id, b"sleep 30\n").expect("iniciar processo");
+        manager
+            .write(&session.id, b"sleep 30\n")
+            .expect("iniciar processo");
         thread::sleep(Duration::from_millis(150));
-        manager.write(&session.id, b"\x03").expect("SIGINT pelo PTY");
+        manager
+            .write(&session.id, b"\x03")
+            .expect("SIGINT pelo PTY");
         thread::sleep(Duration::from_millis(150));
-        manager.write(&session.id, b"printf 'AURORA_INTERRUPT_OK\n'\n").expect("comando após interrupção");
+        manager
+            .write(&session.id, b"printf 'AURORA_INTERRUPT_OK\n'\n")
+            .expect("comando após interrupção");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut output = Vec::new();
         while Instant::now() < deadline {
             for chunk in manager.read_output(&session.id, 64).expect("saída") {
                 output.extend(chunk.bytes);
             }
-            if String::from_utf8_lossy(&output).contains("AURORA_INTERRUPT_OK") { break; }
+            if String::from_utf8_lossy(&output).contains("AURORA_INTERRUPT_OK") {
+                break;
+            }
             thread::sleep(Duration::from_millis(20));
         }
         assert!(String::from_utf8_lossy(&output).contains("AURORA_INTERRUPT_OK"));
@@ -661,21 +686,27 @@ mod tests {
         let manager = manager(1);
         let directory = std::env::temp_dir().join(format!("aurora-history-{}", Uuid::new_v4()));
         std::fs::create_dir_all(&directory).expect("workspace temporário");
-        let session = manager.create_session(Some(directory.clone())).expect("Bash real");
-        manager.write(&session.id, b"printf 'AURORA_HISTORY_MARKER'\nexit\n").expect("comandos");
+        let session = manager
+            .create_session(Some(directory.clone()))
+            .expect("Bash real");
+        manager
+            .write(&session.id, b"printf 'AURORA_HISTORY_MARKER'\nexit\n")
+            .expect("comandos");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut status = TerminalSessionStatus::Running;
         while Instant::now() < deadline {
             status = manager.list_sessions().expect("listar")[0].status;
-            if status == TerminalSessionStatus::Exited { break; }
+            if status == TerminalSessionStatus::Exited {
+                break;
+            }
             thread::sleep(Duration::from_millis(20));
         }
         assert_eq!(status, TerminalSessionStatus::Exited);
-        let history = std::fs::read_to_string(directory.join(".aurora_history")).expect("arquivo de histórico");
+        let history = std::fs::read_to_string(directory.join(".aurora_history"))
+            .expect("arquivo de histórico");
         assert!(history.contains("AURORA_HISTORY_MARKER"));
         let _ = std::fs::remove_dir_all(directory);
     }
-
 
     #[test]
     fn aplica_diretorio_e_variaveis_por_sessao() {
@@ -684,11 +715,18 @@ mod tests {
         std::fs::create_dir_all(&directory).expect("workspace temporário");
         let mut environment = BTreeMap::new();
         environment.insert("AURORA_SESSION_VALUE".to_owned(), "isolated".to_owned());
-        let session = manager.create_session_with_options(TerminalSessionOptions {
-            working_directory: Some(directory.clone()),
-            environment,
-        }).expect("sessão configurada");
-        manager.write(&session.id, b"printf '%s|%s\n' \"$AURORA_SESSION_VALUE\" \"$PWD\"\n").expect("comando");
+        let session = manager
+            .create_session_with_options(TerminalSessionOptions {
+                working_directory: Some(directory.clone()),
+                environment,
+            })
+            .expect("sessão configurada");
+        manager
+            .write(
+                &session.id,
+                b"printf '%s|%s\n' \"$AURORA_SESSION_VALUE\" \"$PWD\"\n",
+            )
+            .expect("comando");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut output = Vec::new();
         while Instant::now() < deadline {
@@ -696,12 +734,17 @@ mod tests {
                 output.extend(chunk.bytes);
             }
             let text = String::from_utf8_lossy(&output);
-            if text.contains("isolated|") && text.contains(directory.to_string_lossy().as_ref()) { break; }
+            if text.contains("isolated|") && text.contains(directory.to_string_lossy().as_ref()) {
+                break;
+            }
             thread::sleep(Duration::from_millis(20));
         }
         let text = String::from_utf8_lossy(&output);
         assert!(text.contains("isolated|"), "saída: {text}");
-        assert!(text.contains(directory.to_string_lossy().as_ref()), "saída: {text}");
+        assert!(
+            text.contains(directory.to_string_lossy().as_ref()),
+            "saída: {text}"
+        );
         manager.close_session(&session.id).expect("fechar");
         let _ = std::fs::remove_dir_all(directory);
     }
