@@ -471,7 +471,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"stty -echo -ixon; printf 'AURORA_ECHO_DISABLED\\n'\n",
+                b"stty -echo -ixon; printf '\\101\\125\\122\\117\\122\\101\\137\\105\\103\\110\\117\\137\\117\\106\\106\\n'\n",
             )
             .expect("desativar eco do terminal");
 
@@ -485,8 +485,8 @@ mod tests {
                 setup_output.extend(chunk.bytes);
             }
             if setup_output
-                .windows(b"AURORA_ECHO_DISABLED".len())
-                .any(|window| window == b"AURORA_ECHO_DISABLED")
+                .windows(b"AURORA_ECHO_OFF".len())
+                .any(|window| window == b"AURORA_ECHO_OFF")
             {
                 break;
             }
@@ -494,8 +494,8 @@ mod tests {
         }
         assert!(
             setup_output
-                .windows(b"AURORA_ECHO_DISABLED".len())
-                .any(|window| window == b"AURORA_ECHO_DISABLED"),
+                .windows(b"AURORA_ECHO_OFF".len())
+                .any(|window| window == b"AURORA_ECHO_OFF"),
             "o shell precisa confirmar que o eco foi desativado antes do teste"
         );
 
