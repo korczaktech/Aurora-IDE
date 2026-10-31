@@ -102,7 +102,7 @@
 
   function redirectAfterLogin() {
     const next = new URLSearchParams(window.location.search).get("next");
-    window.location.replace(next === "editor.html" ? "editor.html" : "index.html");
+    window.location.replace(["editor.html", "perfil.html"].includes(next) ? next : "index.html");
   }
 
   async function handleLogin(form) {
