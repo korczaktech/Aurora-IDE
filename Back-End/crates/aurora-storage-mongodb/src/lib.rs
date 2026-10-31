@@ -30,9 +30,17 @@ impl MongoStorage {
         self.client.database(&self.accounts_database).collection(name)
     }
 
+    fn sessions_collection(&self) -> Collection<Document> {
+        self.client.database(&self.sessions_database).collection("sessoes")
+    }
+
     pub async fn ping(&self) -> mongodb::error::Result<()> {
         self.client
             .database(&self.accounts_database)
+            .run_command(doc! { "ping": 1 })
+            .await?;
+        self.client
+            .database(&self.sessions_database)
             .run_command(doc! { "ping": 1 })
             .await?;
         Ok(())
@@ -40,7 +48,7 @@ impl MongoStorage {
 
     /// Cria os índices de sessão. A coleção de contas existente não é alterada.
     pub async fn ensure_auth_indexes(&self) -> mongodb::error::Result<()> {
-        let sessions = self.client.database(&self.sessions_database).collection::<Document>("sessoes");
+        let sessions = self.sessions_collection();
 
         let token_options = IndexOptions::builder()
             .name("unique_session_token_hash".to_owned())
@@ -191,7 +199,7 @@ impl MongoStorage {
             .unwrap_or_default()
             .as_millis() as i64;
 
-        self.client.database(&self.sessions_database).collection::<Document>("sessoes")
+        self.sessions_collection()
             .insert_one(doc! {
                 "_id": ObjectId::new(),
                 "sessionId": uuid::Uuid::new_v4().to_string(),
@@ -210,7 +218,7 @@ impl MongoStorage {
         &self,
         token_hash: &str,
     ) -> mongodb::error::Result<Option<String>> {
-        let session = self.collection("sessoes")
+        let session = self.sessions_collection()
             .find_one(doc! {
                 "tokenHash": token_hash,
                 "revokedAt": mongodb::bson::Bson::Null,
@@ -224,7 +232,7 @@ impl MongoStorage {
     }
 
     pub async fn touch_session(&self, token_hash: &str) -> mongodb::error::Result<()> {
-        self.collection("sessoes")
+        self.sessions_collection()
             .update_one(
                 doc! { "tokenHash": token_hash, "revokedAt": mongodb::bson::Bson::Null },
                 doc! { "$set": { "lastUsedAt": DateTime::now() } },
