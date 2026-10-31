@@ -320,7 +320,7 @@
       });
     }
 
-    if (page === "index.html" || page === "" || isProfile) initializeHome();
+    if (page === "index.html" || page === "" || isProfile || page === "planos.html") initializeHome();
     if (isEditor) protectEditor();
     if (isProfile) protectProfile();
   });
