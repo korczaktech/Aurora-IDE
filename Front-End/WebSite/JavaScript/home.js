@@ -1,13 +1,19 @@
 (() => {
   const rail = document.getElementById("leftRail");
   const toggle = document.getElementById("railToggle");
+  const reopen = document.getElementById("railReopen");
+  const workspace = document.querySelector(".workspace");
 
-  toggle.addEventListener("click", () => {
-    const collapsed = rail.classList.toggle("is-collapsed");
+  function setRailCollapsed(collapsed) {
+    rail.classList.toggle("is-collapsed", collapsed);
+    workspace.classList.toggle("rail-collapsed", collapsed);
     toggle.setAttribute("aria-expanded", String(!collapsed));
     toggle.setAttribute("aria-label", collapsed ? "Expandir barra lateral" : "Recolher barra lateral");
     toggle.title = collapsed ? "Expandir barra lateral" : "Recolher barra lateral";
-  });
+  }
+
+  toggle.addEventListener("click", () => setRailCollapsed(true));
+  reopen.addEventListener("click", () => setRailCollapsed(false));
 
   document.querySelectorAll(".rail-item").forEach((item) => {
     item.addEventListener("click", () => {
@@ -50,7 +56,9 @@
   }
 
   for (let eventNumber = 1; eventNumber <= 7; eventNumber += 1) {
-    document.addEventListener(`aurora:event-${eventNumber}`, handleProfileEvent);
+    document.addEventListener(`aurora:event-${eventNumber}`, () => {
+      handleProfileEvent({ detail: { event: eventNumber } });
+    });
   }
   document.addEventListener("aurora:profile-event", handleProfileEvent);
 
