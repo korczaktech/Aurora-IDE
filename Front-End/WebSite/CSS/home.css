@@ -681,3 +681,32 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .app-page .settings-index a.settings-nav-active{color:#c4e0cb;border-color:#82bd91}
 .app-page .settings-info-line{gap:20px}
 @media(max-width:650px){.app-page .activity-tools{align-items:flex-end;flex-direction:column;gap:5px}.app-page .activity-tools .text-action{padding:4px 0}}
+
+
+/* Página Sobre o Aurora e documentos institucionais */
+.app-page .about-information{margin:8px 0 42px;border-top:1px solid rgba(135,182,148,.18)}
+.app-page .about-information-row{display:flex;justify-content:space-between;align-items:center;gap:24px;min-height:49px;padding:12px 2px;border-bottom:1px solid rgba(135,182,148,.12)}
+.app-page .about-information-row>span{color:#829388;font-size:11px}
+.app-page .about-information-row>strong{color:#d8e8dc;font-size:11px;font-weight:550;text-align:right}
+.app-page .about-document-links{margin:7px 0 42px;border-top:1px solid rgba(135,182,148,.18)}
+.app-page .about-document-row,.app-page .about-download-row{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:17px 2px;border-bottom:1px solid rgba(135,182,148,.12)}
+.app-page .about-document-row>div,.app-page .about-download-row>div{display:grid;gap:5px}
+.app-page .about-document-row strong,.app-page .about-download-row strong{color:#dcebe0;font-size:12px;font-weight:600}
+.app-page .about-document-row small,.app-page .about-download-row small{color:#829188;font-size:10px;line-height:1.7}
+.app-page .about-document-row .text-action{color:#91c39d;font-size:10px;white-space:nowrap}
+.app-page .about-document-row .text-action:hover{color:#d6eddb}
+.app-page .about-download-row{margin:7px 0 20px;padding:20px 2px;border-top:1px solid rgba(135,182,148,.18)}
+.app-page .about-download-row .action-primary{white-space:nowrap}
+.app-page .about-document-page{max-width:900px;margin:8px 0 45px}
+.app-page .about-document-page>.property-back{margin:0 0 20px}
+.app-page .about-document-updated{padding:0 0 17px;border-bottom:1px solid rgba(135,182,148,.16);color:#78917f;font:9px 'DM Mono',monospace;letter-spacing:.5px}
+.app-page .about-document-page section{padding:20px 0;border-bottom:1px solid rgba(135,182,148,.12)}
+.app-page .about-document-page h2{margin:0 0 9px;color:#dcebe0;font-size:14px;font-weight:600}
+.app-page .about-document-page p{margin:0;color:#89988e;font-size:11px;line-height:1.95}
+.app-page .about-document-page p strong{color:#c9ddce;font-weight:600}
+@media(max-width:650px){
+ .app-page .about-information-row{align-items:flex-start;gap:12px}
+ .app-page .about-information-row>span,.app-page .about-information-row>strong{font-size:10px}
+ .app-page .about-document-row,.app-page .about-download-row{align-items:flex-start;flex-direction:column;gap:12px}
+ .app-page .about-document-row .text-action{padding:4px 0}
+}
