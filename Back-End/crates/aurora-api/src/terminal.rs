@@ -24,6 +24,7 @@ use uuid::Uuid;
 const MAX_PER_ACCOUNT: usize = 4;
 const MAX_INPUT: usize = 65_536;
 const TICKET_TTL: Duration = Duration::from_secs(30);
+const MAX_PENDING_TICKETS: usize = 512;
 
 struct Ticket {
     account: String,
@@ -62,8 +63,24 @@ impl TerminalRuntime {
     }
 
     fn account_workspace(&self, account_id: &str) -> Result<PathBuf, std::io::Error> {
+        if account_id.is_empty()
+            || !account_id
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-' || byte == b'_')
+        {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "identificador de conta inválido para diretório de trabalho",
+            ));
+        }
+
         let path = self.workspace_root.join(account_id);
         std::fs::create_dir_all(&path)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700))?;
+        }
         Ok(path)
     }
 
@@ -84,6 +101,9 @@ impl TerminalRuntime {
             .lock()
             .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
         tickets.retain(|_, ticket| ticket.expires > Instant::now());
+        if tickets.len() >= MAX_PENDING_TICKETS {
+            return Err(StatusCode::TOO_MANY_REQUESTS);
+        }
 
         let value = Uuid::new_v4().to_string();
         tickets.insert(
@@ -144,7 +164,7 @@ fn bearer_token(headers: &HeaderMap) -> Option<&str> {
         .strip_prefix("Bearer ")
 }
 
-async fn authenticated_account(
+async fn admin_account(
     state: &AppState,
     headers: &HeaderMap,
 ) -> Result<aurora_auth::AuthenticatedAccount, (StatusCode, Json<Value>)> {
@@ -168,6 +188,12 @@ async fn authenticated_account(
                 Json(json!({"error":"Sessão inválida"})),
             )
         })?;
+    aurora_auth::require_admin(&account).map_err(|_| {
+        (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error":"Acesso administrativo necessário"})),
+        )
+    })?;
     Ok(account)
 }
 
@@ -192,7 +218,7 @@ async fn list_sessions(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let owners = state.terminal.owners.lock().map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -222,7 +248,7 @@ async fn create_session(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let mut owners = state.terminal.owners.lock().map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -286,7 +312,7 @@ async fn close_session(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<StatusCode, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     if !state.terminal.owns(&account.id, &id) {
         return Err((
             StatusCode::NOT_FOUND,
@@ -319,7 +345,7 @@ async fn create_ticket(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let value = state.terminal.ticket(&account.id, &id).map_err(|_| {
         (
             StatusCode::NOT_FOUND,
@@ -357,6 +383,8 @@ async fn websocket(
     }
 
     Ok(ws
+        .max_message_size(MAX_INPUT)
+        .max_frame_size(MAX_INPUT)
         .protocols(["aurora-terminal"])
         .on_upgrade(move |socket| serve(socket, state, grant.session)))
 }
@@ -399,10 +427,20 @@ async fn serve(mut socket: WebSocket, state: AppState, id: String) {
                                 }
                             }
                             Some("resize") => {
-                                let columns = message["columns"].as_u64().unwrap_or(0) as u16;
-                                let rows = message["rows"].as_u64().unwrap_or(0) as u16;
-                                if (20..=300).contains(&columns) && (5..=120).contains(&rows) {
-                                    let _ = state.terminal.manager.resize(&id, columns, rows);
+                                let columns = message["columns"]
+                                    .as_u64()
+                                    .and_then(|value| u16::try_from(value).ok());
+                                let rows = message["rows"]
+                                    .as_u64()
+                                    .and_then(|value| u16::try_from(value).ok());
+                                if let (Some(columns), Some(rows)) = (columns, rows) {
+                                    if (20..=300).contains(&columns) && (5..=120).contains(&rows) {
+                                        if let Err(error) = state.terminal.manager.resize(&id, columns, rows) {
+                                            if !send_json(&mut socket, json!({"type":"error","message":error.to_string()})).await {
+                                                break;
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             Some("ping")
@@ -427,7 +465,8 @@ async fn serve(mut socket: WebSocket, state: AppState, id: String) {
                 match state.terminal.manager.read_output(&id, 64) {
                     Ok(chunks) => {
                         for chunk in chunks {
-                            if socket.send(Message::Binary(chunk.bytes.into())).await.is_err() {
+                            let data = String::from_utf8_lossy(&chunk.bytes);
+                            if !send_json(&mut socket, json!({"type":"output","data":data})).await {
                                 return;
                             }
                         }

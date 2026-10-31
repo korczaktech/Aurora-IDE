@@ -469,17 +469,37 @@ mod tests {
         let session = manager.create_session(None).expect("Bash real");
 
         manager
-            .write(&session.id, b"stty -echo\n")
+            .write(
+                &session.id,
+                b"stty -echo -ixon; printf 'AURORA_ECHO_DISABLED\\n'\\n",
+            )
             .expect("desativar eco do terminal");
-        thread::sleep(Duration::from_millis(50));
-        let _ = manager
-            .read_output(&session.id, 256)
-            .expect("limpar eco inicial");
+
+        let setup_deadline = Instant::now() + Duration::from_secs(5);
+        let mut setup_output = Vec::new();
+        while Instant::now() < setup_deadline {
+            for chunk in manager.read_output(&session.id, 256).expect("saída de configuração") {
+                setup_output.extend(chunk.bytes);
+            }
+            if setup_output
+                .windows(b"AURORA_ECHO_DISABLED".len())
+                .any(|window| window == b"AURORA_ECHO_DISABLED")
+            {
+                break;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        assert!(
+            setup_output
+                .windows(b"AURORA_ECHO_DISABLED".len())
+                .any(|window| window == b"AURORA_ECHO_DISABLED"),
+            "o shell precisa confirmar que o eco foi desativado antes do teste"
+        );
 
         manager
             .write(
                 &session.id,
-                b"yes Z | head -c 1048576; printf '\\n\\101\\125\\122\\117\\122\\101\\137\\106\\114\\117\\117\\104\\137\\104\\117\\116\\105\\n'\n",
+                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
             )
             .expect("comando de saída intensa");
 
