@@ -724,3 +724,14 @@ body {
 .aurora-terminal-empty-icon{color:#79d8ad;font-size:24px}
 .aurora-terminal-status{display:flex;justify-content:space-between;gap:12px;padding:5px 2px 0;color:#6f857a;font-size:9px}
 @media(max-width:700px){.aurora-terminal-sessions{flex-basis:94px}.aurora-terminal-session{font-size:9px;padding:7px 4px}.aurora-terminal-toolbar{gap:5px}.aurora-terminal-picker{max-width:125px}.aurora-terminal-tab{padding:7px 6px;font-size:8px}}
+
+/* Compact header for the docked terminal: prioritize usable console space */
+.editor-terminal-integrated .editor-panel-heading{flex:0 0 30px;min-height:30px;padding:3px 11px;gap:8px}
+.editor-terminal-integrated .editor-panel-kicker{display:none}
+.editor-terminal-integrated .editor-panel-heading h2{margin:0;font-size:11px;line-height:18px;font-weight:500;letter-spacing:.01em}
+.editor-terminal-integrated .editor-panel-close{width:22px;height:22px;font-size:17px;line-height:20px}
+.editor-terminal-integrated .editor-panel-content{padding:5px 10px 8px}
+.editor-terminal-integrated .aurora-terminal-toolbar{min-height:29px;padding-bottom:5px}
+.editor-terminal-integrated .aurora-terminal-main{padding-top:5px}
+.editor-terminal-integrated .aurora-terminal-content{padding-left:7px}
+.editor-terminal-integrated .aurora-terminal-stage{padding-top:5px}
