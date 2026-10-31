@@ -1,4 +1,5 @@
 use aurora_storage_mongodb::MongoStorage;
+use aurora_users::UserRole;
 use bcrypt::{hash, verify, DEFAULT_COST};
 use mongodb::bson::Document;
 use serde::Serialize;
@@ -12,6 +13,7 @@ pub enum AuthError {
     InvalidInput(&'static str),
     InvalidCredentials,
     AccountUnavailable,
+    InsufficientPermissions,
     Storage(mongodb::error::Error),
     PasswordHash(bcrypt::BcryptError),
 }
@@ -22,6 +24,7 @@ impl fmt::Display for AuthError {
             Self::InvalidInput(message) => write!(f, "{message}"),
             Self::InvalidCredentials => write!(f, "E-mail ou senha inválidos"),
             Self::AccountUnavailable => write!(f, "Conta indisponível"),
+            Self::InsufficientPermissions => write!(f, "Permissão insuficiente"),
             Self::Storage(_) => write!(f, "Falha ao acessar o serviço de contas"),
             Self::PasswordHash(_) => write!(f, "Falha ao processar credenciais"),
         }
@@ -47,7 +50,7 @@ pub struct AuthenticatedAccount {
     pub id: String,
     pub name: String,
     pub email: String,
-    pub role: String,
+    pub role: UserRole,
 }
 
 #[derive(Debug, Serialize)]
@@ -81,14 +84,16 @@ fn account_from_document(document: &Document) -> Result<AuthenticatedAccount, Au
     let role = account
         .get_str("Role")
         .map_err(|_| AuthError::AccountUnavailable)?;
-    if role != "admin" && role != "user" {
-        return Err(AuthError::AccountUnavailable);
-    }
+    let role = match role {
+        "admin" => UserRole::Admin,
+        "user" => UserRole::User,
+        _ => return Err(AuthError::AccountUnavailable),
+    };
     Ok(AuthenticatedAccount {
         id: id.to_owned(),
         name: name.to_owned(),
         email: email.to_owned(),
-        role: role.to_owned(),
+        role,
     })
 }
 
@@ -212,4 +217,14 @@ pub async fn logout(storage: &MongoStorage, token: &str) -> Result<(), AuthError
     }
     storage.revoke_session(&token_digest(token)).await?;
     Ok(())
+}
+
+
+/// Bloqueia operações administrativas para contas comuns.
+pub fn require_admin(account: &AuthenticatedAccount) -> Result<(), AuthError> {
+    if account.role == UserRole::Admin {
+        Ok(())
+    } else {
+        Err(AuthError::InsufficientPermissions)
+    }
 }
