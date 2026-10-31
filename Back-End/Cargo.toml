@@ -1,0 +1,32 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/aurora-api",
+    "crates/aurora-auth",
+    "crates/aurora-users",
+    "crates/aurora-projects",
+    "crates/aurora-files",
+    "crates/aurora-gmail",
+    "crates/aurora-drive",
+    "crates/aurora-github",
+    "crates/aurora-security",
+    "crates/aurora-storage-mongodb",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "UNLICENSED"
+
+[workspace.dependencies]
+axum = "0.8"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net"] }
+tower-http = { version = "0.6", features = ["cors", "trace"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+mongodb = "3.2"
+uuid = { version = "1", features = ["v4"] }
+bcrypt = "0.16"
+sha2 = "0.10"

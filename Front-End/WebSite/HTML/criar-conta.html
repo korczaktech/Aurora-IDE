@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050708">
+  <meta name="description" content="Crie sua conta Aurora EDS.">
+  <title>Aurora EDS — Criar conta</title>
+  <meta name="robots" content="noindex,follow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/auth.css">
+  <script src="../JavaScript/auth.js"></script>
+</head>
+<body>
+  <div class="auth-app">
+    <header class="auth-header">
+      <a class="auth-brand" href="index.html">Aurora<span>.</span><small>EDS</small></a>
+      <a class="auth-back" href="index.html">Voltar ao início</a>
+    </header>
+    <main class="auth-main">
+      <div class="auth-kicker"><i></i> SEU ESPAÇO DE CRIAÇÃO</div>
+      <h1>Comece a<br><span>construir.</span></h1>
+      <p class="auth-description">Crie sua conta Aurora e prepare seu espaço para desenvolver novas ideias.</p>
+      <form class="auth-form" id="register-form">
+        <label class="auth-field">Nome completo<input type="text" name="name" placeholder="Como podemos chamar você?" autocomplete="name"></label>
+        <label class="auth-field">E-mail<input type="email" name="email" placeholder="voce@exemplo.com" autocomplete="email"></label>
+        <label class="auth-field">Senha<input type="password" name="password" placeholder="Crie uma senha" autocomplete="new-password"></label>
+        <label class="auth-field">Confirmar senha<input type="password" name="password-confirm" placeholder="Digite a senha novamente" autocomplete="new-password"></label>
+        <button class="auth-submit" type="submit">Criar conta</button>
+      </form>
+      <p class="auth-switch">Já possui uma conta? <a href="entrar.html">Entrar</a></p>
+    </main>
+  </div>
+</body>
+</html>
