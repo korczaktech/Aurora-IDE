@@ -731,3 +731,11 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .account-menu-icon{width:17px;flex:none;color:#91bd9b;text-align:center;font-size:14px}
 .account-menu-arrow{margin-left:auto;color:#61766a;font-size:12px}
 @media(max-width:460px){.account-menu{right:-3px;width:min(258px,calc(100vw - 28px))}}
+
+/* Ícones SVG autorais do menu de conta */
+.account-menu-icon{width:19px;height:19px;display:inline-grid;place-items:center;flex:none;color:#91bd9b}
+.account-menu-icon svg{display:block;width:19px;height:19px;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round}
+.account-menu-item:nth-of-type(2) .account-menu-icon{color:#75b9ed}
+.account-menu-item:nth-of-type(3) .account-menu-icon{color:#c39aee}
+.account-menu-item:nth-of-type(4) .account-menu-icon{color:#e4bd75}
+.account-menu-item[data-account-profile] .account-menu-icon{color:#8ed0bc}
