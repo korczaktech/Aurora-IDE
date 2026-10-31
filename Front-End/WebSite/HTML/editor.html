@@ -52,7 +52,6 @@
     const searchField = document.querySelector(".search-field");
 
     function measureMenuMotion() {
-      const buttonRect = menuToggle.getBoundingClientRect();
       const searchRect = searchField.getBoundingClientRect();
       const svgRect = menuToggle.querySelector("svg").getBoundingClientRect();
       const svgScale = svgRect.width / 24;
@@ -62,17 +61,20 @@
       const thirdX = svgRect.left + 19 * svgScale;
       const targetX = searchRect.left + 12;
       const travel = Math.max(0, targetX - thirdX);
-
-      // A barra horizontal deve ligar exatamente o primeiro traço ao terceiro já deslocado.
       const middleTargetX = (firstX + targetX) / 2;
       const middleOffset = middleTargetX - middleX;
       const originalLength = 15 * svgScale;
       const expandedLength = Math.max(originalLength, targetX - firstX);
       const lengthScale = expandedLength / originalLength;
 
+      // O centro da barra percorre exatamente do topo à base dos traços verticais.
+      const verticalSweep = 7.5 * svgScale;
+
       document.documentElement.style.setProperty("--menu-travel", travel + "px");
       document.documentElement.style.setProperty("--middle-offset", middleOffset + "px");
       document.documentElement.style.setProperty("--middle-length-scale", String(lengthScale));
+      document.documentElement.style.setProperty("--middle-sweep-up", (-verticalSweep) + "px");
+      document.documentElement.style.setProperty("--middle-sweep-down", verticalSweep + "px");
     }
 
     measureMenuMotion();
