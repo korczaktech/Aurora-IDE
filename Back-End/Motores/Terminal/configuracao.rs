@@ -44,7 +44,6 @@ impl TerminalConfig {
     }
 }
 
-
 #[cfg(unix)]
 fn is_executable(path: &std::path::Path) -> bool {
     use std::os::unix::fs::PermissionsExt;
