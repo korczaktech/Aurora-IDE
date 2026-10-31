@@ -595,3 +595,44 @@ body {
 @media (max-width: 700px) {
   .code-viewport > .code-gutter { flex-basis: 43px; width: 43px; min-width: 43px; padding-right: 11px; }
 }
+
+
+/* Numeração isolada: não depende do script principal do editor. */
+.code-viewport > #codeGutter {
+  box-sizing: border-box;
+  display: flex !important;
+  flex: 0 0 57px !important;
+  width: 57px !important;
+  min-width: 57px !important;
+  height: 100%;
+  min-height: 0;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+  padding: 0 15px 0 0;
+  color: #a6b7b0 !important;
+  background: #080d0f;
+  font: 12px/22px "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  text-align: right;
+  user-select: none;
+}
+.code-viewport > #codeGutter .code-gutter-line {
+  display: block;
+  box-sizing: border-box;
+  flex: 0 0 22px;
+  width: 100%;
+  height: 22px;
+  min-height: 22px;
+  color: #a6b7b0 !important;
+  line-height: 22px;
+  white-space: nowrap;
+}
+@media (max-width: 700px) {
+  .code-viewport > #codeGutter {
+    flex-basis: 43px !important;
+    width: 43px !important;
+    min-width: 43px !important;
+    padding-right: 11px;
+  }
+}
