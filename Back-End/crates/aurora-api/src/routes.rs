@@ -39,11 +39,17 @@ fn auth_error(error: aurora_auth::AuthError) -> (StatusCode, Json<Value>) {
         AuthError::AccountUnavailable => (StatusCode::FORBIDDEN, "Conta indisponível"),
         AuthError::Storage(error) => {
             tracing::error!(error = %error, "Erro no armazenamento de autenticação");
-            (StatusCode::INTERNAL_SERVER_ERROR, "Serviço temporariamente indisponível")
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Serviço temporariamente indisponível",
+            )
         }
         AuthError::PasswordHash(error) => {
             tracing::error!(error = %error, "Erro ao processar hash de senha");
-            (StatusCode::INTERNAL_SERVER_ERROR, "Não foi possível processar a solicitação")
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "Não foi possível processar a solicitação",
+            )
         }
     };
     (status, Json(json!({ "error": message })))
@@ -148,7 +154,9 @@ async fn logout(
     let database = state.database.as_ref().ok_or_else(database_unavailable)?;
     let token = bearer_token(&headers)
         .ok_or_else(|| auth_error(aurora_auth::AuthError::InvalidCredentials))?;
-    aurora_auth::logout(database, token).await.map_err(auth_error)?;
+    aurora_auth::logout(database, token)
+        .await
+        .map_err(auth_error)?;
     Ok(StatusCode::NO_CONTENT)
 }
 
