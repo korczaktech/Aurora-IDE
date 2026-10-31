@@ -3,50 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090b10">
-  <meta name="description" content="Aurora IDE — entre no seu ambiente de desenvolvimento.">
-  <title>Entrar — Aurora IDE</title>
+  <meta name="theme-color" content="#050708">
+  <meta name="description" content="Aurora IDE — seu espaço de desenvolvimento.">
+  <title>Aurora — Início</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="CSS/login.css">
+  <link rel="stylesheet" href="CSS/home.css">
 </head>
 <body>
-  <div class="app-frame">
-    <header class="window-bar">
-      <a class="brand" href="./index.html" aria-label="Aurora IDE"><span class="brand-symbol" aria-hidden="true"><i></i><i></i><i></i></span><span class="brand-name">AURORA<span> IDE</span></span></a>
-      <div class="window-context"><span class="context-pulse"></span> AMBIENTE DE DESENVOLVIMENTO</div>
-      <div class="window-controls" aria-hidden="true"><span></span><span></span><span></span></div>
-    </header>
-    <main class="login-layout">
-      <section class="login-side" aria-labelledby="login-title">
-        <div class="login-content">
-          <div class="eyebrow"><span class="eyebrow-line"></span> SEU ESPAÇO DE CRIAÇÃO</div>
-          <h1 id="login-title">Tudo começa<br>com uma <em>ideia.</em></h1>
-          <p class="intro">Entre no Aurora e continue construindo o que ainda não existe.</p>
-          <form id="loginForm" novalidate>
-            <label class="field-label" for="email">E-MAIL</label>
-            <div class="input-wrap"><span class="input-symbol" aria-hidden="true">✳</span><input id="email" name="email" type="email" placeholder="voce@exemplo.com" autocomplete="username" required></div>
-            <div class="password-heading"><label class="field-label" for="password">SENHA</label><button class="text-link" type="button" id="forgotPassword">Esqueceu a senha?</button></div>
-            <div class="input-wrap"><span class="input-symbol lock-symbol" aria-hidden="true">⌑</span><input id="password" name="password" type="password" placeholder="Sua senha" autocomplete="current-password" required minlength="8"><button class="visibility-button" type="button" id="togglePassword" aria-label="Mostrar senha" aria-pressed="false">◉</button></div>
-            <label class="remember-row"><input type="checkbox" id="remember"><span class="custom-check"></span><span>Manter sessão iniciada</span></label>
-            <button class="submit-button" type="submit"><span>Entrar no Aurora</span><span class="button-arrow">↗</span></button>
-            <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
-          </form>
-          <div class="signup-line">Ainda não tem uma conta? <button type="button" class="text-link" id="createAccount">Criar conta</button></div>
+  <div class="aurora-app">
+    <header class="top-header">
+      <a class="wordmark" href="./index.html" aria-label="Aurora início">Aurora<span class="wordmark-point">.</span></a>
+      <div class="header-actions">
+        <a class="header-link" href="#entrar" id="loginLink">Entrar</a>
+        <a class="create-account" href="#criar-conta" id="createLink">Criar Conta</a>
+        <div class="account-area" id="accountArea" hidden>
+          <span class="account-name" id="accountName"></span>
+          <button class="account-avatar" id="accountAvatar" aria-label="Perfil da conta"><span id="avatarInitial">A</span></button>
         </div>
-        <footer class="login-footer"><span>© 2026 AURORA IDE</span><span class="footer-separator">/</span><span>FEITO PARA IR ALÉM</span><span class="footer-version">PREVIEW 0.0.2</span></footer>
-      </section>
-      <aside class="visual-side" aria-label="Identidade visual Aurora">
-        <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
-        <div class="visual-topline"><span>01 — 03</span><span>ENGINEERED FOR POSSIBILITY</span></div>
-        <div class="aurora-art" aria-hidden="true"><div class="art-grid"></div><div class="orbit orbit-outer"></div><div class="orbit orbit-middle"></div><div class="orbit orbit-inner"></div><div class="core-glow"></div><div class="core-shape"><span>✳</span></div><span class="orbit-point point-one"></span><span class="orbit-point point-two"></span><span class="orbit-point point-three"></span><span class="art-coordinate coordinate-one">−23.5505° S</span><span class="art-coordinate coordinate-two">46.6333° W</span></div>
-        <div class="visual-caption"><div class="caption-index">A / 001</div><div><h2>Crie sem limites.</h2><p>Um ambiente. Todas as possibilidades.</p></div><div class="caption-mark">✳</div></div>
-        <div class="visual-bottom"><span>CORE SYSTEM / INITIALIZING</span><span><i></i> ALL SYSTEMS READY</span></div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="left-rail" id="leftRail" aria-label="Navegação principal">
+        <button class="rail-toggle" id="railToggle" aria-label="Recolher barra lateral" aria-expanded="true" title="Recolher barra lateral">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/></svg>
+        </button>
+        <nav class="rail-nav">
+          <button class="rail-item is-active" aria-label="Início" title="Início"><svg viewBox="0 0 24 24"><path d="m3.5 10 8.5-7 8.5 7v10a1 1 0 0 1-1 1h-5.2v-6.5H9.7V21H4.5a1 1 0 0 1-1-1z"/></svg></button>
+          <button class="rail-item" aria-label="Projetos" title="Projetos"><svg viewBox="0 0 24 24"><path d="M3.5 7.5h6l2 2h9v9a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/><path d="M3.5 7.5v-2a2 2 0 0 1 2-2h4l2 2h5"/></svg></button>
+          <button class="rail-item" aria-label="Explorar" title="Explorar"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4.5 4.5M8 10.8h5.6M10.8 8v5.6"/></svg></button>
+          <button class="rail-item" aria-label="Repositórios" title="Repositórios"><svg viewBox="0 0 24 24"><circle cx="6" cy="5" r="2"/><circle cx="18" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 5h8M6 7v8a4 4 0 0 0 4 4h6"/></svg></button>
+          <button class="rail-item" aria-label="Extensões" title="Extensões"><svg viewBox="0 0 24 24"><path d="M9 3.5h6v4h4a1.5 1.5 0 0 1 1.5 1.5v6H16v4h-6v-4H5.5A1.5 1.5 0 0 1 4 13.5V9a1.5 1.5 0 0 1 1.5-1.5H9z"/></svg></button>
+          <button class="rail-item" aria-label="Atividade" title="Atividade"><svg viewBox="0 0 24 24"><path d="M3 12h4l2.2-6 4.6 12 2.2-6H21"/></svg></button>
+          <button class="rail-item" aria-label="Configurações" title="Configurações"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="m19.4 15 .1.1a1.8 1.8 0 0 1-2.5 2.5l-.1-.1a1.8 1.8 0 0 0-3 .9v.2a1.8 1.8 0 0 1-3.6 0v-.2a1.8 1.8 0 0 0-3-.9l-.1.1a1.8 1.8 0 0 1-2.5-2.5l.1-.1a1.8 1.8 0 0 0-.9-3h-.2a1.8 1.8 0 0 1 0-3.6h.2a1.8 1.8 0 0 0 .9-3l-.1-.1a1.8 1.8 0 0 1 2.5-2.5l.1.1a1.8 1.8 0 0 0 3-.9v-.2a1.8 1.8 0 0 1 3.6 0v.2a1.8 1.8 0 0 0 3 .9l.1-.1a1.8 1.8 0 0 1 2.5 2.5l-.1.1a1.8 1.8 0 0 0 .9 3h.2a1.8 1.8 0 0 1 0 3.6h-.2a1.8 1.8 0 0 0-.9 3z"/></svg></button>
+        </nav>
+        <div class="rail-bottom"><span class="rail-version">A / 01</span></div>
       </aside>
-    </main>
-    <footer class="system-bar"><span><i></i> SISTEMA OPERACIONAL</span><span>CONEXÃO SEGURA</span><span>PT-BR</span></footer>
+
+      <main class="home-main">
+        <div class="main-atmosphere" aria-hidden="true">
+          <span class="star star-a"></span><span class="star star-b"></span><span class="star star-c"></span><span class="star star-d"></span><span class="star star-e"></span><span class="star star-f"></span>
+          <div class="aurora-ribbon ribbon-one"></div><div class="aurora-ribbon ribbon-two"></div><div class="aurora-ribbon ribbon-three"></div>
+        </div>
+        <section class="welcome-block">
+          <div class="welcome-kicker"><span></span> SEU AMBIENTE DE DESENVOLVIMENTO</div>
+          <h1>Onde suas ideias<br><em>ganham forma.</em></h1>
+          <p>Um espaço para criar, explorar e transformar possibilidades em projetos.</p>
+        </section>
+        <div class="bottom-signature"><span class="signature-mark">✳</span><span>CONSTRUA NO SEU PRÓPRIO RITMO</span><span class="signature-line"></span><span class="signature-code">AURORA / 001</span></div>
+      </main>
+
+      <aside class="projects-sidebar" aria-label="Projetos">
+        <div class="projects-heading"><h2>Projetos</h2><span class="project-count">01</span></div>
+        <button class="project-entry" type="button" aria-label="Projeto Aurora Playground">
+          <span class="project-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 8.2 4.6v9.2L12 21.2l-8.2-4.6V7.4z"/><path d="m8 9 4 7 4-7M8.8 14h6.4"/></svg></span>
+          <span class="project-copy"><strong>Aurora Playground</strong><span class="project-tag"><i></i> EXPERIMENTO</span></span>
+        </button>
+        <div class="projects-foot"><span class="projects-foot-dot"></span> SEUS PROJETOS</div>
+      </aside>
+    </div>
   </div>
-  <script src="JavaScript/login.js"></script>
+  <script src="JavaScript/home.js"></script>
 </body>
 </html>

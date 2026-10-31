@@ -12,8 +12,7 @@ O frontend web é a interface de aplicativo do Aurora IDE, não um site instituc
 
 ## Telas
 
-- `HTML/index.html`: entrada principal e tela de login.
-- `HTML/index-demo.html`: primeira interface exploratória, preservada como demonstração.
-- `CSS/style-demo.css` e `JavaScript/app-demo.js`: recursos da demonstração anterior.
+- `HTML/index.html`: tela inicial do Aurora, com navegação lateral, área principal e painel de projetos.
+- `HTML/index-demo.html`: interface exploratória anterior, preservada como demonstração.
 
-A tela de login é apenas frontend nesta etapa. A autenticação real será integrada posteriormente ao backend Rust.
+A tela inicial é uma estrutura visual nesta etapa. A autenticação e os dados reais de conta/projetos serão integrados posteriormente ao backend.
