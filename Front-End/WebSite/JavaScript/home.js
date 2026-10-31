@@ -9,12 +9,33 @@
   if (!rail || !workspace || !collapseButton || !expandButton || !main) return;
 
   const homeMarkup = main.innerHTML;
+  const defaultProject = { id: "aurora-playground", name: "Aurora Playground", description: "Ambiente experimental para explorar recursos e possibilidades da estação.", createdAt: "30 de outubro de 2026", kind: "EXPERIMENTO" };
+  let projects = [];
+  try { projects = JSON.parse(localStorage.getItem("aurora-projects") || "[]"); } catch (_) { projects = []; }
+  if (!Array.isArray(projects) || !projects.length) projects = [{ ...defaultProject }];
+  let selectedProjectId = projects[0]?.id || defaultProject.id;
+  const persistProjects = () => localStorage.setItem("aurora-projects", JSON.stringify(projects));
+  const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || defaultProject;
+  const renderProjectSidebar = () => {
+    if (!projectsSidebar) return;
+    const list = projectsSidebar.querySelector("#projects-sidebar-list");
+    const count = projectsSidebar.querySelector(".project-count");
+    if (count) count.textContent = String(projects.length).padStart(2, "0");
+    if (list) list.innerHTML = projects.map(project => `<button class="project-entry" type="button" data-project-id="${escapeHTML(project.id)}" aria-label="Abrir projeto ${escapeHTML(project.name)}"><span class="project-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 8.2 4.6v9.2L12 21.2l-8.2-4.6V7.4z"/><path d="m8 9 4 7 4-7M8.8 14h6.4"/></svg></span><span class="project-copy"><strong>${escapeHTML(project.name)}</strong><span class="project-tag"><i></i> ${escapeHTML(project.kind || "PROJETO")}</span></span></button>`).join("");
+  };
+  const renderProjectList = () => {
+    const list = document.getElementById("project-list");
+    const count = document.getElementById("project-count");
+    if (count) count.textContent = `${String(projects.length).padStart(2, "0")} ${projects.length === 1 ? "PROJETO" : "PROJETOS"}`;
+    if (list) list.innerHTML = projects.map((project, index) => `<div class="project-line" data-open-project data-project-id="${escapeHTML(project.id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(project.name)}"><span class="project-line-index">${String(index + 1).padStart(2, "0")}</span><div class="project-line-main"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.description || "Projeto criado nesta estação")}</small></div><span class="project-line-state"><i></i>${project.id === "aurora-playground" ? "Ativo" : "Novo"}</span><span class="project-line-arrow">↗</span></div>`).join("");
+  };
+  persistProjects();
   const pages = {
     inicio:{title:"Início",eyebrow:"Sua estação de desenvolvimento",lead:"Um espaço para criar, explorar e transformar possibilidades em projetos.",render:()=>homeMarkup},
     projetos:{title:"Projetos",eyebrow:"ESPAÇO DE CRIAÇÃO",lead:"Cada ideia começa em algum lugar. Reúna seus experimentos e acompanhe o que está construindo.",render:()=>[
       '<div class="project-command"><div><span class="micro-label">ÁREA DE TRABALHO</span><strong>Seus projetos</strong></div><button class="action-primary" data-action="new-project">＋ Novo projeto</button></div>',
-      '<section class="project-feature" data-open-project role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">EXPERIMENTO · 001</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p><div class="project-progress"><span style="width:32%"></span></div><div class="project-progress-meta"><span>Progresso do projeto</span><strong>32%</strong></div></div><div class="project-feature-status"><i></i> EM DESENVOLVIMENTO</div></section>',
-      '<div class="section-heading"><span>SEUS PROJETOS</span><span id="project-count">01 PROJETO</span></div><div class="project-table" id="project-list"><div class="project-line" data-open-project role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><span class="project-line-index">01</span><div class="project-line-main"><strong>Aurora Playground</strong><small>Experimento inicial · Criado para explorar a estação</small></div><span class="project-line-state"><i></i>Ativo</span><span class="project-line-arrow">↗</span></div></div><div class="quiet-hint">Projetos criados nesta prévia permanecem disponíveis apenas durante a sessão atual.</div>'
+      '<section class="project-feature" data-open-project data-project-id="aurora-playground" role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">PROJETO EM DESTAQUE</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p><div class="project-progress"><span style="width:32%"></span></div><div class="project-progress-meta"><span>Progresso do projeto</span><strong>32%</strong></div></div><div class="project-feature-status"><i></i> EM DESENVOLVIMENTO</div></section>',
+      '<div class="section-heading"><span>SEUS PROJETOS</span><span id="project-count"></span></div><div class="project-table" id="project-list"></div><div class="quiet-hint">Projetos salvos neste navegador ficam disponíveis neste dispositivo. A sincronização entre dispositivos será integrada futuramente.</div>'
     ].join("")},
     propriedades:{title:"Aurora Playground",eyebrow:"PROPRIEDADES DO PROJETO",lead:"Informações, composição técnica, estrutura e preferências visuais do projeto.",render:()=>[
       '<div class="property-toolbar"><button class="property-back" type="button" data-back-projects>← Voltar para projetos</button><span class="property-status"><i></i> EXPERIMENTO · ATIVO</span></div>',
@@ -121,17 +142,28 @@
     if (projectsSidebar) projectsSidebar.hidden = key !== "inicio";
     document.title = "Aurora EDS — " + page.title;
     if (key === "propriedades") {
+      const project = selectedProject();
+      const title = main.querySelector(".page-title");
+      const identityTitle = main.querySelector(".property-identity-copy h2");
+      const identityDescription = main.querySelector(".property-identity-copy p");
+      const nameInput = document.getElementById("project-name");
+      const descriptionInput = document.getElementById("project-description");
+      if (title) title.textContent = project.name;
+      if (identityTitle) identityTitle.textContent = project.name;
+      if (identityDescription) identityDescription.textContent = project.description || "";
+      if (nameInput) nameInput.value = project.name;
+      if (descriptionInput) descriptionInput.value = project.description || "";
       const theme = document.getElementById("project-theme"); const font = document.getElementById("project-font");
       if (theme) theme.value = localStorage.getItem("aurora-project-theme") || "aurora";
       if (font) font.value = localStorage.getItem("aurora-project-font") || "JetBrains Mono";
       main.querySelectorAll("[data-project-setting]").forEach(input => { const saved = localStorage.getItem("aurora-project-setting-" + input.dataset.projectSetting); if (saved !== null) input.checked = saved === "true"; });
     }
+    if (key === "projetos") renderProjectList();
     if (key === "anotacoes") renderNotes();
     if (key === "repositorios") renderRepos();
     main.scrollTop = 0;
   };
   navItems.forEach(item => item.addEventListener("click", () => showPage(item.dataset.page)));
-  document.querySelector(".project-entry")?.addEventListener("click", () => showPage("propriedades"));
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
     const folder = event.target.closest("[data-tree-folder]");
@@ -152,17 +184,22 @@
       setVisibility(folderId, collapse);
       return;
     }
-    if (event.target.closest("[data-open-project]")) { showPage("propriedades"); return; }
+    const projectTrigger = event.target.closest("[data-open-project], .project-entry");
+    if (projectTrigger) { selectedProjectId = projectTrigger.dataset.projectId || "aurora-playground"; showPage("propriedades"); return; }
     if (event.target.closest("[data-back-projects]")) { showPage("projetos"); return; }
     if (event.target.closest("[data-save-project]")) {
       const name = document.getElementById("project-name")?.value.trim();
       const description = document.getElementById("project-description")?.value.trim();
       if (!name) { notify("O nome do projeto não pode ficar vazio."); return; }
-      document.querySelectorAll(".project-feature-copy h2,.project-line-main strong").forEach(node => node.textContent = name);
-      if (description) document.querySelector(".project-feature-copy p").textContent = description;
+      const project = selectedProject();
+      project.name = name;
+      project.description = description || "";
+      project.modifiedAt = new Date().toISOString();
+      persistProjects();
+      renderProjectSidebar();
       const modified = document.getElementById("project-modified");
-      if (modified) modified.textContent = new Intl.DateTimeFormat("pt-BR",{dateStyle:"long",timeStyle:"short"}).format(new Date());
-      notify("Alterações aplicadas nesta prévia.");
+      if (modified) modified.textContent = new Intl.DateTimeFormat("pt-BR",{dateStyle:"long",timeStyle:"short"}).format(new Date(project.modifiedAt));
+      notify("Alterações salvas neste navegador.");
       return;
     }
     const noteButton = event.target.closest("[data-note-index]");
@@ -176,9 +213,13 @@
     if (!action) return;
     if (action === "new-project") {
       const name = window.prompt("Nome do novo projeto:"); if (!name?.trim()) return;
-      const list = document.getElementById("project-list");
-      if (list) list.insertAdjacentHTML("beforeend", `<div class="list-row"><span class="status-dot"></span><div class="list-row-main"><strong>${escapeHTML(name.trim())}</strong><small>Novo projeto · Criado nesta sessão</small></div><span class="tag">NOVO</span></div>`);
-      notify("Projeto adicionado à visualização.");
+      const project = { id: "aurora-" + Date.now().toString(36), name: name.trim(), description: "Novo projeto criado no Aurora.", createdAt: new Date().toISOString(), kind: "NOVO" };
+      projects.push(project);
+      selectedProjectId = project.id;
+      persistProjects();
+      renderProjectList();
+      renderProjectSidebar();
+      notify("Projeto criado e salvo neste navegador.");
     }
     if (action === "new-note") { document.getElementById("note-title").value = ""; document.getElementById("note-body").value = ""; document.getElementById("note-title").focus(); }
     if (action === "save-note") {
@@ -219,5 +260,6 @@
     if (!/^https:\/\//i.test(url) && !/^git@/i.test(url)) { notify("Informe uma URL HTTPS ou SSH válida."); return; }
     repos.push({ name, url }); renderRepos(); event.target.reset(); notify("Endereço registrado nesta sessão.");
   });
+  renderProjectSidebar();
   showPage("inicio");
 })();
