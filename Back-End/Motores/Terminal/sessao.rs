@@ -628,9 +628,24 @@ mod tests {
     fn ctrl_d_encerra_shell_interativo() {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
-        manager
-            .write(&session.id, b"printf 'CTRL_D_READY'\n\x04")
-            .expect("comando e EOF");
+        let prompt_deadline = Instant::now() + Duration::from_secs(5);
+        let mut prompt = Vec::new();
+        while Instant::now() < prompt_deadline {
+            for chunk in manager.read_output(&session.id, 16).expect("ler prompt") {
+                prompt.extend(chunk.bytes);
+            }
+            let text = String::from_utf8_lossy(&prompt);
+            if text.contains("$ ") || text.contains("# ") {
+                break;
+            }
+            thread::sleep(Duration::from_millis(20));
+        }
+        let prompt_text = String::from_utf8_lossy(&prompt);
+        assert!(
+            prompt_text.contains("$ ") || prompt_text.contains("# "),
+            "Bash não apresentou prompt: {prompt_text}"
+        );
+        manager.write(&session.id, b"\x04").expect("enviar EOF");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut state = TerminalSessionStatus::Running;
         while Instant::now() < deadline {
