@@ -206,7 +206,7 @@
             <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 5.25h16A1.75 1.75 0 0 1 21.75 7v9A1.75 1.75 0 0 1 20 17.75H10l-5.5 3v-3H4A1.75 1.75 0 0 1 2.25 16V7A1.75 1.75 0 0 1 4 5.25Z"/><path d="m12 7.8 1.25 2.55 2.82.41-2.04 1.99.48 2.81L12 14.23l-2.51 1.33.48-2.81-2.04-1.99 2.82-.41L12 7.8Z"/></svg></span>
             <span>FeedBack</span><span class="account-menu-arrow">↗</span>
           </a>
-          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/planos">
+          <a class="account-menu-item" role="menuitem" href="planos.html">
             <span class="account-menu-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 3.75h14A1.75 1.75 0 0 1 20.75 5.5v13A1.75 1.75 0 0 1 19 20.25H5A1.75 1.75 0 0 1 3.25 18.5v-13A1.75 1.75 0 0 1 5 3.75Z"/><path d="m7 8 1.55 1.55L11 7.1m2 1.15h3.5M7 14h10m-10 3h7"/><path d="m12 2 1.05 1.4 1.7-.12.4 1.65 1.55.7-.7 1.55"/></svg></span>
             <span>Planos do EDS</span><span class="account-menu-arrow">↗</span>
           </a>
