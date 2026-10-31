@@ -222,6 +222,7 @@ jobs:
               "https://aurora.korczaktech.com.br/index.html",
               "https://aurora.korczaktech.com.br/sobre.html",
               "https://aurora.korczaktech.com.br/recursos.html",
+              "https://aurora.korczaktech.com.br/planos.html",
           }
           if set(urls) != expected or len(urls) != len(expected):
               raise SystemExit("Sitemap contém URLs inesperadas ou ausentes: " + repr(urls))
@@ -234,6 +235,7 @@ jobs:
               "index.html": "https://aurora.korczaktech.com.br/index.html",
               "sobre.html": "https://aurora.korczaktech.com.br/sobre.html",
               "recursos.html": "https://aurora.korczaktech.com.br/recursos.html",
+              "planos.html": "https://aurora.korczaktech.com.br/planos.html",
           }
           for filename, canonical in canonical_expected.items():
               html = (root / filename).read_text(encoding="utf-8")
@@ -254,6 +256,12 @@ jobs:
               html = (root / filename).read_text(encoding="utf-8")
               if not re.search(r'<meta name="robots" content="noindex,follow"', html, re.I):
                   raise SystemExit(f"{filename}: deveria estar marcado noindex,follow.")
+
+          profile = (root / "perfil.html").read_text(encoding="utf-8")
+          if not re.search(r'<meta name="robots" content="noindex,nofollow"', profile, re.I):
+              raise SystemExit("perfil.html: deveria permanecer privado com noindex,nofollow.")
+          if any("perfil.html" in url for url in urls):
+              raise SystemExit("perfil.html: página privada incluída no sitemap.")
               if any(filename in url for url in urls):
                   raise SystemExit(f"{filename}: página noindex incluída no sitemap.")
 
