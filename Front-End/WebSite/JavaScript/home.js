@@ -37,7 +37,9 @@
   const defaultProject = { id: "aurora-playground", name: "Aurora Playground", description: "Ambiente experimental para explorar recursos e possibilidades da estação.", createdAt: "30 de outubro de 2026", kind: "EXPERIMENTO" };
   let projects = [];
   try { projects = JSON.parse(storageGet("aurora-projects", "[]")); } catch (_) { projects = []; }
-  if (!Array.isArray(projects) || !projects.length) projects = [{ ...defaultProject }];
+  if (!Array.isArray(projects)) projects = [];
+  projects = projects.filter(project => project && typeof project === "object");
+  if (!projects.length) projects = [{ ...defaultProject }];
   let selectedProjectId = projects[0]?.id || defaultProject.id;
   const persistProjects = () => storageSet("aurora-projects", JSON.stringify(projects));
   const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || defaultProject;
@@ -210,9 +212,9 @@
     }
     event.preventDefault();
     showPage(destination);
-  });
+  }, true);
 
-  workspace.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
+  workspace?.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
     const folder = event.target.closest("[data-tree-folder]");
