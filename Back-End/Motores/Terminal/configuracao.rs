@@ -14,8 +14,7 @@ impl Default for TerminalConfig {
     fn default() -> Self {
         Self {
             shell_path: PathBuf::from("/bin/bash"),
-            default_working_directory: env::current_dir()
-                .unwrap_or_else(|_| PathBuf::from("/")),
+            default_working_directory: env::current_dir().unwrap_or_else(|_| PathBuf::from("/")),
             max_sessions: 8,
             initial_columns: 120,
             initial_rows: 30,
