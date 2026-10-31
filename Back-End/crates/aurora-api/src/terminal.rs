@@ -385,11 +385,12 @@ async fn serve(mut socket: WebSocket, state: AppState, id: String) {
                                     let _ = state.terminal.manager.resize(&id, columns, rows);
                                 }
                             }
-                            Some("ping") => {
-                                if !send_json(&mut socket, json!({"type":"pong"})).await {
-                                    break;
-                                }
+                            Some("ping")
+                                if !send_json(&mut socket, json!({"type":"pong"})).await =>
+                            {
+                                break;
                             }
+                            Some("ping") => {}
                             _ => {}
                         }
                     }
