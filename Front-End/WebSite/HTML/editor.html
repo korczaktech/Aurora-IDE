@@ -87,7 +87,30 @@
       </div>
       <div class="file-sidebar-footer"><span class="status-dot"></span> Arquivos do projeto</div>
     </aside>
-    <section class="editor-empty-area" aria-label="Área de edição"></section>
+    <section class="editor-empty-area" aria-label="Editor de código">
+      <div class="code-editor-shell">
+        <div class="editor-tab-strip" id="codeTabs" role="tablist" aria-label="Arquivos abertos">
+          <button class="code-tab is-active" type="button" role="tab" aria-selected="true" data-code-file="index.html"><span class="code-tab-icon html">5</span>index.html<span class="tab-unsaved" aria-hidden="true"></span></button>
+          <button class="code-tab" type="button" role="tab" aria-selected="false" data-code-file="style.css"><span class="code-tab-icon css">▧</span>style.css</button>
+          <button class="code-tab" type="button" role="tab" aria-selected="false" data-code-file="script.js"><span class="code-tab-icon js">JS</span>script.js</button>
+        </div>
+        <div class="editor-context-row">
+          <div class="editor-breadcrumb"><span>Meu projeto</span><span class="breadcrumb-separator">›</span><span id="activeCodeFile">index.html</span></div>
+          <span class="editor-context-label" id="activeLanguage">HTML</span>
+        </div>
+        <div class="code-viewport" id="codeViewport">
+          <div class="code-gutter" id="codeGutter" aria-hidden="true">1</div>
+          <div class="code-input-wrap">
+            <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
+            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
+          </div>
+        </div>
+        <footer class="code-statusbar">
+          <div class="code-status-left"><span class="status-dot"></span><span>Pronto</span><span class="status-divider">|</span><span id="codeFileStatus">index.html</span></div>
+          <div class="code-status-right"><span id="codeCursor">Ln 1, Col 1</span><span id="codeLanguageStatus">HTML</span><span>UTF-8</span><span>LF</span></div>
+        </footer>
+      </div>
+    </section>
   </main>
 
   <script>
@@ -187,6 +210,133 @@
         if (menuState === "returning") finishMenuReturn();
       });
 
+      const codeInput = document.getElementById("codeInput");
+      const codeHighlight = document.getElementById("codeHighlight");
+      const codeGutter = document.getElementById("codeGutter");
+      const codeTabs = document.getElementById("codeTabs");
+      const codeFiles = {
+        "index.html": `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu projeto</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Olá, mundo.</h1>
+    <p>Seu próximo projeto começa aqui.</p>
+  </main>
+  <script src="script.js"><\\/script>
+</body>
+</html>`,
+        "style.css": `:root {
+  color-scheme: dark;
+  --background: #080d0f;
+  --accent: #72d6ad;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: #e4eeee;
+  font-family: system-ui, sans-serif;
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-content: center;
+  text-align: center;
+}`,
+        "script.js": `const greeting = "Olá, mundo.";
+
+function startProject() {
+  console.log(greeting);
+}
+
+startProject();`
+      };
+      let activeCodeFile = "index.html";
+      const escapeCode = value => value.replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
+      function highlightCode(source, file) {
+        const escaped = escapeCode(source);
+        const tokenPattern = /(<!--[\\s\\S]*?-->|\/\\*[\\s\\S]*?\\*\/|\/\/[^\\n]*|&lt;\\/?[\\w-]+|&gt;|&lt;|\\b(?:const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)\\b|#[0-9a-fA-F]{3,8}\\b|\\b\\d+(?:px|rem|em|vh|vw|%)?\\b|"(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*')/g;
+        let result = "";
+        let last = 0;
+        for (const match of escaped.matchAll(tokenPattern)) {
+          result += escaped.slice(last, match.index);
+          const token = match[0];
+          let kind = "code-token";
+          if (token.startsWith("&lt;") || token === "&gt;") kind += " token-tag";
+          else if (token.startsWith("<!--") || token.startsWith("/*") || token.startsWith("//")) kind += " token-comment";
+          else if (token.startsWith('"') || token.startsWith("'")) kind += " token-string";
+          else if (/^(const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)$/.test(token)) kind += " token-keyword";
+          else if (token.startsWith("#") || /^\\d/.test(token)) kind += " token-number";
+          result += `<span class="${kind}">${token}</span>`;
+          last = match.index + token.length;
+        }
+        result += escaped.slice(last);
+        return result + (source.endsWith("\\n") ? " " : "");
+      }
+      function updateCodeSurface() {
+        const source = codeInput.value;
+        codeHighlight.innerHTML = highlightCode(source, activeCodeFile);
+        const lineCount = Math.max(1, source.split("\\n").length);
+        codeGutter.textContent = Array.from({ length: lineCount }, (_, index) => index + 1).join("\\n");
+        document.getElementById("codeFileStatus").textContent = activeCodeFile;
+        updateCodeCursor();
+      }
+      function updateCodeCursor() {
+        const before = codeInput.value.slice(0, codeInput.selectionStart);
+        const lines = before.split("\\n");
+        const position = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
+        document.getElementById("codeCursor").textContent = position;
+      }
+      function openCodeFile(name) {
+        if (!(name in codeFiles)) return;
+        activeCodeFile = name;
+        codeInput.value = codeFiles[name];
+        const language = name.endsWith(".html") ? "HTML" : name.endsWith(".css") ? "CSS" : "JAVASCRIPT";
+        document.getElementById("activeCodeFile").textContent = name;
+        document.getElementById("activeLanguage").textContent = language;
+        document.getElementById("codeLanguageStatus").textContent = language;
+        codeTabs.querySelectorAll("[data-code-file]").forEach(tab => {
+          const active = tab.dataset.codeFile === name;
+          tab.classList.toggle("is-active", active);
+          tab.setAttribute("aria-selected", String(active));
+        });
+        document.querySelectorAll("[data-tree-file]").forEach(file => file.classList.toggle("is-selected", file.dataset.treeFile === name));
+        updateCodeSurface();
+      }
+      codeTabs.addEventListener("click", event => {
+        const tab = event.target.closest("[data-code-file]");
+        if (tab) openCodeFile(tab.dataset.codeFile);
+      });
+      codeInput.addEventListener("input", () => {
+        codeFiles[activeCodeFile] = codeInput.value;
+        updateCodeSurface();
+      });
+      codeInput.addEventListener("scroll", () => {
+        codeHighlight.scrollTop = codeInput.scrollTop;
+        codeHighlight.scrollLeft = codeInput.scrollLeft;
+        codeGutter.scrollTop = codeInput.scrollTop;
+      });
+      ["click", "keyup", "select"].forEach(type => codeInput.addEventListener(type, updateCodeCursor));
+      codeInput.addEventListener("keydown", event => {
+        if (event.key === "Tab") {
+          event.preventDefault();
+          const start = codeInput.selectionStart;
+          const end = codeInput.selectionEnd;
+          codeInput.setRangeText("  ", start, end, "end");
+          codeInput.dispatchEvent(new Event("input"));
+        }
+      });
       const fileSidebar = document.getElementById("fileSidebar");
       const collapseTree = document.getElementById("collapseTree");
       collapseTree.addEventListener("click", () => {
@@ -223,7 +373,7 @@
         });
       });
 
-      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
+      openCodeFile("index.html");\n\n      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
       menuMark.classList.remove("is-open", "is-returning", "is-returned");
       setState("button");
     })();
