@@ -232,35 +232,6 @@
   </main>
   <script src="script.js"><\\/script>
 
-  <script>
-    // Numeração independente do restante dos controles do editor.
-    (() => {
-      const input = document.getElementById("codeInput");
-      const gutter = document.getElementById("codeGutter");
-      if (!input || !gutter) return;
-
-      const renderLineNumbers = () => {
-        const count = input.value.split(/\r\n|\r|\n/).length;
-        const fragment = document.createDocumentFragment();
-        for (let number = 1; number <= count; number += 1) {
-          const line = document.createElement("div");
-          line.className = "code-gutter-line";
-          line.textContent = number;
-          fragment.appendChild(line);
-        }
-        gutter.replaceChildren(fragment);
-        gutter.scrollTop = input.scrollTop;
-      };
-
-      input.addEventListener("input", renderLineNumbers);
-      input.addEventListener("scroll", renderLineNumbers);
-      document.querySelectorAll("[data-code-file]").forEach(tab => {
-        tab.addEventListener("click", () => requestAnimationFrame(renderLineNumbers));
-      });
-      renderLineNumbers();
-    })();
-  </script>
-
 </body>
 </html>`,
         "style.css": `:root {
