@@ -287,8 +287,18 @@ startProject();`
       function updateCodeSurface() {
         const source = codeInput.value;
         codeHighlight.innerHTML = highlightCode(source, activeCodeFile);
-        const lineCount = Math.max(1, source.split("\\n").length);
-        codeGutter.textContent = Array.from({ length: lineCount }, (_, index) => index + 1).join("\\n");
+
+        // Uma linha visual por linha real do textarea, inclusive linhas vazias.
+        const lineCount = source.split("\\n").length;
+        const lineNumbers = document.createDocumentFragment();
+        for (let index = 1; index <= lineCount; index += 1) {
+          const lineNumber = document.createElement("span");
+          lineNumber.className = "code-gutter-line";
+          lineNumber.textContent = String(index);
+          lineNumbers.appendChild(lineNumber);
+        }
+        codeGutter.replaceChildren(lineNumbers);
+        codeGutter.scrollTop = codeInput.scrollTop;
         document.getElementById("codeFileStatus").textContent = activeCodeFile;
         updateCodeCursor();
       }
