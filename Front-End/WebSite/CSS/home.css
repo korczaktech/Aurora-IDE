@@ -168,10 +168,10 @@
 .page-search{width:min(310px,100%)}
 .page-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
 .page-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
-.surface{position:relative;min-width:0;padding:19px;border:1px solid rgba(139,179,157,.13);border-radius:7px;background:linear-gradient(145deg,rgba(12,25,21,.82),rgba(6,13,13,.86));box-shadow:0 14px 40px rgba(0,0,0,.12)}
-.surface h3{margin:0 0 8px;color:#dce9e1;font-size:12px;font-weight:650}
-.surface p{margin:0;color:#84948b;font-size:10px;line-height:1.8}
-.surface-icon{display:grid;place-items:center;width:35px;height:35px;margin-bottom:16px;border:1px solid rgba(99,169,143,.22);border-radius:7px;background:rgba(27,70,53,.3);color:#9ed2b8;font-size:16px}
+.page-section{position:relative;min-width:0;padding:19px;border:1px solid rgba(139,179,157,.13);border-radius:7px;background:linear-gradient(145deg,rgba(12,25,21,.82),rgba(6,13,13,.86));box-shadow:0 14px 40px rgba(0,0,0,.12)}
+.page-section h3{margin:0 0 8px;color:#dce9e1;font-size:12px;font-weight:650}
+.page-section p{margin:0;color:#84948b;font-size:10px;line-height:1.8}
+.page-section-icon{display:grid;place-items:center;width:35px;height:35px;margin-bottom:16px;border:1px solid rgba(99,169,143,.22);border-radius:7px;background:rgba(27,70,53,.3);color:#9ed2b8;font-size:16px}
 .meta-label{color:#658477;font:8px 'DM Mono',monospace;letter-spacing:1.2px;text-transform:uppercase}
 .stat-value{display:block;margin-top:8px;color:#e2eee7;font-size:27px;font-weight:600;letter-spacing:-1px}
 .muted{color:#7c8d84}
@@ -218,3 +218,108 @@
 @media(max-width:900px){.page-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.page-shell{padding-top:38px}}
 @media(max-width:620px){.page-shell{padding:30px 17px}.page-grid,.page-grid.two,.note-layout{grid-template-columns:1fr}.page-toolbar{align-items:stretch}.page-toolbar>*{width:100%}.repo-url-row{flex-direction:column}.app-page .main-atmosphere{inset:58px 0 0 0}}
 @media(max-width:420px){.page-title{font-size:29px}}
+
+
+/* Redesign editorial: interfaces sem cards ou caixas */
+.page-section{
+  min-width:0!important;
+  padding:18px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.page-section h3{
+  margin:8px 0 9px!important;
+  color:#e0ebe5!important;
+  font-size:14px!important;
+  font-weight:620!important;
+  letter-spacing:-.2px;
+}
+.page-section p{max-width:620px;font-size:11px!important;line-height:1.9!important}
+.page-section .surface-icon{
+  display:inline-flex!important;
+  width:auto!important;height:auto!important;
+  margin:0 0 13px!important;
+  padding:0!important;
+  border:0!important;border-radius:0!important;
+  background:none!important;
+  color:#83bda0!important;
+  font-size:20px!important;
+}
+.page-grid{
+  gap:0 34px!important;
+  align-items:start;
+}
+.page-grid>.page-section{
+  border-bottom:1px solid rgba(139,179,157,.12)!important;
+}
+.page-grid.two{column-gap:48px!important}
+.page-toolbar{
+  margin:38px 0 18px!important;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(139,179,157,.13);
+}
+.page-toolbar h2{font-size:12px!important;letter-spacing:.2px}
+.page-section .list-row{padding:15px 0}
+.page-section .page-notice{
+  padding:12px 0!important;
+  border:0!important;
+  border-top:1px solid rgba(139,179,157,.14)!important;
+  background:transparent!important;
+}
+.page-section .empty-state{
+  padding:24px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  text-align:left!important;
+}
+.note-layout{
+  gap:34px!important;
+  align-items:start;
+}
+.note-layout>.page-section{
+  border-top:1px solid rgba(139,179,157,.15)!important;
+}
+.note-editor{gap:15px!important}
+.note-editor .page-textarea{min-height:230px}
+.note-list{border-top:1px solid rgba(139,179,157,.1)}
+.note-open{
+  border-bottom:1px solid rgba(139,179,157,.1)!important;
+  padding:15px 0!important;
+}
+.color-chip{border-radius:50%;box-shadow:none}
+.switch-row{padding:18px 0}
+.timeline{margin-top:28px}
+.about-mark{font-size:76px}
+.page-section>.progress-track{max-width:520px}
+.page-section .tag{border-radius:2px}
+.page-section .step-number{
+  width:25px;height:25px;border-radius:50%;
+}
+#repo-list.page-section{border-top:1px solid rgba(139,179,157,.14)!important}
+#project-list.page-section{border-top:1px solid rgba(139,179,157,.14)!important}
+#extension-list .page-section{padding:20px 0!important}
+#extension-list .page-section .page-button{margin-top:15px!important}
+.project-entry{border-radius:0!important}
+.project-icon{
+  border:0!important;border-radius:0!important;
+  background:transparent!important;
+}
+.page-input,.page-select,.page-textarea{
+  border-radius:3px!important;
+  background:rgba(7,15,14,.55)!important;
+}
+.page-action,.page-button{border-radius:3px!important}
+.page-toast{border-radius:3px!important}
+@media(max-width:900px){
+  .page-grid{column-gap:24px!important}
+  .page-grid.two{column-gap:30px!important}
+}
+@media(max-width:620px){
+  .page-grid,.page-grid.two,.note-layout{grid-template-columns:1fr!important}
+  .page-grid>.page-section{padding:18px 0!important}
+  .note-layout{gap:20px!important}
+  .page-toolbar{margin-top:28px!important}
+}
