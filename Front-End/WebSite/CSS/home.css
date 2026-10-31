@@ -150,7 +150,8 @@
 /* Interfaces das seções do Aurora */
 .workspace{min-width:0}
 .home-main.app-page{display:block;overflow:auto;isolation:isolate;padding:0;background:#030806}
-.app-page .main-atmosphere{position:fixed;inset:66px 0 0 196px;z-index:0;pointer-events:none}
+.app-page .main-atmosphere{position:absolute;inset:0;z-index:0;pointer-events:none}
+.projects-sidebar[hidden]{display:none!important}
 .page-shell{position:relative;z-index:2;max-width:1180px;margin:0 auto;padding:54px clamp(22px,4vw,58px) 48px;min-height:100%;color:#e7efeb}
 .page-eyebrow{display:flex;align-items:center;gap:9px;color:#79a99a;font:9px 'DM Mono',monospace;letter-spacing:1.8px;text-transform:uppercase}
 .page-eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:#72c4a2;box-shadow:0 0 12px #72c4a277}
