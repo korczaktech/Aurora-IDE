@@ -372,6 +372,8 @@ startProject();`
         }
         const file = event.target.closest("[data-tree-file]");
         if (!file) return;
+        const fileName = file.dataset.treeFile;
+        if (fileName && fileName in codeFiles) openCodeFile(fileName);
         fileSidebar.querySelectorAll("[data-tree-file]").forEach(item => item.classList.toggle("is-selected", item === file));
       });
 
@@ -386,7 +388,9 @@ startProject();`
         });
       });
 
-      openCodeFile("index.html");\n\n      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
+      openCodeFile("index.html");
+
+      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
       menuMark.classList.remove("is-open", "is-returning", "is-returned");
       setState("button");
     })();
