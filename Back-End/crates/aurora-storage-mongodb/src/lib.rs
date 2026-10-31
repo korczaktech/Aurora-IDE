@@ -15,7 +15,11 @@ pub struct MongoStorage {
 
 impl MongoStorage {
     /// Conecta ao MongoDB e valida a conexão com um ping.
-    pub async fn connect(uri: &str, accounts_database: impl Into<String>, sessions_database: impl Into<String>) -> mongodb::error::Result<Self> {
+    pub async fn connect(
+        uri: &str,
+        accounts_database: impl Into<String>,
+        sessions_database: impl Into<String>,
+    ) -> mongodb::error::Result<Self> {
         let client = Client::with_uri_str(uri).await?;
         let storage = Self {
             client,
@@ -28,11 +32,15 @@ impl MongoStorage {
     }
 
     fn collection(&self, name: &str) -> Collection<Document> {
-        self.client.database(&self.accounts_database).collection(name)
+        self.client
+            .database(&self.accounts_database)
+            .collection(name)
     }
 
     fn sessions_collection(&self) -> Collection<Document> {
-        self.client.database(&self.sessions_database).collection("sessoes")
+        self.client
+            .database(&self.sessions_database)
+            .collection("sessoes")
     }
 
     pub async fn ping(&self) -> mongodb::error::Result<()> {
