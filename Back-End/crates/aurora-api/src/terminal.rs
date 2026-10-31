@@ -551,4 +551,82 @@ mod tests {
         assert!(!runtime.owns("account-a", &session.id));
         assert!(runtime.consume("one-time-ticket").is_none());
     }
+    #[test]
+    fn ticket_expirado_nao_pode_ser_consumido() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        runtime.tickets.lock().unwrap().insert(
+            "expired".to_owned(),
+            Ticket {
+                account: "a".into(),
+                session: "s".into(),
+                expires: Instant::now() - Duration::from_secs(1),
+            },
+        );
+        assert!(runtime.consume("expired").is_none());
+    }
+
+    #[test]
+    fn origem_websocket_exige_correspondencia_exata() {
+        let runtime = TerminalRuntime::new(vec!["https://aurora.korczaktech.com.br".into()]).unwrap();
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            header::ORIGIN,
+            axum::http::HeaderValue::from_static("https://aurora.korczaktech.com.br"),
+        );
+        assert!(runtime.origin_ok(&headers));
+        headers.insert(
+            header::ORIGIN,
+            axum::http::HeaderValue::from_static("https://evil.example"),
+        );
+        assert!(!runtime.origin_ok(&headers));
+    }
+
+    #[test]
+    fn protocolo_websocket_extrai_ticket_sem_query_string() {
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            "sec-websocket-protocol",
+            axum::http::HeaderValue::from_static("aurora-terminal, aurora-ticket.abc-123"),
+        );
+        assert_eq!(protocol_ticket(&headers).as_deref(), Some("abc-123"));
+    }
+
+    #[test]
+    fn identificador_de_conta_nao_pode_sair_do_workspace() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        assert!(runtime.account_workspace("../outra-conta").is_err());
+        assert!(runtime.account_workspace("conta/../../etc").is_err());
+    }
+
+    #[test]
+    fn tickets_pendentes_tem_limite_global() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        let directory = runtime.account_workspace("ticket-limit-test").unwrap();
+        let session = runtime.manager.create_session(Some(directory)).unwrap();
+        runtime
+            .owners
+            .lock()
+            .unwrap()
+            .insert(session.id.clone(), "account-a".to_owned());
+
+        let mut tickets = runtime.tickets.lock().unwrap();
+        for index in 0..MAX_PENDING_TICKETS {
+            tickets.insert(
+                format!("ticket-{index}"),
+                Ticket {
+                    account: "account-a".into(),
+                    session: session.id.clone(),
+                    expires: Instant::now() + Duration::from_secs(30),
+                },
+            );
+        }
+        drop(tickets);
+
+        assert_eq!(
+            runtime.ticket("account-a", &session.id),
+            Err(StatusCode::TOO_MANY_REQUESTS)
+        );
+        runtime.manager.close_session(&session.id).unwrap();
+    }
+
 }
