@@ -35,11 +35,25 @@ impl TerminalConfig {
                 self.default_working_directory.display().to_string(),
             ));
         }
-        if !self.shell_path.is_file() {
+        if !is_executable(&self.shell_path) {
             return Err(crate::TerminalError::ShellUnavailable(
                 self.shell_path.display().to_string(),
             ));
         }
         Ok(())
     }
+}
+
+
+#[cfg(unix)]
+fn is_executable(path: &std::path::Path) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::metadata(path)
+        .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
+}
+
+#[cfg(not(unix))]
+fn is_executable(path: &std::path::Path) -> bool {
+    path.is_file()
 }
