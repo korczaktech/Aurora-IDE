@@ -478,7 +478,10 @@ mod tests {
         let setup_deadline = Instant::now() + Duration::from_secs(5);
         let mut setup_output = Vec::new();
         while Instant::now() < setup_deadline {
-            for chunk in manager.read_output(&session.id, 256).expect("saída de configuração") {
+            for chunk in manager
+                .read_output(&session.id, 256)
+                .expect("saída de configuração")
+            {
                 setup_output.extend(chunk.bytes);
             }
             if setup_output
