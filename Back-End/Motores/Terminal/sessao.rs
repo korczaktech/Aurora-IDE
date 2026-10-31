@@ -12,12 +12,17 @@ use std::{
 };
 use uuid::Uuid;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TerminalSessionStatus { Running, Exited, Closed }
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TerminalSessionInfo {
     pub id: String,
     pub working_directory: PathBuf,
     pub columns: u16,
     pub rows: u16,
+    pub status: TerminalSessionStatus,
+    pub exit_code: Option<u32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,12 +37,14 @@ struct TerminalSession {
     writer: Box<dyn Write + Send>,
     child: Box<dyn Child + Send + Sync>,
     output_rx: Receiver<Vec<u8>>,
-    status: TerminalSessionStatus,\n    exit_code: Option<u32>,
+    status: TerminalSessionStatus,
+    exit_code: Option<u32>,
 }
 
 impl TerminalSession {
     fn write(&mut self, bytes: &[u8]) -> TerminalResult<()> {
-        self.refresh_status()?;\n        if self.status != TerminalSessionStatus::Running {
+        self.refresh_status()?;
+        if self.status != TerminalSessionStatus::Running {
             return Err(TerminalError::SessionClosed(self.info.id.clone()));
         }
         self.writer.write_all(bytes)?;
@@ -46,7 +53,8 @@ impl TerminalSession {
     }
 
     fn resize(&mut self, columns: u16, rows: u16) -> TerminalResult<()> {
-        if self.closed {
+        self.refresh_status()?;
+        if self.status != TerminalSessionStatus::Running {
             return Err(TerminalError::SessionClosed(self.info.id.clone()));
         }
         if columns == 0 || rows == 0 {
@@ -67,7 +75,30 @@ impl TerminalSession {
         Ok(())
     }
 
-    fn refresh_status(&mut self) -> TerminalResult<()> {\n        if self.status != TerminalSessionStatus::Running { return Ok(()); }\n        if let Some(status) = self.child.try_wait().map_err(|error| TerminalError::Pty(error.to_string()))? {\n            self.status = TerminalSessionStatus::Exited;\n            self.exit_code = Some(status.exit_code());\n        }\n        self.info.status = self.status;\n        self.info.exit_code = self.exit_code;\n        Ok(())\n    }\n\n    fn drain_output(&self, limit: usize) -> Vec<Vec<u8>> {
+    fn refresh_status(&mut self) -> TerminalResult<()> {
+        if self.status != TerminalSessionStatus::Running { return Ok(()); }
+        if let Some(status) = self.child.try_wait().map_err(|error| TerminalError::Pty(error.to_string()))? {
+            self.status = TerminalSessionStatus::Exited;
+            self.exit_code = Some(status.exit_code());
+        }
+        self.info.status = self.status;
+        self.info.exit_code = self.exit_code;
+        Ok(())
+    }
+
+    fn refresh_status(&mut self) -> TerminalResult<()> {
+        if self.status == TerminalSessionStatus::Running {
+            if let Some(status) = self.child.try_wait().map_err(|e| TerminalError::Pty(e.to_string()))? {
+                self.status = TerminalSessionStatus::Exited;
+                self.exit_code = Some(status.exit_code());
+                self.info.status = self.status;
+                self.info.exit_code = self.exit_code;
+            }
+        }
+        Ok(())
+    }
+
+    fn drain_output(&self, limit: usize) -> Vec<Vec<u8>> {
         let mut output = Vec::new();
         for _ in 0..limit {
             match self.output_rx.try_recv() {
@@ -79,12 +110,13 @@ impl TerminalSession {
     }
 
     fn close(&mut self) {
-        if self.closed {
-            return;
+        if self.status == TerminalSessionStatus::Closed { return; }
+        if self.status == TerminalSessionStatus::Running && self.child.try_wait().ok().flatten().is_none() {
+            let _ = self.child.kill();
         }
-        self.closed = true;
-        let _ = self.child.kill();
         let _ = self.child.wait();
+        self.status = TerminalSessionStatus::Closed;
+        self.info.status = TerminalSessionStatus::Closed;
     }
 }
 
@@ -125,7 +157,11 @@ impl TerminalManager {
             .sessions
             .lock()
             .map_err(|_| TerminalError::InternalState)?;
-        for session in sessions.values() {\n            session.lock().map_err(|_| TerminalError::InternalState)?.refresh_status()?;\n        }\n        let running = sessions.values().filter(|session| session.lock().map(|s| s.status == TerminalSessionStatus::Running).unwrap_or(false)).count();\n        if running >= self.config.max_sessions {
+        for session in sessions.values() {
+            session.lock().map_err(|_| TerminalError::InternalState)?.refresh_status()?;
+        }
+        let running = sessions.values().filter(|session| session.lock().map(|s| s.status == TerminalSessionStatus::Running).unwrap_or(false)).count();
+        if running >= self.config.max_sessions {
             return Err(TerminalError::SessionLimitReached);
         }
 
@@ -156,14 +192,14 @@ impl TerminalManager {
             .map_err(|error| TerminalError::Pty(error.to_string()))?;
         drop(pair.slave);
 
-        let reader = pair
-            .master
-            .try_clone_reader()
-            .map_err(|error| TerminalError::Pty(error.to_string()))?;
-        let writer = pair
-            .master
-            .take_writer()
-            .map_err(|error| TerminalError::Pty(error.to_string()))?;
+        let reader = match pair.master.try_clone_reader() {
+            Ok(reader) => reader,
+            Err(error) => { let mut child = child; let _ = child.kill(); let _ = child.wait(); return Err(TerminalError::Pty(error.to_string())); }
+        };
+        let writer = match pair.master.take_writer() {
+            Ok(writer) => writer,
+            Err(error) => { let mut child = child; let _ = child.kill(); let _ = child.wait(); return Err(TerminalError::Pty(error.to_string())); }
+        };
         let (tx, rx) = sync_channel::<Vec<u8>>(128);
         spawn_reader(reader, tx);
 
@@ -172,6 +208,8 @@ impl TerminalManager {
             working_directory: directory,
             columns: self.config.initial_columns,
             rows: self.config.initial_rows,
+            status: TerminalSessionStatus::Running,
+            exit_code: None,
         };
         let session = TerminalSession {
             info: info.clone(),
@@ -179,7 +217,8 @@ impl TerminalManager {
             writer,
             child,
             output_rx: rx,
-            status: TerminalSessionStatus::Running,\n            exit_code: None,
+            status: TerminalSessionStatus::Running,
+            exit_code: None,
         };
         sessions.insert(info.id.clone(), Arc::new(Mutex::new(session)));
         Ok(info)
@@ -204,7 +243,8 @@ impl TerminalManager {
 
     pub fn read_output(&self, id: &str, max_chunks: usize) -> TerminalResult<Vec<TerminalOutput>> {
         let session = self.session(id)?;
-        let guard = session.lock().map_err(|_| TerminalError::InternalState)?;
+        let mut guard = session.lock().map_err(|_| TerminalError::InternalState)?;
+        guard.refresh_status()?;
         Ok(guard
             .drain_output(max_chunks)
             .into_iter()
@@ -222,13 +262,9 @@ impl TerminalManager {
             .map_err(|_| TerminalError::InternalState)?;
         let mut result = Vec::with_capacity(sessions.len());
         for session in sessions.values() {
-            result.push(
-                session
-                    .lock()
-                    .map_err(|_| TerminalError::InternalState)?
-                    .info
-                    .clone(),
-            );
+            let mut session = session.lock().map_err(|_| TerminalError::InternalState)?;
+            session.refresh_status()?;
+            result.push(session.info.clone());
         }
         result.sort_by(|left, right| left.id.cmp(&right.id));
         Ok(result)
@@ -296,8 +332,9 @@ fn spawn_reader(mut reader: Box<dyn Read + Send>, tx: SyncSender<Vec<u8>>) {
                 match reader.read(&mut buffer) {
                     Ok(0) | Err(_) => break,
                     Ok(count) => {
-                        if tx.send(buffer[..count].to_vec()).is_err() {
-                            break;
+                        match tx.try_send(buffer[..count].to_vec()) {
+                            Ok(()) | Err(TrySendError::Full(_)) => {},
+                            Err(TrySendError::Disconnected(_)) => break,
                         }
                     }
                 }
@@ -336,7 +373,9 @@ mod tests {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
         manager
-            .write(&session.id, b"printf 'AURORA_PTY_OK\\n'\n")
+            .write(&session.id, b"printf 'AURORA_PTY_OK\
+'
+")
             .expect("entrada");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut output = Vec::new();
