@@ -33,6 +33,11 @@
     return;
   }
 
+  document.getElementById("developButton")?.addEventListener("click", event => {
+    event.preventDefault();
+    window.location.href = "editor.html";
+  });
+
   const homeMarkup = main.innerHTML;
   const defaultProject = { id: "aurora-playground", name: "Aurora Playground", description: "Ambiente experimental para explorar recursos e possibilidades da estação.", createdAt: "30 de outubro de 2026", kind: "EXPERIMENTO" };
   let projects = [];
