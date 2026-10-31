@@ -6,15 +6,40 @@
   const main = document.querySelector(".home-main");
   const projectsSidebar = document.querySelector(".projects-sidebar");
   const navItems = [...document.querySelectorAll(".rail-item[data-page]")];
-  if (!rail || !workspace || !collapseButton || !expandButton || !main) return;
+
+  // Uma falha no armazenamento local nunca deve interromper a navegação.
+  const storageGet = (key, fallback = null) => {
+    try {
+      const value = window.localStorage.getItem(key);
+      return value === null ? fallback : value;
+    } catch (error) {
+      console.warn("[Aurora] Leitura local indisponível:", error);
+      return fallback;
+    }
+  };
+  const storageSet = (key, value) => {
+    try {
+      window.localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.warn("[Aurora] Gravação local indisponível:", error);
+      return false;
+    }
+  };
+
+  // Só a sidebar e a área principal são obrigatórias para a navegação.
+  if (!rail || !main) {
+    console.error("[Aurora] Elementos essenciais de navegação não encontrados.", { rail, main });
+    return;
+  }
 
   const homeMarkup = main.innerHTML;
   const defaultProject = { id: "aurora-playground", name: "Aurora Playground", description: "Ambiente experimental para explorar recursos e possibilidades da estação.", createdAt: "30 de outubro de 2026", kind: "EXPERIMENTO" };
   let projects = [];
-  try { projects = JSON.parse(localStorage.getItem("aurora-projects") || "[]"); } catch (_) { projects = []; }
+  try { projects = JSON.parse(storageGet("aurora-projects", "[]")); } catch (_) { projects = []; }
   if (!Array.isArray(projects) || !projects.length) projects = [{ ...defaultProject }];
   let selectedProjectId = projects[0]?.id || defaultProject.id;
-  const persistProjects = () => localStorage.setItem("aurora-projects", JSON.stringify(projects));
+  const persistProjects = () => storageSet("aurora-projects", JSON.stringify(projects));
   const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || defaultProject;
   const renderProjectSidebar = () => {
     if (!projectsSidebar) return;
@@ -106,11 +131,11 @@
 
   const setCollapsed = collapsed => {
     rail.classList.toggle("is-collapsed", collapsed);
-    workspace.classList.toggle("rail-collapsed", collapsed);
-    collapseButton.setAttribute("aria-expanded", String(!collapsed));
-    expandButton.setAttribute("aria-expanded", String(collapsed));
+    workspace?.classList.toggle("rail-collapsed", collapsed);
+    collapseButton?.setAttribute("aria-expanded", String(!collapsed));
+    expandButton?.setAttribute("aria-expanded", String(collapsed));
   };
-  expandButton.addEventListener("click", event => { event.preventDefault(); setCollapsed(false); });
+  expandButton?.addEventListener("click", event => { event.preventDefault(); setCollapsed(false); });
 
   const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[char]));
   const notify = message => {
@@ -119,7 +144,7 @@
     document.body.appendChild(toast); window.setTimeout(() => toast.remove(), 2600);
   };
   let notes = [];
-  try { notes = JSON.parse(localStorage.getItem("aurora-notes") || "[]"); } catch {}
+  try { notes = JSON.parse(storageGet("aurora-notes", "[]")); } catch {}
   let repos = [];
   const renderNotes = () => {
     const list = document.getElementById("note-list"); if (!list) return;
@@ -153,9 +178,9 @@
       if (nameInput) nameInput.value = project.name;
       if (descriptionInput) descriptionInput.value = project.description || "";
       const theme = document.getElementById("project-theme"); const font = document.getElementById("project-font");
-      if (theme) theme.value = localStorage.getItem("aurora-project-theme") || "aurora";
-      if (font) font.value = localStorage.getItem("aurora-project-font") || "JetBrains Mono";
-      main.querySelectorAll("[data-project-setting]").forEach(input => { const saved = localStorage.getItem("aurora-project-setting-" + input.dataset.projectSetting); if (saved !== null) input.checked = saved === "true"; });
+      if (theme) theme.value = storageGet("aurora-project-theme", "aurora");
+      if (font) font.value = storageGet("aurora-project-font", "JetBrains Mono");
+      main.querySelectorAll("[data-project-setting]").forEach(input => { const saved = storageGet("aurora-project-setting-" + input.dataset.projectSetting); if (saved !== null) input.checked = saved === "true"; });
     }
     if (key === "projetos") renderProjectList();
     if (key === "anotacoes") renderNotes();
@@ -165,26 +190,27 @@
 
   // Navegação global delegada: continua funcionando mesmo quando a sidebar
   // é reconstruída, recebe elementos internos ou muda de estado visual.
-  document.addEventListener("click", event => {
+  // Roteamento delegado: o clique no botão, SVG, ícone ou texto
+  // sempre é resolvido pelo botão da sidebar correspondente.
+  rail.addEventListener("click", event => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
-    if (!target) return;
-
-    const collapse = target.closest("#railToggle");
+    const collapse = target?.closest("#railToggle");
     if (collapse) {
       event.preventDefault();
       setCollapsed(true);
       return;
     }
 
-    const navigationItem = target.closest(".rail-item[data-page]");
-    if (navigationItem && rail.contains(navigationItem)) {
-      const destination = navigationItem.dataset.page;
-      if (Object.prototype.hasOwnProperty.call(pages, destination)) {
-        event.preventDefault();
-        showPage(destination);
-      }
+    const item = target?.closest(".rail-item[data-page]");
+    if (!item || !rail.contains(item)) return;
+    const destination = item.dataset.page;
+    if (!Object.prototype.hasOwnProperty.call(pages, destination)) {
+      console.error("[Aurora] Destino de navegação não cadastrado:", destination);
+      return;
     }
-  }, true);
+    event.preventDefault();
+    showPage(destination);
+  });
 
   workspace.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
@@ -250,7 +276,7 @@
       const body = document.getElementById("note-body").value.trim();
       if (!title && !body) { notify("Escreva algo antes de salvar."); return; }
       notes.unshift({ title, body, updatedAt:Date.now() });
-      localStorage.setItem("aurora-notes", JSON.stringify(notes));
+      storageSet("aurora-notes", JSON.stringify(notes));
       renderNotes(); notify("Anotação salva neste navegador.");
     }
     if (action === "extension") { event.target.closest("button").textContent = "Solicitada"; event.target.closest("button").disabled = true; notify("Extensão marcada para instalação futura."); }
@@ -271,9 +297,9 @@
     }
   });
   main.addEventListener("change", event => {
-    if (event.target.matches("[data-project-setting]")) localStorage.setItem("aurora-project-setting-" + event.target.dataset.projectSetting, String(event.target.checked));
-    if (event.target.id === "project-theme" || event.target.id === "project-font") localStorage.setItem("aurora-" + event.target.id, event.target.value);
-    if (event.target.matches("[data-setting]")) localStorage.setItem("aurora-setting-" + event.target.dataset.setting, String(event.target.checked));
+    if (event.target.matches("[data-project-setting]")) storageSet("aurora-project-setting-" + event.target.dataset.projectSetting, String(event.target.checked));
+    if (event.target.id === "project-theme" || event.target.id === "project-font") storageSet("aurora-" + event.target.id, event.target.value);
+    if (event.target.matches("[data-setting]")) storageSet("aurora-setting-" + event.target.dataset.setting, String(event.target.checked));
   });
   main.addEventListener("submit", event => {
     if (event.target.id !== "repo-form") return;
