@@ -46,3 +46,48 @@
 .rail-toggle:hover{color:#d0e1f7;background:#172b4788}
 .rail-version{color:#536987}
 @media(max-width:620px){.wordmark-category{font-size:9px;letter-spacing:1.8px}.learn-button{margin-top:25px;padding:12px 15px;font-size:10px}}
+
+
+/* Aurora boreal visível: cortinas luminosas em camadas */
+.home-main{isolation:isolate;background:#030806}
+.main-atmosphere{z-index:0;opacity:1}
+.main-atmosphere:before,
+.main-atmosphere:after{content:"";position:absolute;pointer-events:none;inset:-22% -18%;mix-blend-mode:screen}
+.main-atmosphere:before{
+  z-index:0;
+  filter:blur(23px);
+  opacity:.95;
+  background:
+    linear-gradient(112deg,transparent 8%,rgba(12,75,43,.04) 18%,rgba(32,145,76,.24) 27%,rgba(92,205,116,.22) 31%,rgba(19,111,61,.28) 36%,rgba(8,55,39,.08) 43%,transparent 51%),
+    linear-gradient(103deg,transparent 27%,rgba(18,100,55,.12) 37%,rgba(67,183,96,.3) 43%,rgba(27,126,68,.24) 49%,rgba(9,66,45,.08) 56%,transparent 65%),
+    linear-gradient(118deg,transparent 43%,rgba(23,107,58,.1) 51%,rgba(83,190,105,.24) 57%,rgba(22,102,59,.22) 63%,transparent 74%);
+  transform:rotate(-8deg) scale(1.08);
+  animation:aurora-drift 19s ease-in-out infinite alternate;
+}
+.main-atmosphere:after{
+  z-index:1;
+  inset:-8% -12%;
+  filter:blur(34px);
+  opacity:.72;
+  background:
+    radial-gradient(ellipse at 34% 27%,rgba(38,147,75,.22),transparent 34%),
+    radial-gradient(ellipse at 62% 34%,rgba(44,166,84,.2),transparent 38%),
+    linear-gradient(165deg,transparent 23%,rgba(33,125,68,.16) 36%,rgba(85,190,104,.16) 42%,transparent 56%),
+    linear-gradient(75deg,transparent 38%,rgba(21,99,58,.16) 52%,transparent 68%);
+  animation:aurora-glow 14s ease-in-out infinite alternate;
+}
+.aurora-ribbon{z-index:1;filter:blur(30px);mix-blend-mode:screen;mask-image:linear-gradient(180deg,transparent 0%,#000 22%,#000 78%,transparent 100%)}
+.ribbon-one{top:1%;left:3%;width:105%;height:58%;opacity:.48;background:linear-gradient(112deg,transparent 5%,rgba(15,94,48,.34) 22%,rgba(57,175,88,.55) 37%,rgba(115,218,131,.32) 43%,rgba(25,119,66,.42) 53%,transparent 75%);transform:rotate(-12deg)}
+.ribbon-two{top:13%;left:-8%;width:110%;height:48%;opacity:.35;background:linear-gradient(105deg,transparent 9%,rgba(19,105,56,.25) 25%,rgba(65,185,97,.44) 41%,rgba(31,129,72,.36) 55%,transparent 79%);transform:rotate(12deg)}
+.ribbon-three{top:33%;left:8%;width:100%;height:39%;opacity:.3;background:linear-gradient(100deg,transparent 4%,rgba(16,86,50,.22) 23%,rgba(65,174,91,.38) 44%,rgba(27,111,66,.3) 60%,transparent 86%);transform:rotate(-7deg)}
+.star{z-index:2}
+@keyframes aurora-drift{0%{transform:translate3d(-2%,0,0) rotate(-10deg) scale(1.04)}100%{transform:translate3d(3%,2%,0) rotate(-5deg) scale(1.12)}}
+@keyframes aurora-glow{0%{opacity:.42;transform:translateX(-2%) rotate(-3deg)}100%{opacity:.82;transform:translateX(2%) rotate(2deg)}}
+/* Luz azul fria na barra lateral */
+.left-rail{isolation:isolate;overflow:hidden}
+.left-rail:before{z-index:0;opacity:.9;filter:blur(9px);background:
+  radial-gradient(ellipse at 5% 18%,rgba(29,100,190,.34),transparent 43%),
+  radial-gradient(ellipse at 92% 54%,rgba(20,76,165,.28),transparent 47%),
+  linear-gradient(155deg,transparent 8%,rgba(31,91,169,.15) 29%,transparent 48%),
+  linear-gradient(25deg,transparent 52%,rgba(19,72,153,.2) 70%,transparent 89%)}
+@media(prefers-reduced-motion:reduce){.main-atmosphere:before,.main-atmosphere:after{animation:none}}
