@@ -191,7 +191,11 @@ impl TerminalManager {
         command.arg("--noprofile");
         command.arg("--norc");
         command.arg("-i");
+        command.env_clear();
         command.cwd(&directory);
+        command.env("PATH", "/usr/local/bin:/usr/bin:/bin");
+        command.env("HOME", directory.to_string_lossy().as_ref());
+        command.env("LANG", "C.UTF-8");
         command.env("TERM", "xterm-256color");
         command.env("COLORTERM", "truecolor");
         for (key, value) in &self.config.environment {
