@@ -37,6 +37,7 @@ fn auth_error(error: aurora_auth::AuthError) -> (StatusCode, Json<Value>) {
         AuthError::InvalidInput(message) => (StatusCode::BAD_REQUEST, message),
         AuthError::InvalidCredentials => (StatusCode::UNAUTHORIZED, "Credenciais inválidas"),
         AuthError::AccountUnavailable => (StatusCode::FORBIDDEN, "Conta indisponível"),
+        AuthError::InsufficientPermissions => (StatusCode::FORBIDDEN, "Permissão insuficiente"),
         AuthError::Storage(error) => {
             tracing::error!(error = %error, "Erro no armazenamento de autenticação");
             (
@@ -160,6 +161,21 @@ async fn logout(
     Ok(StatusCode::NO_CONTENT)
 }
 
+
+async fn admin_health(
+    State(state): State<AppState>,
+    headers: HeaderMap,
+) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
+    let database = state.database.as_ref().ok_or_else(database_unavailable)?;
+    let token = bearer_token(&headers)
+        .ok_or_else(|| auth_error(aurora_auth::AuthError::InvalidCredentials))?;
+    let account = aurora_auth::authenticate(database, token)
+        .await
+        .map_err(auth_error)?;
+    aurora_auth::require_admin(&account).map_err(auth_error)?;
+    Ok(Json(json!({ "status": "ok", "access": "admin" })))
+}
+
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/", get(index))
@@ -169,5 +185,6 @@ pub fn router(state: AppState) -> Router {
         .route("/auth/login", post(login))
         .route("/auth/me", get(current_account))
         .route("/auth/logout", post(logout))
+        .route("/admin/health", get(admin_health))
         .with_state(state)
 }
