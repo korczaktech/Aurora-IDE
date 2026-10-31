@@ -395,6 +395,46 @@ mod tests {
     }
 
     #[test]
+    fn detecta_saida_espontanea_e_libera_vaga() {
+        let manager = manager(1);
+        let first = manager.create_session(None).expect("primeira sessão");
+        manager.write(&first.id, b"exit 7\n").expect("encerrar shell");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut state = TerminalSessionStatus::Running;
+        let mut exit_code = None;
+        while Instant::now() < deadline {
+            let info = manager.list_sessions().expect("listar");
+            state = info[0].status;
+            exit_code = info[0].exit_code;
+            if state == TerminalSessionStatus::Exited { break; }
+            thread::sleep(Duration::from_millis(20));
+        }
+        assert_eq!(state, TerminalSessionStatus::Exited);
+        assert_eq!(exit_code, Some(7));
+        let second = manager.create_session(None).expect("vaga liberada");
+        manager.close_session(&second.id).expect("fechar segunda");
+    }
+
+    #[test]
+    fn saida_intensa_nao_bloqueia_o_leitor_do_pty() {
+        let manager = manager(1);
+        let session = manager.create_session(None).expect("Bash real");
+        manager.write(&session.id, b"yes AURORA_FLOOD | head -c 2000000 >/dev/null; echo AURORA_FLOOD_DONE\n").expect("comando");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut completed = false;
+        while Instant::now() < deadline {
+            let chunks = manager.read_output(&session.id, 256).expect("saída");
+            if chunks.iter().any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE")) {
+                completed = true;
+                break;
+            }
+            thread::sleep(Duration::from_millis(20));
+        }
+        assert!(completed, "o leitor do PTY deve continuar drenando saída intensa");
+        manager.close_session(&session.id).expect("fechar");
+    }
+
+    #[test]
     fn rejeita_diretorio_inexistente() {
         let manager = manager(1);
         assert!(matches!(
