@@ -11,14 +11,22 @@
 <body>
   <header class="editor-header" aria-label="Cabeçalho do editor">
     <div class="header-start">
-      <button class="icon-button menu-button" type="button" aria-label="Abrir ou recolher painel lateral" title="Painel lateral">
-        <img src="../SVG/editor-menu.svg" alt="">
+      <button class="icon-button menu-button" id="editor-menu-toggle" type="button"
+        aria-label="Abrir ou recolher painel lateral" aria-expanded="false" title="Painel lateral">
+        <svg class="menu-motion-icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
+          <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
+          <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
+          <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
+        </svg>
       </button>
     </div>
 
     <form class="search-area" role="search" onsubmit="return false">
       <label class="visually-hidden" for="editor-search">Pesquisar no Aurora</label>
-      <input id="editor-search" type="search" placeholder="Pesquisar" autocomplete="off" spellcheck="false">
+      <div class="search-field">
+        <img class="search-icon" src="../SVG/editor-search.svg" alt="">
+        <input id="editor-search" type="search" placeholder="Pesquisar" autocomplete="off" spellcheck="false">
+      </div>
     </form>
 
     <nav class="header-actions" aria-label="Ferramentas do editor">
@@ -38,5 +46,13 @@
   </header>
 
   <main class="editor-workspace" aria-label="Área de desenvolvimento"></main>
+
+  <script>
+    const menuToggle = document.getElementById("editor-menu-toggle");
+    menuToggle.addEventListener("click", () => {
+      const opened = menuToggle.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", String(opened));
+    });
+  </script>
 </body>
 </html>
