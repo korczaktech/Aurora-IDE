@@ -76,17 +76,6 @@ impl TerminalSession {
     }
 
     fn refresh_status(&mut self) -> TerminalResult<()> {
-        if self.status != TerminalSessionStatus::Running { return Ok(()); }
-        if let Some(status) = self.child.try_wait().map_err(|error| TerminalError::Pty(error.to_string()))? {
-            self.status = TerminalSessionStatus::Exited;
-            self.exit_code = Some(status.exit_code());
-        }
-        self.info.status = self.status;
-        self.info.exit_code = self.exit_code;
-        Ok(())
-    }
-
-    fn refresh_status(&mut self) -> TerminalResult<()> {
         if self.status == TerminalSessionStatus::Running {
             if let Some(status) = self.child.try_wait().map_err(|e| TerminalError::Pty(e.to_string()))? {
                 self.status = TerminalSessionStatus::Exited;
@@ -373,9 +362,7 @@ mod tests {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
         manager
-            .write(&session.id, b"printf 'AURORA_PTY_OK\
-'
-")
+            .write(&session.id, b"printf 'AURORA_PTY_OK\\n'\n")
             .expect("entrada");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut output = Vec::new();
