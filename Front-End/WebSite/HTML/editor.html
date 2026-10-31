@@ -269,7 +269,7 @@ startProject();`
       const escapeCode = value => value.replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
       function highlightCode(source, file) {
         const escaped = escapeCode(source);
-        const tokenPattern = /(<!--[\\s\\S]*?-->|\/\\*[\\s\\S]*?\\*\/|\/\/[^\\n]*|&lt;\\/?[\\w-]+|&gt;|&lt;|\\b(?:const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)\\b|#[0-9a-fA-F]{3,8}\\b|\\b\\d+(?:px|rem|em|vh|vw|%)?\\b|"(?:[^"\\\\]|\\\\.)*"|'(?:[^'\\\\]|\\\\.)*')/g;
+        const tokenPattern = /(<!--[\\s\\S]*?-->|\/\*[\\s\\S]*?\*\/|\/\/[^\n]*|&lt;\/?[\w-]+|&gt;|&lt;|\b(?:const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)\b|#[0-9a-fA-F]{3,8}\b|\b\d+(?:px|rem|em|vh|vw|%)?\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
         let result = "";
         let last = 0;
         for (const match of escaped.matchAll(tokenPattern)) {
@@ -285,7 +285,7 @@ startProject();`
           last = match.index + token.length;
         }
         result += escaped.slice(last);
-        return result + (source.endsWith("\\n") ? " " : "");
+        return result + (source.endsWith("\n") ? " " : "");
       }
       function updateCodeSurface() {
         const source = codeInput.value;
