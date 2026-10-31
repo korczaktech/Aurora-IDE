@@ -517,6 +517,18 @@ body {
 .token-keyword { color: #c49adf; }
 .token-comment { color: #657773; font-style: italic; }
 .token-number { color: #d7b477; }
+
+/* Garante contraste do texto renderizado no editor e das cores de sintaxe. */
+.code-highlight,
+.code-highlight * {
+  color: #c4d2cd;
+  -webkit-text-fill-color: currentColor;
+}
+.code-highlight .token-tag { color: #79b9d4; }
+.code-highlight .token-string { color: #b7d78e; }
+.code-highlight .token-keyword { color: #c49adf; }
+.code-highlight .token-comment { color: #82938e; }
+.code-highlight .token-number { color: #d7b477; }
 .code-statusbar {
   display: flex;
   flex: 0 0 25px;
