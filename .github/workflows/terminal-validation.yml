@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   rust:
@@ -26,6 +26,13 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: Back-End
+      - name: Aplicar rustfmt
+        run: cargo fmt --all
+      - name: Salvar formatação no repositório
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Formata implementação do terminal"
+          file_pattern: "Back-End/**/*.rs"
       - name: Verificar formatação
         run: cargo fmt --all -- --check
       - name: Executar Clippy
