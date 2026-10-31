@@ -4,7 +4,7 @@
 
 https://aurora.korczaktech.com.br/index.html
 
-Este é o endereço atual do GitHub Pages e foi usado nos canonical links, sitemap e dados estruturados. Se a Aurora migrar para um domínio próprio, todos esses endereços deverão ser atualizados em conjunto.
+Este é o domínio personalizado pretendido para a Aurora. Ele foi aplicado aos canonical links, sitemap, metadados sociais e dados estruturados.
 
 ## Implementado no repositório
 
@@ -22,7 +22,7 @@ Este é o endereço atual do GitHub Pages e foi usado nos canonical links, sitem
 
 ## Etapas externas que exigem acesso do proprietário
 
-1. Abrir Google Search Console e adicionar a propriedade de prefixo de URL https://aurora.korczaktech.com.br/index.html.
+1. Abrir Google Search Console e adicionar a propriedade de prefixo de URL https://aurora.korczaktech.com.br/.
 2. Escolher a verificação por arquivo HTML, baixar o arquivo fornecido pelo Google e colocá-lo na raiz publicada do projeto. O token não deve ser inventado; a validação só pode ser concluída com o arquivo real emitido pelo Google.
 3. Após a publicação, confirmar a propriedade no Search Console.
 4. Enviar https://aurora.korczaktech.com.br/sitemap.xml.
@@ -31,7 +31,7 @@ Este é o endereço atual do GitHub Pages e foi usado nos canonical links, sitem
 
 ## Limitações específicas do GitHub Pages
 
-A Aurora usa o domínio próprio aurora.korczaktech.com.br. O arquivo CNAME é incluído no artefato do GitHub Pages e o robots.txt é publicado na raiz desse domínio. Confirme também que o DNS do subdomínio aponta para o GitHub Pages e que o domínio personalizado está salvo nas configurações de Pages do repositório.
+O arquivo CNAME está incluído no artefato publicado pelo GitHub Actions. Ainda é necessário confirmar nas configurações de Pages do repositório que o domínio personalizado está definido como aurora.korczaktech.com.br e que o DNS do subdomínio aponta para o GitHub Pages. Até essa confirmação, não se deve considerar o domínio personalizado efetivamente ativo.
 
 ## Contatos de segurança
 
