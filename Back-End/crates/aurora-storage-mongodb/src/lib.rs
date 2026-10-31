@@ -9,28 +9,30 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 #[derive(Clone)]
 pub struct MongoStorage {
     client: Client,
-    database_name: String,
+    accounts_database: String,
+    sessions_database: String,
 }
 
 impl MongoStorage {
     /// Conecta ao MongoDB e valida a conexão com um ping.
-    pub async fn connect(uri: &str, database_name: impl Into<String>) -> mongodb::error::Result<Self> {
+    pub async fn connect(uri: &str, accounts_database: impl Into<String>, sessions_database: impl Into<String>) -> mongodb::error::Result<Self> {
         let client = Client::with_uri_str(uri).await?;
         let storage = Self {
             client,
-            database_name: database_name.into(),
+            accounts_database: accounts_database.into(),
+            sessions_database: sessions_database.into(),
         };
         storage.ping().await?;
         Ok(storage)
     }
 
     fn collection(&self, name: &str) -> Collection<Document> {
-        self.client.database(&self.database_name).collection(name)
+        self.client.database(&self.accounts_database).collection(name)
     }
 
     pub async fn ping(&self) -> mongodb::error::Result<()> {
         self.client
-            .database(&self.database_name)
+            .database(&self.accounts_database)
             .run_command(doc! { "ping": 1 })
             .await?;
         Ok(())
@@ -38,7 +40,7 @@ impl MongoStorage {
 
     /// Cria os índices de sessão. A coleção de contas existente não é alterada.
     pub async fn ensure_auth_indexes(&self) -> mongodb::error::Result<()> {
-        let sessions = self.collection("sessoes");
+        let sessions = self.client.database(&self.sessions_database).collection::<Document>("sessoes");
 
         let token_options = IndexOptions::builder()
             .name("unique_session_token_hash".to_owned())
@@ -189,7 +191,7 @@ impl MongoStorage {
             .unwrap_or_default()
             .as_millis() as i64;
 
-        self.collection("sessoes")
+        self.client.database(&self.sessions_database).collection::<Document>("sessoes")
             .insert_one(doc! {
                 "_id": ObjectId::new(),
                 "sessionId": uuid::Uuid::new_v4().to_string(),
