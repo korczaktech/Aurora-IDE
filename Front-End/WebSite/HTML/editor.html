@@ -289,7 +289,7 @@ startProject();`
         codeHighlight.innerHTML = highlightCode(source, activeCodeFile);
 
         // Uma linha visual por linha real do textarea, inclusive linhas vazias.
-        const lineCount = source.split("\\n").length;
+        const lineCount = source.split("\n").length;
         const lineNumbers = document.createDocumentFragment();
         for (let index = 1; index <= lineCount; index += 1) {
           const lineNumber = document.createElement("span");
@@ -304,7 +304,7 @@ startProject();`
       }
       function updateCodeCursor() {
         const before = codeInput.value.slice(0, codeInput.selectionStart);
-        const lines = before.split("\\n");
+        const lines = before.split("\n");
         const position = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
         document.getElementById("codeCursor").textContent = position;
       }
