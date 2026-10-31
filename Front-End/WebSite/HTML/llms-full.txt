@@ -41,7 +41,7 @@ Aurora é um ambiente de desenvolvimento em construção. A proposta é reunir e
 ## Páginas oficiais
 
 ### Página inicial
-https://aurora.korczaktech.com.br/
+https://aurora.korczaktech.com.br/index.html
 
 ### Sobre o Aurora
 https://aurora.korczaktech.com.br/sobre.html
