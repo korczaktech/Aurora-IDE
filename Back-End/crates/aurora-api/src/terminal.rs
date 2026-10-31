@@ -567,7 +567,8 @@ mod tests {
 
     #[test]
     fn origem_websocket_exige_correspondencia_exata() {
-        let runtime = TerminalRuntime::new(vec!["https://aurora.korczaktech.com.br".into()]).unwrap();
+        let runtime =
+            TerminalRuntime::new(vec!["https://aurora.korczaktech.com.br".into()]).unwrap();
         let mut headers = HeaderMap::new();
         headers.insert(
             header::ORIGIN,
@@ -628,5 +629,4 @@ mod tests {
         );
         runtime.manager.close_session(&session.id).unwrap();
     }
-
 }
