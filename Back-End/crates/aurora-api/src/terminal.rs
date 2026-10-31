@@ -164,7 +164,7 @@ fn bearer_token(headers: &HeaderMap) -> Option<&str> {
         .strip_prefix("Bearer ")
 }
 
-async fn authenticated_account(
+async fn admin_account(
     state: &AppState,
     headers: &HeaderMap,
 ) -> Result<aurora_auth::AuthenticatedAccount, (StatusCode, Json<Value>)> {
@@ -188,6 +188,12 @@ async fn authenticated_account(
                 Json(json!({"error":"Sessão inválida"})),
             )
         })?;
+    aurora_auth::require_admin(&account).map_err(|_| {
+        (
+            StatusCode::FORBIDDEN,
+            Json(json!({"error":"Terminal disponível somente para administradores até a execução isolada por conta"})),
+        )
+    })?;
     Ok(account)
 }
 
@@ -212,7 +218,7 @@ async fn list_sessions(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let owners = state.terminal.owners.lock().map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -242,7 +248,7 @@ async fn create_session(
     State(state): State<AppState>,
     headers: HeaderMap,
 ) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let mut owners = state.terminal.owners.lock().map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -306,7 +312,7 @@ async fn close_session(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<StatusCode, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     if !state.terminal.owns(&account.id, &id) {
         return Err((
             StatusCode::NOT_FOUND,
@@ -339,7 +345,7 @@ async fn create_ticket(
     headers: HeaderMap,
     Path(id): Path<String>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
-    let account = authenticated_account(&state, &headers).await?;
+    let account = admin_account(&state, &headers).await?;
     let value = state.terminal.ticket(&account.id, &id).map_err(|_| {
         (
             StatusCode::NOT_FOUND,
