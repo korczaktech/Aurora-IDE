@@ -11,14 +11,23 @@
 <body>
   <header class="editor-header" aria-label="Cabeçalho do editor">
     <div class="header-start">
-      <button class="icon-button menu-button" id="editor-menu-toggle" type="button"
-        aria-label="Abrir ou recolher painel lateral" aria-expanded="false" title="Painel lateral">
-        <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
-          <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
-          <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
-          <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
-        </svg>
-      </button>
+      <div class="menu-mark" aria-hidden="true">
+      <svg class="menu-motion-icon" viewBox="0 0 24 24">
+        <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
+        <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
+        <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
+      </svg>
+    </div>
+    <nav class="editor-tool-rail" id="editor-tool-rail" aria-label="Ferramentas principais" aria-hidden="true">
+      <button class="tool-icon" type="button" data-tool="files" aria-label="Arquivos" title="Arquivos" aria-pressed="false"><img src="../SVG/editor-files.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="edit" aria-label="Editar" title="Editar" aria-pressed="false"><img src="../SVG/editor-edit.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="selection" aria-label="Seleção" title="Seleção" aria-pressed="false"><img src="../SVG/editor-selection.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="view" aria-label="Exibir" title="Exibir" aria-pressed="false"><img src="../SVG/editor-view.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="access" aria-label="Acessar" title="Acessar" aria-pressed="false"><img src="../SVG/editor-access.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="execute" aria-label="Executar" title="Executar" aria-pressed="false"><img src="../SVG/editor-execute.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="terminal" aria-label="Terminal" title="Terminal" aria-pressed="false"><img src="../SVG/editor-terminal.svg" alt=""></button>
+      <button class="tool-icon" type="button" data-tool="help" aria-label="Ajuda" title="Ajuda" aria-pressed="false"><img src="../SVG/editor-help.svg" alt=""></button>
+    </nav>
     </div>
 
     <form class="search-area" role="search" onsubmit="return false">
@@ -29,31 +38,20 @@
       </div>
     </form>
 
-    <nav class="header-actions" aria-label="Ferramentas do editor">
-      <button class="icon-button" type="button" aria-label="Layout" title="Layout">
-        <img src="../SVG/editor-layout.svg" alt="">
-      </button>
-      <button class="icon-button" type="button" aria-label="Anotações" title="Anotações">
-        <img src="../SVG/editor-notes.svg" alt="">
-      </button>
-      <button class="icon-button" type="button" aria-label="Repositórios" title="Repositórios">
-        <img src="../SVG/editor-repositories.svg" alt="">
-      </button>
-      <button class="icon-button" type="button" aria-label="Configurações" title="Configurações">
-        <img src="../SVG/editor-settings.svg" alt="">
-      </button>
-    </nav>
+    <div class="header-actions" aria-hidden="true"></div>
   </header>
 
   <main class="editor-workspace" aria-label="Área de desenvolvimento"></main>
 
   <script>
-    const menuToggle = document.getElementById("editor-menu-toggle");
+    const menuMark = document.querySelector(".menu-mark");
+    const toolRail = document.getElementById("editor-tool-rail");
+    const middleLine = document.querySelector(".menu-line-middle");
     const searchField = document.querySelector(".search-field");
 
     function measureMenuMotion() {
       const searchRect = searchField.getBoundingClientRect();
-      const svgRect = menuToggle.querySelector("svg").getBoundingClientRect();
+      const svgRect = menuMark.querySelector("svg").getBoundingClientRect();
       const svgScale = svgRect.width / 24;
 
       const firstX = svgRect.left + 5 * svgScale;
@@ -82,9 +80,27 @@
     measureMenuMotion();
     window.addEventListener("resize", measureMenuMotion);
 
-    menuToggle.addEventListener("click", () => {
-      const opened = menuToggle.classList.toggle("is-open");
-      menuToggle.setAttribute("aria-expanded", String(opened));
+    function revealToolRail() {
+      toolRail.classList.add("is-visible");
+      toolRail.setAttribute("aria-hidden", "false");
+    }
+
+    middleLine.addEventListener("animationend", (event) => {
+      if (event.animationName === "menu-middle-journey") revealToolRail();
+    });
+
+    // A sequência é automática: o símbolo se desfaz e libera a barra de ferramentas.
+    menuMark.classList.add("is-open");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) revealToolRail();
+
+    toolRail.addEventListener("click", (event) => {
+      const selected = event.target.closest("[data-tool]");
+      if (!selected) return;
+      toolRail.querySelectorAll("[data-tool]").forEach((button) => {
+        const active = button === selected;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
     });
   </script>
 </body>
