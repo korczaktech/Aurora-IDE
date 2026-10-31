@@ -96,6 +96,8 @@
     function returnToInitialMark() {
       if (backButton.disabled) return;
       backButton.disabled = true;
+      backButton.hidden = true;
+      openButton.disabled = true;
       toolRail.classList.add("is-closing");
       toolRail.setAttribute("aria-hidden", "true");
 
@@ -124,11 +126,10 @@
       menuMark.classList.add("is-open");
     });
 
-    thirdLine.addEventListener("animationend", (event) => {
-      if (event.animationName !== "menu-third-travel" || !menuMark.classList.contains("is-returning")) return;
+    menuMark.addEventListener("animationend", (event) => {
+      if (event.target !== thirdLine || event.animationName !== "menu-third-travel" || !menuMark.classList.contains("is-returning")) return;
       menuMark.classList.remove("is-open", "is-returning");
       menuMark.classList.add("is-returned");
-      backButton.hidden = true;
       openButton.disabled = false;
       toolRail.classList.remove("is-visible", "is-closing");
     });
