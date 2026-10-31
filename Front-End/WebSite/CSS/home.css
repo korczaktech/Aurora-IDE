@@ -660,3 +660,24 @@
 .app-page .mentoria-final p{margin-bottom:19px}
 @media(max-width:900px){.app-page .mentoria-courses{grid-template-columns:repeat(2,minmax(0,1fr))}.app-page .mentoria-course:nth-child(2){border-right:0}.app-page .mentoria-course:nth-child(n+3){border-top:1px solid rgba(135,182,148,.12)}.app-page .mentoria-course:nth-child(3){padding-left:0}.app-page .mentoria-course p{min-height:45px}}
 @media(max-width:650px){.app-page .mentoria-hero{grid-template-columns:1fr;gap:8px;padding-top:23px}.app-page .mentoria-hero-mark{min-height:135px}.app-page .mentoria-hero-mark strong{font-size:55px}.app-page .mentoria-mark-orbit{width:145px;height:75px}.app-page .mentoria-manifesto{padding:18px}.app-page .mentoria-courses{grid-template-columns:1fr}.app-page .mentoria-course,.app-page .mentoria-course+.mentoria-course{padding:17px 0;border-right:0;border-bottom:1px solid rgba(135,182,148,.1)}.app-page .mentoria-course:last-child{border-bottom:0}.app-page .mentoria-course p{min-height:0}.app-page .mentoria-duration{grid-template-columns:1fr;gap:19px}.app-page .mentoria-certificate{grid-template-columns:55px minmax(0,1fr);gap:14px}.app-page .certificate-emblem{width:49px;height:49px}.app-page .certificate-types{grid-column:2;display:flex;flex-wrap:wrap;gap:13px}.app-page .opportunity-options{grid-template-columns:1fr}.app-page .opportunity-option,.app-page .opportunity-option+.opportunity-option{padding:19px 0;border-left:0}.app-page .opportunity-option p{min-height:0}.app-page .mentoria-final .action-primary{max-width:100%;white-space:normal}}
+
+
+/* Funcionalidade real: preferências globais da estação Aurora */
+body.aurora-no-motion *,body.aurora-no-motion *:before,body.aurora-no-motion *:after{animation-duration:0.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:0.001ms!important}
+body.aurora-high-contrast .app-page .page-title,body.aurora-high-contrast .app-page .view-title,body.aurora-high-contrast .app-page h2,body.aurora-high-contrast .app-page h3,body.aurora-high-contrast .app-page strong{color:#f4fff6!important}
+body.aurora-high-contrast .app-page .page-lead,body.aurora-high-contrast .app-page p,body.aurora-high-contrast .app-page small,body.aurora-high-contrast .app-page .micro-label{color:#b5c8ba!important}
+body.aurora-high-contrast .app-page .section-heading,body.aurora-high-contrast .app-page .preference-line,body.aurora-high-contrast .app-page .activity-event,body.aurora-high-contrast .app-page .settings-info-line{border-color:rgba(210,245,220,.32)!important}
+body.aurora-compact-ui .app-page .page-shell{padding-top:34px!important;padding-bottom:46px!important}
+body.aurora-compact-ui .app-page .view-heading{margin-bottom:24px!important}
+body.aurora-compact-ui .app-page .activity-metric,body.aurora-compact-ui .app-page .preference-line,body.aurora-compact-ui .app-page .settings-info-line{padding-top:9px!important;padding-bottom:9px!important}
+body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padding-bottom:11px!important}
+.app-page .activity-tools{display:flex;align-items:center;gap:18px}
+.app-page .activity-tools .text-action{padding:7px 0;color:#87b997;font-size:9px;white-space:nowrap}
+.app-page .activity-tools .text-action:hover{color:#d6eddb}
+.app-page .activity-timeline{min-height:80px}
+.app-page .activity-timeline .empty-state{padding:25px 0;border-bottom:1px solid rgba(135,182,148,.12)}
+.app-page .settings-group{scroll-margin-top:24px}
+.app-page .settings-index a{transition:color .16s ease,border-color .16s ease}
+.app-page .settings-index a.settings-nav-active{color:#c4e0cb;border-color:#82bd91}
+.app-page .settings-info-line{gap:20px}
+@media(max-width:650px){.app-page .activity-tools{align-items:flex-end;flex-direction:column;gap:5px}.app-page .activity-tools .text-action{padding:4px 0}}
