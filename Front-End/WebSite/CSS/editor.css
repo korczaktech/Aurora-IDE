@@ -360,3 +360,183 @@ body {
 @media (max-width: 600px) {
   .file-sidebar { flex-basis: 210px; width: 210px; }
 }
+
+
+/* Editor de código */
+.editor-empty-area {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--aurora-background);
+}
+.code-editor-shell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.editor-tab-strip {
+  display: flex;
+  flex: 0 0 39px;
+  align-items: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #090f11;
+  border-bottom: 1px solid var(--aurora-border);
+}
+.code-tab {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 9px;
+  min-width: 118px;
+  padding: 0 15px;
+  border: 0;
+  border-right: 1px solid #172225;
+  background: transparent;
+  color: #839391;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.code-tab:hover { color: var(--aurora-text); background: #0d1517; }
+.code-tab.is-active {
+  background: var(--aurora-background);
+  color: var(--aurora-text);
+}
+.code-tab.is-active::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--aurora-green);
+  content: "";
+}
+.code-tab-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 15px;
+  font-size: 9px;
+  font-weight: 700;
+}
+.code-tab-icon.html { color: #e49b70; }
+.code-tab-icon.css { color: #78aee7; font-size: 13px; }
+.code-tab-icon.js { color: #d7c36e; font-size: 8px; }
+.editor-context-row {
+  display: flex;
+  flex: 0 0 31px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 17px;
+  color: #748582;
+  font-size: 11px;
+}
+.editor-breadcrumb { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.breadcrumb-separator { color: #465754; }
+#activeCodeFile { color: #b8c9c2; }
+.editor-context-label { color: #61736f; font-size: 9px; letter-spacing: .1em; }
+.code-viewport {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  padding: 13px 0 18px;
+  background: #080d0f;
+}
+.code-gutter {
+  flex: 0 0 57px;
+  min-width: 57px;
+  padding: 0 15px 0 0;
+  overflow: hidden;
+  color: #40504e;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 22px;
+  text-align: right;
+  white-space: pre;
+  user-select: none;
+}
+.code-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.code-highlight, .code-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0 22px 30px 0;
+  border: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: 0;
+  tab-size: 2;
+  white-space: pre;
+  overflow: auto;
+}
+.code-highlight {
+  z-index: 0;
+  color: #c4d2cd;
+  pointer-events: none;
+  scrollbar-width: none;
+}
+.code-highlight::-webkit-scrollbar { display: none; }
+.code-input {
+  z-index: 1;
+  resize: none;
+  outline: none;
+  overflow: auto;
+  background: transparent;
+  color: transparent;
+  caret-color: #a4e9c5;
+  -webkit-text-fill-color: transparent;
+  selection-background-color: rgba(114, 214, 173, .22);
+}
+.code-input::selection {
+  background: rgba(114, 214, 173, .25);
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.token-tag { color: #79b9d4; }
+.token-string { color: #b7d78e; }
+.token-keyword { color: #c49adf; }
+.token-comment { color: #657773; font-style: italic; }
+.token-number { color: #d7b477; }
+.code-statusbar {
+  display: flex;
+  flex: 0 0 25px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border-top: 1px solid #182326;
+  background: #0a1113;
+  color: #71827e;
+  font-size: 10px;
+}
+.code-status-left, .code-status-right { display: flex; align-items: center; gap: 13px; }
+.code-status-left .status-dot { width: 5px; height: 5px; }
+.status-divider { color: #354441; }
+.code-status-right span { white-space: nowrap; }
+@media (max-width: 700px) {
+  .code-tab { min-width: 105px; padding: 0 10px; }
+  .code-gutter { flex-basis: 43px; min-width: 43px; padding-right: 11px; }
+  .code-highlight, .code-input { padding-right: 12px; }
+  .code-statusbar { padding: 0 8px; }
+  .code-status-left, .code-status-right { gap: 7px; }
+}
