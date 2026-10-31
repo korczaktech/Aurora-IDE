@@ -164,6 +164,7 @@
     main.scrollTop = 0;
   };
   navItems.forEach(item => item.addEventListener("click", () => showPage(item.dataset.page)));
+  workspace.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
     const folder = event.target.closest("[data-tree-folder]");
