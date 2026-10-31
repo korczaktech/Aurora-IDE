@@ -5,7 +5,7 @@ use std::{
     io::{Read, Write},
     path::PathBuf,
     sync::{
-        mpsc::{sync_channel, Receiver, SyncSender, TryRecvError, TrySendError},
+        mpsc::{sync_channel, Receiver, SyncSender, TryRecvError},
         Arc, Mutex,
     },
     thread,
@@ -198,7 +198,7 @@ impl TerminalManager {
             command.env(key, value);
         }
 
-        let child = pair
+        let mut child = pair
             .slave
             .spawn_command(command)
             .map_err(|error| TerminalError::Pty(error.to_string()))?;
@@ -223,7 +223,11 @@ impl TerminalManager {
             }
         };
         let (tx, rx) = sync_channel::<Vec<u8>>(128);
-        spawn_reader(reader, tx);
+        if let Err(error) = spawn_reader(reader, tx) {
+            let _ = child.kill();
+            let _ = child.wait();
+            return Err(TerminalError::Io(error));
+        }
 
         let info = TerminalSessionInfo {
             id: Uuid::new_v4().to_string(),
@@ -345,21 +349,25 @@ impl Drop for TerminalManager {
     }
 }
 
-fn spawn_reader(mut reader: Box<dyn Read + Send>, tx: SyncSender<Vec<u8>>) {
-    let _ = thread::Builder::new()
+fn spawn_reader(reader: Box<dyn Read + Send>, tx: SyncSender<Vec<u8>>) -> std::io::Result<()> {
+    thread::Builder::new()
         .name("aurora-pty-reader".into())
         .spawn(move || {
+            let mut reader = reader;
             let mut buffer = [0_u8; 8192];
             loop {
                 match reader.read(&mut buffer) {
                     Ok(0) | Err(_) => break,
-                    Ok(count) => match tx.try_send(buffer[..count].to_vec()) {
-                        Ok(()) | Err(TrySendError::Full(_)) => {}
-                        Err(TrySendError::Disconnected(_)) => break,
-                    },
+                    Ok(count) => {
+                        // Backpressure preserves every byte while keeping memory bounded.
+                        if tx.send(buffer[..count].to_vec()).is_err() {
+                            break;
+                        }
+                    }
                 }
             }
-        });
+        })
+        .map(|_| ())
 }
 
 #[cfg(test)]
@@ -451,35 +459,40 @@ mod tests {
     }
 
     #[test]
-    fn saida_intensa_nao_bloqueia_o_leitor_do_pty() {
+    fn saida_intensa_preserva_todos_os_bytes_sem_crescimento_ilimitado() {
+        const EXPECTED_Z_BYTES: usize = 524_288;
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
         manager
             .write(
                 &session.id,
-                b"yes AURORA_FLOOD | head -c 2000000; echo AURORA_FLOOD_DONE\n",
+                b"stty -echo; yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
             )
             .expect("comando");
-        let deadline = Instant::now() + Duration::from_secs(5);
-        let mut completed = false;
+        let deadline = Instant::now() + Duration::from_secs(15);
+        let mut output = Vec::new();
         while Instant::now() < deadline {
-            let chunks = manager.read_output(&session.id, 256).expect("saída");
-            if chunks
-                .iter()
-                .any(|chunk| String::from_utf8_lossy(&chunk.bytes).contains("AURORA_FLOOD_DONE"))
+            for chunk in manager.read_output(&session.id, 256).expect("saída") {
+                output.extend(chunk.bytes);
+            }
+            if output
+                .windows(b"AURORA_FLOOD_DONE".len())
+                .any(|window| window == b"AURORA_FLOOD_DONE")
             {
-                completed = true;
                 break;
             }
-            thread::sleep(Duration::from_millis(20));
+            thread::sleep(Duration::from_millis(10));
         }
+        let z_bytes = output.iter().filter(|byte| **byte == b'Z').count();
+        assert_eq!(z_bytes, EXPECTED_Z_BYTES, "nenhum byte pode ser descartado");
         assert!(
-            completed,
-            "o leitor do PTY deve continuar drenando saída intensa"
+            output
+                .windows(b"AURORA_FLOOD_DONE".len())
+                .any(|window| window == b"AURORA_FLOOD_DONE"),
+            "o marcador final precisa chegar depois de toda a saída"
         );
         manager.close_session(&session.id).expect("fechar");
     }
-
     #[test]
     fn rejeita_diretorio_inexistente() {
         let manager = manager(1);
