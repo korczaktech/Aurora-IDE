@@ -1,0 +1,20 @@
+{
+  "id": "/Aurora-IDE/",
+  "name": "Aurora EDS",
+  "short_name": "Aurora",
+  "description": "Estação de Desenvolvimento de Sistemas da Korczak Technologies.",
+  "lang": "pt-BR",
+  "start_url": "/Aurora-IDE/",
+  "scope": "/Aurora-IDE/",
+  "display": "standalone",
+  "background_color": "#080d0f",
+  "theme_color": "#080d0f",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
