@@ -489,28 +489,25 @@ body {
   white-space: pre;
   overflow: auto;
 }
+/* O textarea é a camada visível e editável; o texto não depende do overlay. */
 .code-highlight {
-  z-index: 0;
-  color: #c4d2cd;
-  pointer-events: none;
-  scrollbar-width: none;
+  display: none;
 }
-.code-highlight::-webkit-scrollbar { display: none; }
 .code-input {
   z-index: 1;
   resize: none;
   outline: none;
   overflow: auto;
   background: transparent;
-  color: transparent;
+  color: #c4d2cd;
   caret-color: #a4e9c5;
-  -webkit-text-fill-color: transparent;
-  selection-background-color: rgba(114, 214, 173, .22);
+  -webkit-text-fill-color: #c4d2cd;
+  selection-background-color: rgba(114, 214, 173, .28);
 }
 .code-input::selection {
-  background: rgba(114, 214, 173, .25);
-  color: transparent;
-  -webkit-text-fill-color: transparent;
+  background: rgba(114, 214, 173, .28);
+  color: #ffffff;
+  -webkit-text-fill-color: #ffffff;
 }
 .token-tag { color: #79b9d4; }
 .token-string { color: #b7d78e; }
