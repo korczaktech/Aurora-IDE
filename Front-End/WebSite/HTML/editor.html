@@ -3,66 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070b0c">
-  <meta name="description" content="Aurora EDS — ambiente de desenvolvimento web.">
+  <meta name="theme-color" content="#080d0f">
+  <meta name="description" content="Aurora EDS — ambiente de desenvolvimento.">
   <title>Aurora EDS — Editor</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="CSS/editor.css">
 </head>
-<body class="editor-app">
-  <header class="editor-topbar">
-    <a class="brand" href="index.html" aria-label="Voltar ao Aurora"><span>Aurora</span><i>.</i><small>EDS</small></a>
-    <div class="project-identity"><span class="live-dot"></span><span>PROJETO</span><strong id="projectName">Meu primeiro projeto</strong></div>
-    <div class="top-actions">
-      <span class="save-state" id="saveState">Salvo localmente</span>
-      <button class="top-button" id="saveButton" type="button">Salvar <kbd>Ctrl S</kbd></button>
-      <button class="run-button" id="runButton" type="button"><span>▶</span> Executar <kbd>Ctrl ↵</kbd></button>
-      <a class="exit-button" href="index.html" aria-label="Sair do editor">×</a>
-    </div>
-  </header>
-
-  <main class="ide-layout">
-    <aside class="activity-rail" aria-label="Ferramentas">
-      <button class="activity active" type="button" title="Explorador" aria-label="Explorador">▤</button>
-      <button class="activity" type="button" title="Pesquisar" aria-label="Pesquisar">⌕</button>
-      <button class="activity" type="button" title="Extensões" aria-label="Extensões">⌘</button>
-      <div class="activity-spacer"></div>
-      <a class="activity back-home" href="index.html" title="Página inicial" aria-label="Página inicial">⌂</a>
-    </aside>
-
-    <aside class="explorer">
-      <div class="panel-heading"><span>EXPLORADOR</span><button id="newFileButton" type="button" title="Novo arquivo">＋</button></div>
-      <button class="project-folder" type="button"><span>⌄</span><strong>MEU PRIMEIRO PROJETO</strong><small>⋯</small></button>
-      <nav class="file-list" id="fileList" aria-label="Arquivos do projeto">
-        <button class="file-item selected" data-file="index.html" type="button"><span class="file-icon html">5</span>index.html</button>
-        <button class="file-item" data-file="style.css" type="button"><span class="file-icon css">▧</span>style.css</button>
-        <button class="file-item" data-file="script.js" type="button"><span class="file-icon js">JS</span>script.js</button>
-      </nav>
-      <div class="explorer-bottom"><span class="live-dot"></span> WORKSPACE LOCAL</div>
-    </aside>
-
-    <section class="workbench">
-      <div class="editor-tabs" id="editorTabs">
-        <button class="editor-tab active" data-file="index.html" type="button"><span class="file-icon html">5</span>index.html <i>×</i></button>
-        <button class="editor-tab" data-file="style.css" type="button"><span class="file-icon css">▧</span>style.css <i>×</i></button>
-        <button class="editor-tab" data-file="script.js" type="button"><span class="file-icon js">JS</span>script.js <i>×</i></button>
-      </div>
-      <div class="editor-breadcrumb"><span>MEU PRIMEIRO PROJETO</span><b>›</b><strong id="breadcrumbFile">index.html</strong><span class="editor-language" id="languageLabel">HTML</span></div>
-      <div class="code-area">
-        <div class="line-numbers" id="lineNumbers" aria-hidden="true">1</div>
-        <textarea id="codeEditor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor de código" wrap="off"></textarea>
-      </div>
-      <footer class="editor-statusbar"><span><i></i> Aurora Web Runtime</span><span id="cursorPosition">Ln 1, Col 1</span><span id="statusLanguage">HTML</span><span>UTF-8</span><span>LF</span></footer>
-    </section>
-
-    <section class="preview-panel">
-      <div class="preview-heading"><div><span class="preview-indicator"></span><strong>PRÉ-VISUALIZAÇÃO</strong><small id="previewStatus">Aguardando execução</small></div><div class="preview-actions"><button id="refreshPreview" type="button" title="Executar novamente">↻</button><button id="clearOutput" type="button" title="Limpar saída">⌫</button></div></div>
-      <div class="preview-viewport"><iframe id="previewFrame" title="Pré-visualização do projeto" sandbox="allow-scripts"></iframe><div class="preview-empty" id="previewEmpty"><span>✳</span><strong>Seu projeto aparecerá aqui</strong><p>Edite os arquivos e pressione Executar.</p></div></div>
-      <div class="console-panel"><div class="console-heading"><strong>SAÍDA</strong><span id="outputCount">0 mensagens</span></div><div class="console-output" id="consoleOutput"><p class="console-hint">A saída do JavaScript aparecerá aqui quando você executar o projeto.</p></div></div>
-    </section>
-  </main>
-  <script src="JavaScript/editor.js"></script>
+<body>
+  <main aria-label="Área de desenvolvimento"></main>
 </body>
 </html>
