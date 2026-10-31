@@ -31,6 +31,10 @@ Não criar coleções adicionais na database `Contas`. A estrutura é compartilh
 
 O terminal cria processos Bash no servidor por meio de PTY. O processo não é executado em sandbox. O acesso administrativo é uma barreira de autorização, não um mecanismo de isolamento do sistema operacional.
 
+A criação de sessão aceita `working_directory` relativo ou absoluto, desde que o caminho canonicalizado permaneça dentro do workspace da conta. Variáveis de ambiente podem ser definidas por sessão, mas não podem substituir `PATH`, `HOME`, parâmetros de terminal, variáveis de inicialização do Bash ou variáveis `LD_*`. O histórico Bash é salvo em `.aurora_history` no workspace, com permissões Unix `0600`.
+
+As sessões PTY e seus processos existem apenas na memória do serviço. A reconexão usa novo ticket de uso único; ela não recupera uma sessão depois que o processo da API reinicia. O histórico só atravessa reinícios quando o diretório raiz está montado em armazenamento persistente. No serviço Render atual, o workspace padrão fica em `/tmp` e não há disco persistente configurado.
+
 Regras obrigatórias:
 - manter o terminal restrito a administradores confiáveis;
 - não disponibilizar sessões a contas comuns;

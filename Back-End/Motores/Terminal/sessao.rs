@@ -1,7 +1,7 @@
 use crate::{TerminalConfig, TerminalError, TerminalResult};
 use portable_pty::{native_pty_system, Child, CommandBuilder, MasterPty, PtySize};
 use std::{
-    collections::HashMap,
+    collections::{BTreeMap, HashMap},
     io::{Read, Write},
     path::PathBuf,
     sync::{
@@ -11,6 +11,12 @@ use std::{
     thread,
 };
 use uuid::Uuid;
+
+#[derive(Debug, Clone, Default)]
+pub struct TerminalSessionOptions {
+    pub working_directory: Option<PathBuf>,
+    pub environment: BTreeMap<String, String>,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TerminalSessionStatus {
@@ -146,8 +152,20 @@ impl TerminalManager {
         &self,
         working_directory: Option<PathBuf>,
     ) -> TerminalResult<TerminalSessionInfo> {
-        let directory =
-            working_directory.unwrap_or_else(|| self.config.default_working_directory.clone());
+        self.create_session_with_options(TerminalSessionOptions {
+            working_directory,
+            environment: BTreeMap::new(),
+        })
+    }
+
+    pub fn create_session_with_options(
+        &self,
+        options: TerminalSessionOptions,
+    ) -> TerminalResult<TerminalSessionInfo> {
+        validate_session_environment(&options.environment)?;
+        let directory = options
+            .working_directory
+            .unwrap_or_else(|| self.config.default_working_directory.clone());
         if !directory.is_dir() {
             return Err(TerminalError::InvalidWorkingDirectory(
                 directory.display().to_string(),
@@ -189,8 +207,10 @@ impl TerminalManager {
 
         let mut command = CommandBuilder::new(self.config.shell_path.to_string_lossy().as_ref());
         command.arg("--noprofile");
-        command.arg("--norc");
         command.arg("-i");
+        let (history_file, rc_file) = prepare_history(&directory)?;
+        command.arg("--rcfile");
+        command.arg(rc_file.to_string_lossy().as_ref());
         command.env_clear();
         command.cwd(&directory);
         command.env("PATH", "/usr/local/bin:/usr/bin:/bin");
@@ -198,7 +218,14 @@ impl TerminalManager {
         command.env("LANG", "C.UTF-8");
         command.env("TERM", "xterm-256color");
         command.env("COLORTERM", "truecolor");
+        command.env("HISTFILE", history_file);
+        command.env("HISTSIZE", "10000");
+        command.env("HISTFILESIZE", "20000");
+        command.env("HISTCONTROL", "ignoreboth");
         for (key, value) in &self.config.environment {
+            command.env(key, value);
+        }
+        for (key, value) in &options.environment {
             command.env(key, value);
         }
 
@@ -353,6 +380,63 @@ impl Drop for TerminalManager {
     }
 }
 
+
+
+fn prepare_history(directory: &std::path::Path) -> TerminalResult<(PathBuf, PathBuf)> {
+    use std::fs::OpenOptions;
+    let history = directory.join(".aurora_history");
+    let rc = directory.join(".aurora-bashrc");
+    let history_handle = OpenOptions::new().create(true).append(true).open(&history)?;
+    drop(history_handle);
+    let rc_contents = concat!(
+        "umask 077\n",
+        "shopt -s histappend\n",
+        "HISTCONTROL=ignoreboth\n",
+        "HISTSIZE=10000\n",
+        "HISTFILESIZE=20000\n",
+        "PROMPT_COMMAND='history -a; history -n'\n"
+    );
+    if !rc.exists() {
+        std::fs::write(&rc, rc_contents)?;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&history, std::fs::Permissions::from_mode(0o600))?;
+        std::fs::set_permissions(&rc, std::fs::Permissions::from_mode(0o600))?;
+    }
+    Ok((history, rc))
+}
+
+fn validate_session_environment(environment: &BTreeMap<String, String>) -> TerminalResult<()> {
+    const RESERVED: &[&str] = &[
+        "PATH", "HOME", "TERM", "COLORTERM", "LANG", "HISTFILE", "HISTSIZE",
+        "HISTFILESIZE", "HISTCONTROL", "BASH_ENV", "ENV", "SHELLOPTS", "BASHOPTS",
+    ];
+    if environment.len() > 64 {
+        return Err(TerminalError::InvalidConfiguration(
+            "no máximo 64 variáveis de ambiente por sessão".into(),
+        ));
+    }
+    for (key, value) in environment {
+        let valid_key = !key.is_empty()
+            && key.len() <= 128
+            && key.bytes().all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+            && !key.as_bytes()[0].is_ascii_digit();
+        if !valid_key || RESERVED.contains(&key.as_str()) || key.starts_with("LD_") {
+            return Err(TerminalError::InvalidConfiguration(format!(
+                "nome de variável de ambiente não permitido: {key}"
+            )));
+        }
+        if value.len() > 8192 || value.contains('\0') {
+            return Err(TerminalError::InvalidConfiguration(format!(
+                "valor inválido para a variável de ambiente {key}"
+            )));
+        }
+    }
+    Ok(())
+}
+
 fn spawn_reader(reader: Box<dyn Read + Send>, tx: SyncSender<Vec<u8>>) -> std::io::Result<()> {
     thread::Builder::new()
         .name("aurora-pty-reader".into())
@@ -383,8 +467,11 @@ mod tests {
     };
 
     fn manager(limit: usize) -> TerminalManager {
+        let directory = std::env::temp_dir().join(format!("aurora-terminal-tests-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&directory).expect("workspace de teste");
         let config = TerminalConfig {
             max_sessions: limit,
+            default_working_directory: directory,
             ..TerminalConfig::default()
         };
         TerminalManager::new(config).expect("configuração válida")
@@ -405,7 +492,7 @@ mod tests {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
         manager
-            .write(&session.id, b"printf 'AURORA_PTY_OK\\n'\n")
+            .write(&session.id, b"printf 'AURORA_PTY_OK\n'\n")
             .expect("entrada");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut output = Vec::new();
@@ -471,7 +558,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"stty -echo -ixon; printf '\\101\\125\\122\\117\\122\\101\\137\\105\\103\\110\\117\\137\\117\\106\\106\\n'\n",
+                b"stty -echo -ixon; printf '\\101\\125\\122\\117\\122\\101\\137\\105\\103\\110\\117\\137\\117\\106\\106\n'\n",
             )
             .expect("desativar eco do terminal");
 
@@ -502,7 +589,7 @@ mod tests {
         manager
             .write(
                 &session.id,
-                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\n",
+                b"yes Z | head -c 1048576; printf '\nAURORA_FLOOD_DONE\n'\n",
             )
             .expect("comando de saída intensa");
 
@@ -531,6 +618,108 @@ mod tests {
         );
         manager.close_session(&session.id).expect("fechar");
     }
+
+    #[test]
+    fn ctrl_d_encerra_shell_interativo() {
+        let manager = manager(1);
+        let session = manager.create_session(None).expect("Bash real");
+        manager.write(&session.id, b"\x04").expect("EOF");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut state = TerminalSessionStatus::Running;
+        while Instant::now() < deadline {
+            state = manager.list_sessions().expect("listar")[0].status;
+            if state == TerminalSessionStatus::Exited { break; }
+            thread::sleep(Duration::from_millis(20));
+        }
+        assert_eq!(state, TerminalSessionStatus::Exited);
+    }
+
+    #[test]
+    fn ctrl_c_interrompe_processo_sem_encerrar_shell() {
+        let manager = manager(1);
+        let session = manager.create_session(None).expect("Bash real");
+        manager.write(&session.id, b"sleep 30\n").expect("iniciar processo");
+        thread::sleep(Duration::from_millis(150));
+        manager.write(&session.id, b"\x03").expect("SIGINT pelo PTY");
+        thread::sleep(Duration::from_millis(150));
+        manager.write(&session.id, b"printf 'AURORA_INTERRUPT_OK\n'\n").expect("comando após interrupção");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut output = Vec::new();
+        while Instant::now() < deadline {
+            for chunk in manager.read_output(&session.id, 64).expect("saída") {
+                output.extend(chunk.bytes);
+            }
+            if String::from_utf8_lossy(&output).contains("AURORA_INTERRUPT_OK") { break; }
+            thread::sleep(Duration::from_millis(20));
+        }
+        assert!(String::from_utf8_lossy(&output).contains("AURORA_INTERRUPT_OK"));
+        manager.close_session(&session.id).expect("fechar");
+    }
+
+    #[test]
+    fn historico_bash_persiste_no_workspace() {
+        let manager = manager(1);
+        let directory = std::env::temp_dir().join(format!("aurora-history-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&directory).expect("workspace temporário");
+        let session = manager.create_session(Some(directory.clone())).expect("Bash real");
+        manager.write(&session.id, b"printf 'AURORA_HISTORY_MARKER'\nexit\n").expect("comandos");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut status = TerminalSessionStatus::Running;
+        while Instant::now() < deadline {
+            status = manager.list_sessions().expect("listar")[0].status;
+            if status == TerminalSessionStatus::Exited { break; }
+            thread::sleep(Duration::from_millis(20));
+        }
+        assert_eq!(status, TerminalSessionStatus::Exited);
+        let history = std::fs::read_to_string(directory.join(".aurora_history")).expect("arquivo de histórico");
+        assert!(history.contains("AURORA_HISTORY_MARKER"));
+        let _ = std::fs::remove_dir_all(directory);
+    }
+
+
+    #[test]
+    fn aplica_diretorio_e_variaveis_por_sessao() {
+        let manager = manager(1);
+        let directory = std::env::temp_dir().join(format!("aurora-session-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&directory).expect("workspace temporário");
+        let mut environment = BTreeMap::new();
+        environment.insert("AURORA_SESSION_VALUE".to_owned(), "isolated".to_owned());
+        let session = manager.create_session_with_options(TerminalSessionOptions {
+            working_directory: Some(directory.clone()),
+            environment,
+        }).expect("sessão configurada");
+        manager.write(&session.id, b"printf '%s|%s\n' \"$AURORA_SESSION_VALUE\" \"$PWD\"\n").expect("comando");
+        let deadline = Instant::now() + Duration::from_secs(5);
+        let mut output = Vec::new();
+        while Instant::now() < deadline {
+            for chunk in manager.read_output(&session.id, 64).expect("saída") {
+                output.extend(chunk.bytes);
+            }
+            let text = String::from_utf8_lossy(&output);
+            if text.contains("isolated|") && text.contains(directory.to_string_lossy().as_ref()) { break; }
+            thread::sleep(Duration::from_millis(20));
+        }
+        let text = String::from_utf8_lossy(&output);
+        assert!(text.contains("isolated|"), "saída: {text}");
+        assert!(text.contains(directory.to_string_lossy().as_ref()), "saída: {text}");
+        manager.close_session(&session.id).expect("fechar");
+        let _ = std::fs::remove_dir_all(directory);
+    }
+
+    #[test]
+    fn rejeita_variaveis_de_ambiente_reservadas() {
+        let manager = manager(1);
+        let mut environment = BTreeMap::new();
+        environment.insert("PATH".to_owned(), "/tmp".to_owned());
+        assert!(matches!(
+            manager.create_session_with_options(TerminalSessionOptions {
+                working_directory: None,
+                environment,
+            }),
+            Err(TerminalError::InvalidConfiguration(_))
+        ));
+    }
+
     #[test]
     fn rejeita_diretorio_inexistente() {
         let manager = manager(1);

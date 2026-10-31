@@ -70,15 +70,23 @@ As senhas são verificadas com bcrypt. O token aleatório de sessão não é per
 
 O motor utiliza `portable-pty` para criar pseudo-terminais e iniciar Bash. O backend mantém o vínculo entre sessão e conta proprietária, controla tickets de uso único com expiração curta, limita entradas e verifica a origem da conexão.
 
-O diretório de trabalho padrão é `/tmp/aurora-workspaces`. A variável `AURORA_TERMINAL_WORKDIR` permite configurar outro caminho. Cada conta recebe um subdiretório próprio; em sistemas Unix, o backend aplica permissões restritas ao diretório.
+O diretório de trabalho padrão é `/tmp/aurora-workspaces`. A variável `AURORA_TERMINAL_WORKDIR` permite configurar outro caminho. Cada conta recebe um subdiretório próprio; em sistemas Unix, o backend aplica permissões restritas ao diretório. Na criação da sessão, o cliente pode informar `working_directory` (absoluto ou relativo ao workspace da conta) e um mapa `environment` de variáveis próprias da sessão. O backend canonicaliza o caminho e rejeita diretórios fora do workspace, inclusive escapes por links simbólicos. Variáveis reservadas do processo, do shell e do histórico não podem ser sobrescritas; são aceitas até 64 variáveis, com nomes limitados a 128 bytes e valores a 8 KiB.
 
 ### Limite de segurança
 
 O processo Bash é executado no host do serviço e herda as permissões do processo da API. A implementação não constitui sandbox nem isolamento forte entre processos. Por esse motivo, a autorização do terminal é administrativa. Não conceder acesso a usuários comuns e não executar código não confiável nesse ambiente.
 
+### Histórico, sinais e reconexão
+
+O Bash utiliza um histórico por workspace em `.aurora_history`, com permissões Unix `0600`, limite de 10.000 entradas em memória e 20.000 no arquivo. O arquivo de inicialização do terminal ativa `histappend` e grava novas entradas a cada prompt. Comandos iniciados por espaço são ignorados pelo padrão `ignoreboth`. O histórico é carregado por novas sessões que usam o mesmo workspace.
+
+`Ctrl+C` é enviado ao PTY como o caractere de interrupção do terminal e `Ctrl+D` como EOF. A sessão continua no processo do servidor após a desconexão do WebSocket; o cliente solicita um novo ticket de uso único para reconectar. A fila de saída limitada aplica backpressure enquanto o cliente está desconectado.
+
+O estado do processo e da sessão é mantido em memória e não sobrevive ao reinício da API. O histórico é um arquivo no workspace: só permanece após reinícios se `AURORA_TERMINAL_WORKDIR` apontar para armazenamento persistente. O padrão `/tmp/aurora-workspaces` é efêmero no serviço Render atual, que não possui disco persistente configurado.
+
 ### Interface
 
-O frontend utiliza xterm.js e seu complemento de ajuste de dimensões. A saída binária do PTY é transmitida por WebSocket e decodificada para o painel Output.
+O frontend utiliza xterm.js e seu complemento de ajuste de dimensões. A saída binária do PTY é transmitida por WebSocket e decodificada para o painel Output. A criação envia um objeto JSON com `working_directory` e `environment` opcionais.
 
 As áreas Debug Console, Problems e Ports não possuem motores conectados e não devem ser descritas como recursos operacionais.
 

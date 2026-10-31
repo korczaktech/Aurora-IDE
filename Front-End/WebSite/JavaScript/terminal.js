@@ -116,9 +116,9 @@
     }
     if(view==="output"){renderOutput(stage);return;}
     const messages={
-      debug:"O adaptador de depuração não faz parte da Fase 2.",
-      problems:"Nenhum analisador de problemas foi conectado nesta fase.",
-      ports:"Encaminhamento de portas não faz parte da Fase 2."
+      debug:"O adaptador de depuração ainda não está conectado.",
+      problems:"Nenhum analisador de problemas está conectado.",
+      ports:"O encaminhamento de portas ainda não está conectado."
     };
     stage.append(el("div","aurora-terminal-output",messages[view]||""));
   }

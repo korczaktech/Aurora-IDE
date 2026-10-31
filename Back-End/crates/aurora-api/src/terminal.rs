@@ -1,6 +1,7 @@
 use crate::state::AppState;
 use aurora_terminal::{
-    TerminalConfig, TerminalManager, TerminalSessionInfo, TerminalSessionStatus,
+    TerminalConfig, TerminalManager, TerminalSessionInfo, TerminalSessionOptions,
+    TerminalSessionStatus,
 };
 use axum::{
     extract::{
@@ -12,6 +13,7 @@ use axum::{
     routing::{delete, get, post},
     Json, Router,
 };
+use serde::Deserialize;
 use serde_json::{json, Value};
 use std::{
     collections::HashMap,
@@ -25,6 +27,13 @@ const MAX_PER_ACCOUNT: usize = 4;
 const MAX_INPUT: usize = 65_536;
 const TICKET_TTL: Duration = Duration::from_secs(30);
 const MAX_PENDING_TICKETS: usize = 512;
+
+#[derive(Debug, Deserialize)]
+struct CreateSessionRequest {
+    working_directory: Option<String>,
+    #[serde(default)]
+    environment: HashMap<String, String>,
+}
 
 struct Ticket {
     account: String,
@@ -87,6 +96,29 @@ impl TerminalRuntime {
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700))?;
         }
         Ok(path)
+    }
+
+    fn resolve_working_directory(
+        &self,
+        account_id: &str,
+        requested: Option<&str>,
+    ) -> Result<PathBuf, std::io::Error> {
+        let root = self.account_workspace(account_id)?.canonicalize()?;
+        let candidate = match requested {
+            Some(value) if !value.trim().is_empty() => {
+                let supplied = PathBuf::from(value);
+                if supplied.is_absolute() { supplied } else { root.join(supplied) }
+            }
+            _ => root.clone(),
+        };
+        let resolved = candidate.canonicalize()?;
+        if !resolved.is_dir() || !resolved.starts_with(&root) {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "o diretório precisa permanecer dentro do workspace da conta",
+            ));
+        }
+        Ok(resolved)
     }
 
     fn owns(&self, account: &str, session: &str) -> bool {
@@ -252,6 +284,7 @@ async fn list_sessions(
 async fn create_session(
     State(state): State<AppState>,
     headers: HeaderMap,
+    Json(payload): Json<CreateSessionRequest>,
 ) -> Result<(StatusCode, Json<Value>), (StatusCode, Json<Value>)> {
     let account = admin_account(&state, &headers).await?;
     let mut owners = state.terminal.owners.lock().map_err(|_| {
@@ -285,22 +318,29 @@ async fn create_session(
 
     let directory = state
         .terminal
-        .account_workspace(&account.id)
+        .resolve_working_directory(&account.id, payload.working_directory.as_deref())
         .map_err(|error| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(json!({"error":error.to_string()})),
-            )
+            let status = if error.kind() == std::io::ErrorKind::PermissionDenied {
+                StatusCode::FORBIDDEN
+            } else {
+                StatusCode::BAD_REQUEST
+            };
+            (status, Json(json!({"error":error.to_string()})))
         })?;
+    let environment = payload.environment.into_iter().collect();
     let session = state
         .terminal
         .manager
-        .create_session(Some(directory))
+        .create_session_with_options(TerminalSessionOptions {
+            working_directory: Some(directory),
+            environment,
+        })
         .map_err(|error| {
-            let status = if matches!(&error, aurora_terminal::TerminalError::SessionLimitReached) {
-                StatusCode::TOO_MANY_REQUESTS
-            } else {
-                StatusCode::INTERNAL_SERVER_ERROR
+            let status = match &error {
+                aurora_terminal::TerminalError::SessionLimitReached => StatusCode::TOO_MANY_REQUESTS,
+                aurora_terminal::TerminalError::InvalidConfiguration(_)
+                | aurora_terminal::TerminalError::InvalidWorkingDirectory(_) => StatusCode::BAD_REQUEST,
+                _ => StatusCode::INTERNAL_SERVER_ERROR,
             };
             (status, Json(json!({"error":error.to_string()})))
         })?;
@@ -597,6 +637,53 @@ mod tests {
         let runtime = TerminalRuntime::new(vec![]).unwrap();
         assert!(runtime.account_workspace("../outra-conta").is_err());
         assert!(runtime.account_workspace("conta/../../etc").is_err());
+    }
+
+
+    #[test]
+    fn sessao_permite_emitir_novo_ticket_apos_desconexao() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        let directory = runtime.account_workspace("reconnect-account").unwrap();
+        let session = runtime.manager.create_session(Some(directory)).unwrap();
+        runtime.owners.lock().unwrap().insert(
+            session.id.clone(),
+            "reconnect-account".to_owned(),
+        );
+
+        let first = runtime.ticket("reconnect-account", &session.id).unwrap();
+        let first_grant = runtime.consume(&first).expect("primeiro ticket");
+        assert_eq!(first_grant.session, session.id);
+
+        let second = runtime.ticket("reconnect-account", &session.id).unwrap();
+        let second_grant = runtime.consume(&second).expect("novo ticket");
+        assert_eq!(second_grant.session, session.id);
+        assert!(runtime.owns("reconnect-account", &session.id));
+        runtime.manager.close_session(&session.id).unwrap();
+    }
+
+    #[test]
+    fn diretorio_da_sessao_nao_escapa_do_workspace_da_conta() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        let root = runtime.account_workspace("workspace-guard").unwrap();
+        let project = root.join("project");
+        std::fs::create_dir_all(&project).unwrap();
+        let resolved = runtime
+            .resolve_working_directory("workspace-guard", Some("project"))
+            .unwrap();
+        assert_eq!(resolved, project.canonicalize().unwrap());
+        assert!(runtime
+            .resolve_working_directory("workspace-guard", Some("../"))
+            .is_err());
+        assert!(runtime
+            .resolve_working_directory("workspace-guard", Some("/tmp"))
+            .is_err());
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink("/tmp", root.join("outside")).unwrap();
+            assert!(runtime
+                .resolve_working_directory("workspace-guard", Some("outside"))
+                .is_err());
+        }
     }
 
     #[test]
