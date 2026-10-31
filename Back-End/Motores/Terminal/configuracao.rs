@@ -9,11 +9,13 @@ pub struct TerminalConfig {
     pub initial_rows: u16,
     pub environment: BTreeMap<String, String>,
 }
+
 impl Default for TerminalConfig {
     fn default() -> Self {
         Self {
             shell_path: PathBuf::from("/bin/bash"),
-            default_working_directory: env::current_dir().unwrap_or_else(|_| PathBuf::from("/")),
+            default_working_directory: env::current_dir()
+                .unwrap_or_else(|_| PathBuf::from("/")),
             max_sessions: 8,
             initial_columns: 120,
             initial_rows: 30,
@@ -21,6 +23,7 @@ impl Default for TerminalConfig {
         }
     }
 }
+
 impl TerminalConfig {
     pub fn validate(&self) -> crate::TerminalResult<()> {
         if self.max_sessions == 0 || self.initial_columns == 0 || self.initial_rows == 0 {
@@ -34,7 +37,9 @@ impl TerminalConfig {
             ));
         }
         if !self.shell_path.is_file() {
-            return Err(crate::TerminalError::ShellUnavailable(self.shell_path.display().to_string()));
+            return Err(crate::TerminalError::ShellUnavailable(
+                self.shell_path.display().to_string(),
+            ));
         }
         Ok(())
     }
