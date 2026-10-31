@@ -155,9 +155,13 @@ async fn logout(
     let database = state.database.as_ref().ok_or_else(database_unavailable)?;
     let token = bearer_token(&headers)
         .ok_or_else(|| auth_error(aurora_auth::AuthError::InvalidCredentials))?;
+    let account = aurora_auth::authenticate(database, token)
+        .await
+        .map_err(auth_error)?;
     aurora_auth::logout(database, token)
         .await
         .map_err(auth_error)?;
+    state.terminal.close_account_sessions(&account.id);
     Ok(StatusCode::NO_CONTENT)
 }
 

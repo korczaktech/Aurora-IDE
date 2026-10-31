@@ -108,6 +108,32 @@ impl TerminalRuntime {
             .and_then(|value| value.to_str().ok())
             .is_some_and(|origin| self.origins.iter().any(|allowed| allowed == origin))
     }
+
+    pub fn close_account_sessions(&self, account_id: &str) {
+        let ids: Vec<String> = self
+            .owners
+            .lock()
+            .map(|owners| {
+                owners
+                    .iter()
+                    .filter(|(_, owner)| owner.as_str() == account_id)
+                    .map(|(id, _)| id.clone())
+                    .collect()
+            })
+            .unwrap_or_default();
+
+        for id in &ids {
+            let _ = self.manager.close_session(id);
+        }
+        if let Ok(mut owners) = self.owners.lock() {
+            for id in &ids {
+                owners.remove(id);
+            }
+        }
+        if let Ok(mut tickets) = self.tickets.lock() {
+            tickets.retain(|_, ticket| ticket.account != account_id);
+        }
+    }
 }
 
 fn bearer_token(headers: &HeaderMap) -> Option<&str> {
@@ -463,5 +489,30 @@ mod tests {
         );
         assert!(runtime.consume(&key).is_some());
         assert!(runtime.consume(&key).is_none());
+    }
+
+    #[test]
+    fn logout_fecha_sessoes_e_invalida_tickets_da_conta() {
+        let runtime = TerminalRuntime::new(vec![]).unwrap();
+        let directory = runtime.account_workspace("account-a").unwrap();
+        let session = runtime.manager.create_session(Some(directory)).unwrap();
+        runtime
+            .owners
+            .lock()
+            .unwrap()
+            .insert(session.id.clone(), "account-a".to_owned());
+        runtime.tickets.lock().unwrap().insert(
+            "one-time-ticket".to_owned(),
+            Ticket {
+                account: "account-a".to_owned(),
+                session: session.id.clone(),
+                expires: Instant::now() + Duration::from_secs(30),
+            },
+        );
+
+        runtime.close_account_sessions("account-a");
+
+        assert!(!runtime.owns("account-a", &session.id));
+        assert!(runtime.consume("one-time-ticket").is_none());
     }
 }
