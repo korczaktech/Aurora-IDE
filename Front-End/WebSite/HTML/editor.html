@@ -46,7 +46,49 @@
     <div class="header-actions" aria-hidden="true"></div>
   </header>
 
-  <main class="editor-workspace" aria-label="Área de desenvolvimento"></main>
+  <main class="editor-workspace" aria-label="Área de desenvolvimento">
+    <aside class="file-sidebar" id="fileSidebar" aria-label="Explorador de arquivos">
+      <div class="file-sidebar-heading">
+        <span>EXPLORADOR</span>
+        <button class="sidebar-action" id="collapseTree" type="button" aria-label="Recolher árvore" title="Recolher árvore">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5 8 10l5-4.5" /></svg>
+        </button>
+      </div>
+      <div class="project-tree">
+        <button class="tree-row tree-project" type="button" aria-expanded="true" data-tree-toggle="project">
+          <span class="tree-chevron" aria-hidden="true">⌄</span>
+          <span class="tree-folder-icon" aria-hidden="true"></span>
+          <span class="tree-label">Meu projeto</span>
+        </button>
+        <div class="tree-children" data-tree-children="project">
+          <button class="tree-row tree-folder" type="button" aria-expanded="true" data-tree-toggle="src">
+            <span class="tree-chevron" aria-hidden="true">⌄</span>
+            <span class="tree-folder-icon" aria-hidden="true"></span>
+            <span class="tree-label">src</span>
+          </button>
+          <div class="tree-children tree-nested" data-tree-children="src">
+            <button class="tree-row tree-file is-selected" type="button" data-tree-file="index.html">
+              <span class="tree-file-icon html" aria-hidden="true">5</span><span class="tree-label">index.html</span>
+            </button>
+            <button class="tree-row tree-file" type="button" data-tree-file="style.css">
+              <span class="tree-file-icon css" aria-hidden="true">▧</span><span class="tree-label">style.css</span>
+            </button>
+            <button class="tree-row tree-file" type="button" data-tree-file="script.js">
+              <span class="tree-file-icon js" aria-hidden="true">JS</span><span class="tree-label">script.js</span>
+            </button>
+          </div>
+          <button class="tree-row tree-folder" type="button" aria-expanded="false" data-tree-toggle="assets">
+            <span class="tree-chevron" aria-hidden="true">›</span>
+            <span class="tree-folder-icon" aria-hidden="true"></span>
+            <span class="tree-label">assets</span>
+          </button>
+          <div class="tree-children tree-nested" data-tree-children="assets" hidden></div>
+        </div>
+      </div>
+      <div class="file-sidebar-footer"><span class="status-dot"></span> Arquivos do projeto</div>
+    </aside>
+    <section class="editor-empty-area" aria-label="Área de edição"></section>
+  </main>
 
   <script>
     (() => {
@@ -145,9 +187,35 @@
         if (menuState === "returning") finishMenuReturn();
       });
 
+      const fileSidebar = document.getElementById("fileSidebar");
+      const collapseTree = document.getElementById("collapseTree");
+      collapseTree.addEventListener("click", () => {
+        const collapsed = fileSidebar.classList.toggle("is-collapsed");
+        collapseTree.setAttribute("aria-label", collapsed ? "Expandir árvore" : "Recolher árvore");
+        collapseTree.title = collapsed ? "Expandir árvore" : "Recolher árvore";
+      });
+      fileSidebar.addEventListener("click", event => {
+        const toggle = event.target.closest("[data-tree-toggle]");
+        if (toggle) {
+          const key = toggle.dataset.treeToggle;
+          const children = fileSidebar.querySelector(`[data-tree-children="${key}"]`);
+          if (!children) return;
+          const expanded = toggle.getAttribute("aria-expanded") === "true";
+          toggle.setAttribute("aria-expanded", String(!expanded));
+          children.hidden = expanded;
+          const chevron = toggle.querySelector(".tree-chevron");
+          if (chevron) chevron.textContent = expanded ? "›" : "⌄";
+          return;
+        }
+        const file = event.target.closest("[data-tree-file]");
+        if (!file) return;
+        fileSidebar.querySelectorAll("[data-tree-file]").forEach(item => item.classList.toggle("is-selected", item === file));
+      });
+
       toolRail.addEventListener("click", event => {
         const selected = event.target.closest("[data-tool]");
         if (!selected) return;
+        if (selected.dataset.tool === "files") fileSidebar.classList.toggle("is-collapsed");
         toolRail.querySelectorAll("[data-tool]").forEach(button => {
           const active = button === selected;
           button.classList.toggle("is-active", active);
