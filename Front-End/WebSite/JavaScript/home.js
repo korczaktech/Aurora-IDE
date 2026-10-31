@@ -125,9 +125,9 @@
       '<div class="palette-row"><span class="palette-swatch swatch-night"></span><div><strong>Noite profunda</strong><small>#050708 · Fundo principal</small></div><span class="palette-role">BASE</span></div><div class="palette-row"><span class="palette-swatch swatch-forest"></span><div><strong>Floresta boreal</strong><small>#174D3D · Luz ambiente</small></div><span class="palette-role">LUZ</span></div><div class="palette-row"><span class="palette-swatch swatch-mint"></span><div><strong>Verde aurora</strong><small>#82CBB0 · Destaques</small></div><span class="palette-role">ACENTO</span></div><div class="section-heading appearance-options-heading"><span>PREFERÊNCIAS</span></div>',
       '<label class="preference-line"><span><strong>Animações ambientais</strong><small>Movimento suave das luzes de fundo.</small></span><input class="switch" type="checkbox" checked data-setting="animations"></label><label class="preference-line"><span><strong>Contraste elevado</strong><small>Reforça a leitura de textos e divisórias.</small></span><input class="switch" type="checkbox" data-setting="contrast"></label><label class="preference-line"><span><strong>Interface compacta</strong><small>Reduz os espaços entre elementos.</small></span><input class="switch" type="checkbox" data-setting="compact"></label></section></div>'
     ].join("")},
-    atividade:{title:"Atividade",eyebrow:"HISTÓRICO DA ESTAÇÃO",lead:"Acompanhe os eventos registrados nesta experiência do Aurora.",render:()=>[
-      '<div class="activity-overview"><div class="activity-metric"><span class="micro-label">SESSÃO ATUAL</span><strong>01</strong><small>Ambiente em execução</small></div><div class="activity-metric"><span class="micro-label">PROJETOS VISÍVEIS</span><strong>01</strong><small>Aurora Playground</small></div><div class="activity-metric"><span class="micro-label">ARMAZENAMENTO</span><strong class="metric-word">Local</strong><small>Sem sincronização em nuvem</small></div><div class="activity-metric activity-status"><span class="micro-label">ESTADO DO AMBIENTE</span><strong><i></i> Operacional</strong><small>Interface carregada neste navegador</small></div></div>',
-      '<div class="activity-timeline-head"><div><span class="micro-label">REGISTRO DE EVENTOS</span><h2>O que aconteceu</h2></div><span class="timeline-date">SESSÃO ATUAL</span></div><div class="activity-timeline"><div class="activity-event"><span class="event-node"></span><time>AGORA</time><div><strong>Ambiente Aurora aberto</strong><p>A estação foi iniciada neste navegador.</p></div><span class="event-kind">SISTEMA</span></div><div class="activity-event"><span class="event-node"></span><time>INÍCIO</time><div><strong>Aurora Playground disponível</strong><p>Projeto experimental carregado na área de trabalho.</p></div><span class="event-kind">PROJETO</span></div><div class="activity-event"><span class="event-node"></span><time>INÍCIO</time><div><strong>Interface preparada</strong><p>Navegação e ambiente visual inicializados.</p></div><span class="event-kind">SISTEMA</span></div></div>'
+    atividade:{title:"Atividade",eyebrow:"HISTÓRICO DA ESTAÇÃO",lead:"Acompanhe os eventos realmente registrados enquanto você utiliza o Aurora.",render:()=>[
+      '<div class="activity-overview"><div class="activity-metric"><span class="micro-label">SESSÃO ATUAL</span><strong>01</strong><small>Esta aba do navegador</small></div><div class="activity-metric"><span class="micro-label">PROJETOS</span><strong id="activity-project-count">00</strong><small>Projetos registrados nesta estação</small></div><div class="activity-metric"><span class="micro-label">ANOTAÇÕES</span><strong id="activity-note-count">00</strong><small>Anotações disponíveis</small></div><div class="activity-metric activity-status"><span class="micro-label">ARMAZENAMENTO</span><strong id="activity-storage-state">Local</strong><small>Dados neste dispositivo ou nesta sessão</small></div></div>',
+      '<div class="activity-timeline-head"><div><span class="micro-label">REGISTRO DE EVENTOS</span><h2>O que aconteceu</h2></div><div class="activity-tools"><span class="timeline-date" id="activity-event-count">00 EVENTOS</span><button class="text-action" type="button" data-action="clear-activity">Limpar histórico</button></div></div><div class="activity-timeline" id="activity-event-list" aria-live="polite"></div>'
     ].join("")},
     sobre:{title:"Sobre o Aurora",eyebrow:"IDENTIDADE DO PRODUTO",lead:"Uma estação criada para dar espaço às ideias e ferramentas para transformá-las em sistemas.",render:()=>[
       '<section class="about-hero"><div class="about-word">Aurora<span>.</span></div><div class="about-definition"><span class="micro-label">EDS · ESTAÇÃO DE DESENVOLVIMENTO DE SISTEMAS</span><h2>Um ambiente para pensar, experimentar e construir.</h2><p>O Aurora reúne a experiência de desenvolvimento em um espaço coerente, com foco em clareza, autonomia e evolução técnica.</p></div><div class="about-coordinate">KORCZAK TECHNOLOGIES<br>PRODUCT / 001</div></section>',
@@ -136,9 +136,9 @@
     ].join("")},
     configuracoes:{title:"Configurações",eyebrow:"PREFERÊNCIAS DA ESTAÇÃO",lead:"Gerencie o comportamento da interface e consulte o estado dos recursos disponíveis.",render:()=>[
       '<div class="settings-layout"><nav class="settings-index"><span class="micro-label">CATEGORIAS</span><a class="settings-nav-active" href="#settings-general">Geral <span>01</span></a><a href="#settings-privacy">Conta e privacidade <span>02</span></a><a href="#settings-storage">Armazenamento <span>03</span></a></nav><div class="settings-content">',
-      '<section id="settings-general" class="settings-group"><div class="section-heading"><span>GERAL</span><span>01</span></div><label class="preference-line"><span><strong>Abrir na página inicial</strong><small>Iniciar o Aurora na seção Início.</small></span><input class="switch" type="checkbox" checked data-setting="start-home"></label><label class="preference-line"><span><strong>Confirmar ações importantes</strong><small>Solicitar confirmação antes de ações destrutivas.</small></span><input class="switch" type="checkbox" checked data-setting="confirm"></label><label class="preference-line"><span><strong>Salvar preferências neste dispositivo</strong><small>Manter suas escolhas neste navegador.</small></span><input class="switch" type="checkbox" checked data-setting="local"></label></section>',
-      '<section id="settings-privacy" class="settings-group"><div class="section-heading"><span>CONTA E PRIVACIDADE</span><span>02</span></div><div class="settings-info-line"><div><strong>Conta Aurora</strong><small>Autenticação ainda não está disponível nesta prévia.</small></div><span class="setting-state">NÃO CONECTADA</span></div><div class="settings-info-line"><div><strong>Sincronização</strong><small>Seus dados não estão sendo enviados para um servidor.</small></div><span class="setting-state">INATIVA</span></div></section>',
-      '<section id="settings-storage" class="settings-group"><div class="section-heading"><span>ARMAZENAMENTO</span><span>03</span></div><div class="settings-info-line"><div><strong>Anotações</strong><small>Salvas no armazenamento local do navegador.</small></div><span class="setting-state setting-local">LOCAL</span></div><div class="settings-info-line"><div><strong>Repositórios</strong><small>Endereços mantidos durante a sessão atual.</small></div><span class="setting-state setting-local">SESSÃO</span></div></section></div></div>'
+      '<section id="settings-general" class="settings-group"><div class="section-heading"><span>GERAL</span><span>01</span></div><label class="preference-line"><span><strong>Abrir na página inicial</strong><small>Começar pela Início; desativado, retoma a última seção visitada.</small></span><input class="switch" type="checkbox" data-setting="start-home"></label><label class="preference-line"><span><strong>Confirmar ações importantes</strong><small>Pedir confirmação antes de limpar o histórico de atividade.</small></span><input class="switch" type="checkbox" data-setting="confirm"></label><label class="preference-line"><span><strong>Salvar preferências neste dispositivo</strong><small>Manter suas escolhas após fechar e reabrir o navegador.</small></span><input class="switch" type="checkbox" data-setting="local"></label></section>',
+      '<section id="settings-privacy" class="settings-group"><div class="section-heading"><span>CONTA E PRIVACIDADE</span><span>02</span></div><div class="settings-info-line"><div><strong>Conta Aurora</strong><small>Autenticação e perfil ainda dependem da integração de conta.</small></div><span class="setting-state">NÃO CONECTADA</span></div><div class="settings-info-line"><div><strong>Sincronização</strong><small>Nenhum dado é enviado a um servidor nesta versão frontend.</small></div><span class="setting-state">INATIVA</span></div><div class="settings-info-line"><div><strong>Preferências locais</strong><small>Você controla se as preferências ficam salvas neste navegador.</small></div><span class="setting-state setting-local">SOB SEU CONTROLE</span></div></section>',
+      '<section id="settings-storage" class="settings-group"><div class="section-heading"><span>ARMAZENAMENTO</span><span>03</span></div><div class="settings-info-line"><div><strong>Anotações</strong><small>Conteúdo mantido no armazenamento do navegador.</small></div><span class="setting-state setting-local" id="settings-notes-status">LOCAL</span></div><div class="settings-info-line"><div><strong>Projetos</strong><small>Projetos criados nesta estação.</small></div><span class="setting-state setting-local" id="settings-projects-status">LOCAL</span></div><div class="settings-info-line"><div><strong>Histórico de atividade</strong><small>Eventos recentes registrados pelo Aurora.</small></div><span class="setting-state setting-local" id="settings-activity-status">LOCAL</span></div></section></div></div>'
     ].join("")}
   };
 
@@ -155,6 +155,62 @@
     const old = document.querySelector(".page-toast"); if (old) old.remove();
     const toast = document.createElement("div"); toast.className = "page-toast"; toast.textContent = message;
     document.body.appendChild(toast); window.setTimeout(() => toast.remove(), 2600);
+  };
+
+  const settingDefaults = { animations: true, contrast: false, compact: false, "start-home": true, confirm: true, local: true };
+  const getSetting = key => {
+    const saved = storageGet("aurora-setting-" + key);
+    return saved === null ? settingDefaults[key] : saved === "true";
+  };
+  const saveSetting = (key, value) => {
+    if (key === "local" || getSetting("local")) storageSet("aurora-setting-" + key, String(value));
+  };
+  const applyAppearance = () => {
+    document.body.classList.toggle("aurora-no-motion", !getSetting("animations"));
+    document.body.classList.toggle("aurora-high-contrast", getSetting("contrast"));
+    document.body.classList.toggle("aurora-compact-ui", getSetting("compact"));
+  };
+  const hydrateSettings = () => {
+    main.querySelectorAll("[data-setting]").forEach(input => { input.checked = getSetting(input.dataset.setting); });
+    applyAppearance();
+  };
+
+  let activityEvents = [];
+  try {
+    const storedActivity = JSON.parse(storageGet("aurora-activity", "[]"));
+    if (Array.isArray(storedActivity)) activityEvents = storedActivity.filter(item => item && typeof item.title === "string").slice(0, 100);
+  } catch (_) { activityEvents = []; }
+  const recordActivity = (title, description, kind = "SISTEMA") => {
+    const event = { title, description, kind, at: new Date().toISOString() };
+    activityEvents.unshift(event);
+    activityEvents = activityEvents.slice(0, 100);
+    if (getSetting("local")) storageSet("aurora-activity", JSON.stringify(activityEvents));
+  };
+  const formatActivityTime = value => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "AGORA";
+    return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }).format(date).toUpperCase();
+  };
+  const renderActivity = () => {
+    const list = main.querySelector("#activity-event-list");
+    if (!list) return;
+    const count = main.querySelector("#activity-event-count");
+    const projectMetric = main.querySelector("#activity-project-count");
+    const noteMetric = main.querySelector("#activity-note-count");
+    const storageMetric = main.querySelector("#activity-storage-state");
+    if (count) count.textContent = String(activityEvents.length).padStart(2, "0") + " EVENTOS";
+    if (projectMetric) projectMetric.textContent = String(projects.length).padStart(2, "0");
+    if (noteMetric) noteMetric.textContent = String(notes.length).padStart(2, "0");
+    if (storageMetric) storageMetric.textContent = getSetting("local") ? "Local" : "Sessão";
+    list.innerHTML = activityEvents.length ? activityEvents.map(item => `<div class="activity-event"><span class="event-node"></span><time>${escapeHTML(formatActivityTime(item.at))}</time><div><strong>${escapeHTML(item.title)}</strong><p>${escapeHTML(item.description || "")}</p></div><span class="event-kind">${escapeHTML(item.kind || "SISTEMA")}</span></div>`).join("") : '<div class="empty-state"><strong>Nenhuma atividade registrada</strong><p>Suas ações nesta estação aparecerão aqui.</p></div>';
+  };
+  const refreshStorageStatus = () => {
+    const notesStatus = main.querySelector("#settings-notes-status");
+    const projectsStatus = main.querySelector("#settings-projects-status");
+    const activityStatus = main.querySelector("#settings-activity-status");
+    if (notesStatus) notesStatus.textContent = getSetting("local") ? `${notes.length} NOTA(S) · LOCAL` : `${notes.length} NOTA(S) · SESSÃO`;
+    if (projectsStatus) projectsStatus.textContent = getSetting("local") ? `${projects.length} PROJETO(S) · LOCAL` : `${projects.length} PROJETO(S) · SESSÃO`;
+    if (activityStatus) activityStatus.textContent = getSetting("local") ? "LOCAL" : "SESSÃO";
   };
   let notes = [];
   try { notes = JSON.parse(storageGet("aurora-notes", "[]")); } catch {}
@@ -178,6 +234,7 @@
     main.innerHTML = key === "inicio" ? homeMarkup : `<div class="main-atmosphere" aria-hidden="true"><span class="star star-a"></span><span class="star star-b"></span><span class="star star-c"></span><div class="aurora-ribbon ribbon-one"></div><div class="aurora-ribbon ribbon-two"></div><div class="aurora-ribbon ribbon-three"></div></div><div class="page-shell"><div class="page-eyebrow">${page.eyebrow}</div><h1 class="page-title">${page.title}</h1><p class="page-lead">${page.lead}</p>${page.render()}</div>`;
     if (projectsSidebar) projectsSidebar.hidden = key !== "inicio";
     document.title = "Aurora EDS — " + page.title;
+    if (getSetting("local")) storageSet("aurora-last-page", key);
     if (key === "propriedades") {
       const project = selectedProject();
       const title = main.querySelector(".page-title");
@@ -198,6 +255,14 @@
     if (key === "projetos") renderProjectList();
     if (key === "anotacoes") renderNotes();
     if (key === "repositorios") renderRepos();
+    if (key === "aparencia" || key === "configuracoes") hydrateSettings();
+    if (key === "atividade") renderActivity();
+    if (key === "configuracoes") refreshStorageStatus();
+    if (key !== "atividade" && key !== "inicio") {
+      recordActivity("Seção aberta: " + page.title, "Você acessou esta área do Aurora.", "NAVEGAÇÃO");
+    }
+    if (key === "atividade") renderActivity();
+    if (key === "configuracoes") refreshStorageStatus();
     main.scrollTop = 0;
   };
 
@@ -259,6 +324,7 @@
       project.modifiedAt = new Date().toISOString();
       persistProjects();
       renderProjectSidebar();
+      recordActivity("Projeto atualizado: " + project.name, "Nome ou descrição do projeto foram alterados.", "PROJETO");
       const modified = document.getElementById("project-modified");
       if (modified) modified.textContent = new Intl.DateTimeFormat("pt-BR",{dateStyle:"long",timeStyle:"short"}).format(new Date(project.modifiedAt));
       notify("Alterações salvas neste navegador.");
@@ -281,7 +347,15 @@
       persistProjects();
       renderProjectList();
       renderProjectSidebar();
+      recordActivity("Projeto criado: " + project.name, "Um novo projeto foi adicionado à estação.", "PROJETO");
       notify("Projeto criado e salvo neste navegador.");
+    }
+    if (action === "clear-activity") {
+      if (getSetting("confirm") && !window.confirm("Deseja limpar todo o histórico de atividade deste navegador?")) return;
+      activityEvents = [];
+      if (getSetting("local")) storageSet("aurora-activity", "[]");
+      renderActivity();
+      notify("Histórico de atividade limpo.");
     }
     if (action === "new-note") { document.getElementById("note-title").value = ""; document.getElementById("note-body").value = ""; document.getElementById("note-title").focus(); }
     if (action === "save-note") {
@@ -289,8 +363,9 @@
       const body = document.getElementById("note-body").value.trim();
       if (!title && !body) { notify("Escreva algo antes de salvar."); return; }
       notes.unshift({ title, body, updatedAt:Date.now() });
-      storageSet("aurora-notes", JSON.stringify(notes));
-      renderNotes(); notify("Anotação salva neste navegador.");
+      if (getSetting("local")) storageSet("aurora-notes", JSON.stringify(notes));
+      recordActivity("Anotação salva: " + (title || "Sem título"), "Uma anotação foi criada nesta estação.", "ANOTAÇÃO");
+      renderNotes(); notify(getSetting("local") ? "Anotação salva neste navegador." : "Anotação disponível nesta sessão.");
     }
     if (action === "extension") { event.target.closest("button").textContent = "Solicitada"; event.target.closest("button").disabled = true; notify("Extensão marcada para instalação futura."); }
   });
@@ -312,7 +387,29 @@
   main.addEventListener("change", event => {
     if (event.target.matches("[data-project-setting]")) storageSet("aurora-project-setting-" + event.target.dataset.projectSetting, String(event.target.checked));
     if (event.target.id === "project-theme" || event.target.id === "project-font") storageSet("aurora-" + event.target.id, event.target.value);
-    if (event.target.matches("[data-setting]")) storageSet("aurora-setting-" + event.target.dataset.setting, String(event.target.checked));
+    if (event.target.matches("[data-setting]")) {
+      const key = event.target.dataset.setting;
+      saveSetting(key, event.target.checked);
+      if (key === "local" && !event.target.checked) {
+        ["animations","contrast","compact","start-home","confirm"].forEach(name => { try { window.localStorage.removeItem("aurora-setting-" + name); } catch (_) {} });
+      }
+      applyAppearance();
+      recordActivity("Preferência alterada: " + key, "Uma opção da estação foi atualizada.", "PREFERÊNCIA");
+      if (key === "local") {
+        notify(event.target.checked ? "Preferências serão salvas neste dispositivo." : "Preferências serão mantidas somente nesta sessão.");
+        refreshStorageStatus();
+      }
+      if (main.querySelector("#activity-event-list")) renderActivity();
+    }
+  });
+  main.addEventListener("click", event => {
+    const settingsLink = event.target.closest('.settings-index a[href^="#settings-"]');
+    if (settingsLink) {
+      event.preventDefault();
+      const target = main.querySelector(settingsLink.getAttribute("href"));
+      if (target) target.scrollIntoView({ behavior: getSetting("animations") ? "smooth" : "auto", block: "start" });
+      main.querySelectorAll(".settings-index a").forEach(link => link.classList.toggle("settings-nav-active", link === settingsLink));
+    }
   });
   main.addEventListener("submit", event => {
     if (event.target.id !== "repo-form") return;
@@ -323,5 +420,11 @@
     repos.push({ name, url }); renderRepos(); event.target.reset(); notify("Endereço registrado nesta sessão.");
   });
   renderProjectSidebar();
-  showPage("inicio");
+  recordActivity("Ambiente Aurora aberto", "A estação foi iniciada neste navegador.", "SISTEMA");
+  const rememberedPage = storageGet("aurora-last-page", "inicio");
+  const initialPage = getSetting("start-home") ? "inicio" : (Object.prototype.hasOwnProperty.call(pages, rememberedPage) ? rememberedPage : "inicio");
+  showPage(initialPage);
+  window.addEventListener("beforeunload", () => {
+    if (getSetting("local")) storageSet("aurora-last-page", document.querySelector(".rail-item.is-active")?.dataset.page || "inicio");
+  });
 })();
