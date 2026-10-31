@@ -227,7 +227,8 @@ impl MongoStorage {
         &self,
         token_hash: &str,
     ) -> mongodb::error::Result<Option<String>> {
-        let session = self.sessions_collection()
+        let session = self
+            .sessions_collection()
             .find_one(doc! {
                 "tokenHash": token_hash,
                 "revokedAt": mongodb::bson::Bson::Null,
@@ -235,9 +236,7 @@ impl MongoStorage {
             })
             .await?;
 
-        Ok(session.and_then(|document| {
-            document.get_str("accountId").ok().map(str::to_owned)
-        }))
+        Ok(session.and_then(|document| document.get_str("accountId").ok().map(str::to_owned)))
     }
 
     pub async fn touch_session(&self, token_hash: &str) -> mongodb::error::Result<()> {
