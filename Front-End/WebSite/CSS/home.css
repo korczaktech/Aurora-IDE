@@ -91,3 +91,17 @@
   linear-gradient(155deg,transparent 8%,rgba(31,91,169,.15) 29%,transparent 48%),
   linear-gradient(25deg,transparent 52%,rgba(19,72,153,.2) 70%,transparent 89%)}
 @media(prefers-reduced-motion:reduce){.main-atmosphere:before,.main-atmosphere:after{animation:none}}
+
+
+/* Ajuste fino: iluminação ambiente mais suave e controle da navegação visível */
+.main-atmosphere:before{opacity:.38;filter:blur(34px)}
+.main-atmosphere:after{opacity:.3;filter:blur(42px)}
+.ribbon-one{opacity:.2;filter:blur(42px)}
+.ribbon-two{opacity:.15;filter:blur(44px)}
+.ribbon-three{opacity:.11;filter:blur(46px)}
+.home-main{background:radial-gradient(ellipse at 52% 52%,rgba(18,67,42,.12),transparent 48%),radial-gradient(ellipse at 18% 8%,rgba(12,49,36,.07),transparent 36%),#050708}
+.left-rail:before{opacity:.34;filter:blur(16px)}
+.left-rail{background:radial-gradient(ellipse at 5% 18%,rgba(29,100,190,.13),transparent 43%),radial-gradient(ellipse at 92% 54%,rgba(20,76,165,.1),transparent 47%),linear-gradient(180deg,rgba(5,13,29,.98),rgba(4,9,20,.99) 58%,rgba(4,10,24,.98))}
+.rail-toggle{position:absolute;top:17px;right:13px;z-index:3;width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(120,151,183,.18);border-radius:5px;background:rgba(10,20,34,.72);color:#9aafca;cursor:pointer}
+.rail-toggle svg{display:block;width:15px;height:15px;stroke:currentColor;stroke-width:1.8;fill:none}
+.rail-toggle:hover{color:#e0ebf7;background:rgba(28,51,79,.9);border-color:rgba(130,169,211,.4)}
