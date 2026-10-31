@@ -6,3 +6,8 @@ license.workspace = true
 
 [dependencies]
 serde.workspace = true
+mongodb.workspace = true
+uuid.workspace = true
+bcrypt.workspace = true
+sha2.workspace = true
+aurora-storage-mongodb = { path = "../aurora-storage-mongodb" }
