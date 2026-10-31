@@ -56,8 +56,8 @@
         let message;try{message=JSON.parse(event.data);}catch(_){return;}
         if(message.type==="ready"){status("Conectado · Bash real");}
         else if(message.type==="output"){terminal?.write(message.data||"");}
-        else if(message.type==="error"){terminal?.write("\r\n\x1b[31m[Aurora] "+message.message+"\x1b[0m\r\n");}
-        else if(message.type==="exit"){status("Processo encerrado · código "+(message.exit_code??"indisponível"));terminal?.write("\r\n\x1b[90m[Processo encerrado]\x1b[0m\r\n");}
+        else if(message.type==="error"){const line="\r\n[Aurora] "+message.message+"\r\n";terminal?.write("\r\n\x1b[31m"+line+"\x1b[0m");appendOutput(session.id,line);}
+        else if(message.type==="exit"){const decoder=outputDecoders.get(session.id);if(decoder)appendOutput(session.id,decoder.decode());status("Processo encerrado · código "+(message.exit_code??"indisponível"));terminal?.write("\r\n\x1b[90m[Processo encerrado]\x1b[0m\r\n");}
       };
       socket.onerror=()=>status("Erro na conexão");
       socket.onclose=()=>{if(!closed)status("Desconectado · use Reconectar");};
