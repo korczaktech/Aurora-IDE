@@ -696,3 +696,31 @@ body {
 .editor-terminal-integrated .editor-terminal-form input{padding:10px 12px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace}
 .terminal-prompt{color:#8fe0b4;font:15px ui-monospace,monospace}
 @media(max-width:700px){.editor-terminal-open .editor-workspace{height:calc(100% - var(--header-height) - 240px)}.editor-terminal-integrated{left:210px;right:0;bottom:0;height:240px;max-height:240px}.editor-terminal-integrated .editor-panel-heading{padding:12px 13px}.editor-terminal-integrated .editor-panel-content{padding:8px}}
+
+/* Aurora terminal workbench — painel inferior inspirado em IDEs */
+.aurora-terminal-workbench{display:flex;flex:1;min-height:0;flex-direction:column;gap:0;width:100%;color:#c9d8d1;font:11px/1.5 Inter,ui-sans-serif,system-ui,sans-serif}
+.aurora-terminal-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:36px;padding:0 2px 8px;border-bottom:1px solid #1b2b2c}
+.aurora-terminal-toolbar-left,.aurora-terminal-toolbar-right{display:flex;align-items:center;gap:7px}
+.aurora-terminal-new{padding:6px 10px;border:1px solid #315343;border-radius:3px;background:#14271f;color:#a5e5c2;font-size:10px;cursor:pointer}
+.aurora-terminal-picker{max-width:190px;padding:6px 9px;border:1px solid #263638;border-radius:3px;background:#0a1214;color:#c9d8d1;font-size:10px}
+.aurora-terminal-icon{width:27px;height:26px;border:1px solid #263638;border-radius:3px;background:#0d1719;color:#9aada4;cursor:pointer}
+.aurora-terminal-main{display:flex;flex:1;min-height:0;padding-top:8px}
+.aurora-terminal-sessions{display:flex;flex:0 0 142px;flex-direction:column;gap:3px;overflow:auto;padding:4px 8px 4px 0;border-right:1px solid #1b2b2c}
+.aurora-terminal-session{width:100%;padding:8px 7px;border:1px solid transparent;border-radius:3px;background:transparent;color:#82958c;text-align:left;font-size:10px;cursor:pointer}
+.aurora-terminal-session:hover,.aurora-terminal-session.is-active{border-color:#263b36;background:#101d1a;color:#a9e2c1}
+.aurora-terminal-session-add{margin-top:3px;text-align:center;font-size:15px}
+.aurora-terminal-content{display:flex;flex:1;min-width:0;min-height:0;flex-direction:column;padding-left:10px}
+.aurora-terminal-tabs{display:flex;flex:0 0 auto;gap:2px;overflow-x:auto;border-bottom:1px solid #1b2b2c}
+.aurora-terminal-tab{padding:7px 10px;border:0;border-bottom:2px solid transparent;background:transparent;color:#74877e;font-size:9px;letter-spacing:.045em;white-space:nowrap;cursor:pointer}
+.aurora-terminal-tab.is-active{border-bottom-color:#78d8ad;color:#b5e8ca}
+.aurora-terminal-stage{display:flex;flex:1;min-height:0;flex-direction:column;padding-top:8px}
+.aurora-terminal-output{flex:1;min-height:0;overflow:auto;padding:8px 10px;background:#050a0b;color:#c5d5cd;font:11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.aurora-terminal-stage .editor-terminal-form{display:flex;flex:0 0 auto;align-items:center;gap:8px;margin:7px 0 0}
+.aurora-terminal-input{flex:1;min-width:0;padding:9px 10px;border:1px solid #263638;border-radius:3px;background:#070e10;color:#e2eee7;font:11px ui-monospace,monospace;outline:none}
+.aurora-terminal-input:focus{border-color:#477e68}
+.aurora-terminal-stage .editor-terminal-form button{padding:8px 11px;border:1px solid #315343;border-radius:3px;background:#14271f;color:#a5e5c2;font-size:10px;cursor:pointer}
+.aurora-terminal-empty{display:flex;flex:1;align-items:center;justify-content:center;flex-direction:column;gap:7px;color:#8fa198;text-align:center}
+.aurora-terminal-empty p{margin:0;color:#667a71;font-size:10px}
+.aurora-terminal-empty-icon{color:#79d8ad;font-size:24px}
+.aurora-terminal-status{display:flex;justify-content:space-between;gap:12px;padding:5px 2px 0;color:#6f857a;font-size:9px}
+@media(max-width:700px){.aurora-terminal-sessions{flex-basis:94px}.aurora-terminal-session{font-size:9px;padding:7px 4px}.aurora-terminal-toolbar{gap:5px}.aurora-terminal-picker{max-width:125px}.aurora-terminal-tab{padding:7px 6px;font-size:8px}}
