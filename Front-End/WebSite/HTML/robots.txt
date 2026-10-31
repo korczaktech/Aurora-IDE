@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://korczaktech.github.io/Aurora-IDE/sitemap.xml
+Sitemap: https://aurora.korczaktech.com.br/sitemap.xml
