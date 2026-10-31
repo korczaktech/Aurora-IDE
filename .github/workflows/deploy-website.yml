@@ -43,6 +43,15 @@ jobs:
             echo "mode=placeholder" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Validate website JavaScript
+        if: steps.detect.outputs.mode == 'static' || steps.detect.outputs.mode == 'root'
+        shell: bash
+        run: |
+          while IFS= read -r file; do
+            echo "Validando $file"
+            node --check "$file"
+          done < <(find Front-End/WebSite -type f -name '*.js' -not -path '*/node_modules/*' | sort)
+
       - name: Setup Node.js
         if: steps.detect.outputs.mode == 'react'
         uses: actions/setup-node@v4
