@@ -41,7 +41,13 @@ body {
 .header-start, .header-actions { display: flex; align-items: center; }
 .header-start { justify-content: flex-start; min-width: 0; }
 .header-actions { justify-content: flex-end; }
-.menu-mark { position: relative; z-index: 4; display: grid; flex: 0 0 38px; place-items: center; width: 38px; height: 38px; }
+.menu-mark { position: relative; z-index: 4; display: block; flex: 0 0 36px; width: 36px; height: 38px; }
+.menu-back-button { position: absolute; z-index: 5; top: 11px; left: 0; display: grid; place-items: center; width: 14px; height: 16px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.menu-back-button img { display: block; width: 13px; height: 13px; object-fit: contain; }
+.menu-back-button:disabled { opacity: .32; cursor: default; }
+.menu-back-button:not(:disabled):hover img { transform: translateX(-2px); }
+.menu-back-button img { transition: transform 140ms ease; }
+.menu-back-button:focus-visible { outline: 1px solid var(--header-line); outline-offset: 2px; border-radius: 2px; }
 .editor-tool-rail { display: flex; align-items: center; gap: 3px; min-width: 0; margin-left: 0; opacity: 0; visibility: hidden; pointer-events: none; transform: translateX(-8px); }
 .editor-tool-rail.is-visible { margin-left: 8px; opacity: 1; visibility: visible; pointer-events: auto; transform: translateX(0); transition: opacity 260ms ease, transform 260ms ease, margin-left 260ms ease; }
 .tool-icon { display: grid; place-items: center; width: 32px; height: 34px; padding: 7px; border: 1px solid transparent; border-radius: 4px; background: transparent; cursor: pointer; }
@@ -68,7 +74,7 @@ body {
   outline: none;
 }
 .icon-button:focus-visible { outline: 1px solid var(--header-line); outline-offset: 2px; }
-.menu-motion-icon { display: block; width: 20px; height: 20px; overflow: visible; }
+.menu-motion-icon { position: absolute; top: 9px; right: 0; display: block; width: 20px; height: 20px; overflow: visible; }
 .menu-line {
   fill: none;
   stroke: var(--header-line);
@@ -86,6 +92,19 @@ body {
  .menu-mark.is-open .menu-line-middle {
   animation: menu-middle-journey 1500ms cubic-bezier(.2,.75,.25,1) 700ms both;
 }
+.menu-mark.is-returning .menu-line-middle {
+  animation: menu-middle-journey 1500ms cubic-bezier(.2,.75,.25,1) reverse both;
+}
+.menu-mark.is-returning .menu-line-third {
+  animation: menu-third-travel 700ms cubic-bezier(.2,.75,.25,1) 1500ms reverse both;
+}
+.editor-tool-rail.is-closing {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
 @keyframes menu-third-travel {
   from { transform: translateX(0); }
   to { transform: translateX(var(--menu-travel)); }
