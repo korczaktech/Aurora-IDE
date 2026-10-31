@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="description" content="Aurora IDE — ambiente de desenvolvimento.">
+  <title>Aurora IDE — Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../CSS/style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Aurora IDE início">
+        <span class="brand-mark"><span></span><span></span><span></span></span>
+        <span>AURORA<span class="brand-light"> IDE</span></span>
+      </a>
+      <div class="topbar-center"><span class="status-dot"></span><span>Workspace local</span><span class="topbar-divider">/</span><span class="muted">Projeto inicial</span></div>
+      <div class="topbar-actions">
+        <button class="icon-button" id="commandButton" title="Abrir comandos (Ctrl/Cmd + K)" aria-label="Abrir comandos">⌘</button>
+        <button class="avatar" title="Perfil">K</button>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="activity-bar" aria-label="Atividades">
+        <button class="activity active" data-panel="explorer" title="Explorador" aria-label="Explorador">▤</button>
+        <button class="activity" data-panel="search" title="Pesquisa" aria-label="Pesquisa">⌕</button>
+        <button class="activity" data-panel="source" title="Controle de versão" aria-label="Controle de versão">⑂</button>
+        <div class="activity-spacer"></div>
+        <button class="activity" title="Configurações" aria-label="Configurações">⚙</button>
+      </aside>
+
+      <aside class="side-panel" id="sidePanel">
+        <div class="panel-heading"><span id="panelTitle">EXPLORADOR</span><button class="subtle-button" id="collapsePanel" title="Recolher painel">‹</button></div>
+        <div id="explorerPanel">
+          <div class="project-heading"><span class="chevron">⌄</span><span class="folder-icon">▰</span> AURORA-IDE <span class="more">···</span></div>
+          <div class="file-tree">
+            <button class="tree-row folder"><span class="chevron">⌄</span><span class="folder-icon">▰</span> Front-End</button>
+            <button class="tree-row folder indent"><span class="chevron">⌄</span><span class="folder-icon">▰</span> WebSite</button>
+            <button class="tree-row folder indent-2"><span class="chevron">⌄</span><span class="folder-icon">▰</span> HTML</button>
+            <button class="tree-row file selected indent-3" data-file="index.html"><span class="file-icon html">5</span> index.html</button>
+            <button class="tree-row folder indent-2"><span class="chevron">›</span><span class="folder-icon">▱</span> CSS</button>
+            <button class="tree-row folder indent-2"><span class="chevron">›</span><span class="folder-icon">▱</span> JavaScript</button>
+            <button class="tree-row folder indent-2"><span class="chevron">›</span><span class="folder-icon">▱</span> TypeScript</button>
+            <button class="tree-row folder indent-2"><span class="chevron">›</span><span class="folder-icon">▱</span> React</button>
+            <button class="tree-row folder"><span class="chevron">›</span><span class="folder-icon">▱</span> Back-End</button>
+          </div>
+        </div>
+        <div class="panel-foot"><span class="tiny-dot"></span> Nenhum problema detectado</div>
+      </aside>
+
+      <main class="editor-area">
+        <div class="tab-strip">
+          <div class="editor-tab active"><span class="file-icon html">5</span> index.html <span class="tab-close">×</span></div>
+          <div class="tab-spacer"></div>
+          <button class="subtle-button" title="Dividir editor">▣</button>
+          <button class="subtle-button" title="Mais opções">···</button>
+        </div>
+        <div class="breadcrumbs"><span>Front-End</span><span>›</span><span>WebSite</span><span>›</span><span>HTML</span><span>›</span><strong>index.html</strong></div>
+        <section class="code-editor" aria-label="Editor de código">
+          <div class="line-numbers" aria-hidden="true">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15<br>16<br>17<br>18<br>19<br>20<br>21<br>22<br>23<br>24<br>25<br>26<br>27<br>28</div>
+          <pre class="code-content"><span class="syntax-muted">&lt;!doctype html&gt;</span>
+<span class="syntax-tag">&lt;html</span> <span class="syntax-attr">lang</span>=<span class="syntax-string">"pt-BR"</span><span class="syntax-tag">&gt;</span>
+<span class="syntax-tag">&lt;head&gt;</span>
+  <span class="syntax-tag">&lt;meta</span> <span class="syntax-attr">charset</span>=<span class="syntax-string">"UTF-8"</span><span class="syntax-tag">&gt;</span>
+  <span class="syntax-tag">&lt;title&gt;</span><span class="syntax-text">Aurora IDE</span><span class="syntax-tag">&lt;/title&gt;</span>
+<span class="syntax-tag">&lt;/head&gt;</span>
+<span class="syntax-tag">&lt;body&gt;</span>
+  <span class="syntax-tag">&lt;main&gt;</span>
+    <span class="syntax-tag">&lt;h1&gt;</span><span class="syntax-text">Bem-vindo ao Aurora</span><span class="syntax-tag">&lt;/h1&gt;</span>
+    <span class="syntax-tag">&lt;p&gt;</span><span class="syntax-text">Seu próximo ambiente de desenvolvimento.</span><span class="syntax-tag">&lt;/p&gt;</span>
+  <span class="syntax-tag">&lt;/main&gt;</span>
+<span class="syntax-tag">&lt;/body&gt;</span>
+<span class="syntax-tag">&lt;/html&gt;</span>
+
+<span class="syntax-comment">&lt;!-- Interface inicial de demonstração --&gt;</span></pre>
+        </section>
+        <div class="welcome-card">
+          <div class="welcome-orbit orbit-one"></div><div class="welcome-orbit orbit-two"></div>
+          <div class="welcome-content">
+            <div class="eyebrow"><span class="status-dot"></span> AMBIENTE DE DESENVOLVIMENTO</div>
+            <h1>O espaço para<br><span>construir o futuro.</span></h1>
+            <p>Uma nova experiência de desenvolvimento está tomando forma. Este é o primeiro passo do Aurora IDE.</p>
+            <div class="welcome-actions"><button class="primary-button" id="openProject">Explorar projeto <span>↗</span></button><button class="text-button" id="learnMore">Conhecer o Aurora</button></div>
+          </div>
+          <div class="welcome-visual" aria-hidden="true"><div class="visual-core"><span class="core-star">✳</span></div><div class="visual-ring ring-a"></div><div class="visual-ring ring-b"></div><div class="visual-ring ring-c"></div><span class="visual-label label-a">RUST</span><span class="visual-label label-b">WEB</span><span class="visual-label label-c">NATIVE</span></div>
+          <div class="welcome-footer"><span>BUILD 0.0.1 · PREVIEW</span><span>FEITO PARA CRIAR <b>✳</b></span></div>
+        </div>
+        <div class="editor-status"><span>◉ main</span><span>UTF-8&nbsp;&nbsp; HTML</span><span>Ln 1, Col 1</span><span>Espaços: 2</span><span class="status-right">Aurora IDE Preview</span></div>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+  <div class="command-overlay" id="commandOverlay" aria-hidden="true">
+    <div class="command-box"><div class="command-input"><span>⌕</span><input id="commandInput" placeholder="Digite um comando..." autocomplete="off"><kbd>ESC</kbd></div><div class="command-results"><button data-command="explorer">Abrir explorador <kbd>↵</kbd></button><button data-command="welcome">Mostrar boas-vindas</button><button data-command="about">Sobre o Aurora IDE</button></div></div>
+  </div>
+  <script src="../JavaScript/app.js"></script>
+</body>
+</html>
