@@ -63,14 +63,24 @@ fn token_digest(token: &str) -> String {
 }
 
 fn account_from_document(document: &Document) -> Result<AuthenticatedAccount, AuthError> {
-    let id = document.get_str("id").map_err(|_| AuthError::AccountUnavailable)?;
-    let name = document.get_str("Nome").map_err(|_| AuthError::AccountUnavailable)?;
-    let email = document.get_str("Email").map_err(|_| AuthError::AccountUnavailable)?;
-    let account = document.get_document("Conta").map_err(|_| AuthError::AccountUnavailable)?;
+    let id = document
+        .get_str("id")
+        .map_err(|_| AuthError::AccountUnavailable)?;
+    let name = document
+        .get_str("Nome")
+        .map_err(|_| AuthError::AccountUnavailable)?;
+    let email = document
+        .get_str("Email")
+        .map_err(|_| AuthError::AccountUnavailable)?;
+    let account = document
+        .get_document("Conta")
+        .map_err(|_| AuthError::AccountUnavailable)?;
     if account.get_str("Status").ok() != Some("active") {
         return Err(AuthError::AccountUnavailable);
     }
-    let role = account.get_str("Role").map_err(|_| AuthError::AccountUnavailable)?;
+    let role = account
+        .get_str("Role")
+        .map_err(|_| AuthError::AccountUnavailable)?;
     if role != "admin" && role != "user" {
         return Err(AuthError::AccountUnavailable);
     }
@@ -100,13 +110,17 @@ pub async fn register(
     let email = email.trim().to_ascii_lowercase();
 
     if name.len() < 2 || name.len() > 120 {
-        return Err(AuthError::InvalidInput("Nome deve ter entre 2 e 120 caracteres"));
+        return Err(AuthError::InvalidInput(
+            "Nome deve ter entre 2 e 120 caracteres",
+        ));
     }
     if email.len() > 254 || !email.contains('@') || email.starts_with('@') || email.ends_with('@') {
         return Err(AuthError::InvalidInput("E-mail inválido"));
     }
     if password.len() < 8 || password.len() > 72 {
-        return Err(AuthError::InvalidInput("A senha deve ter entre 8 e 72 bytes"));
+        return Err(AuthError::InvalidInput(
+            "A senha deve ter entre 8 e 72 bytes",
+        ));
     }
     if let Some(phone) = phone {
         if phone.len() > 32 {
@@ -115,7 +129,9 @@ pub async fn register(
     }
 
     if storage.find_account_by_email(&email).await?.is_some() {
-        return Err(AuthError::InvalidInput("Já existe uma conta com este e-mail"));
+        return Err(AuthError::InvalidInput(
+            "Já existe uma conta com este e-mail",
+        ));
     }
 
     let hashed_password = hash(password, DEFAULT_COST)?;
