@@ -13,8 +13,18 @@
     inicio:{title:"Início",eyebrow:"Sua estação de desenvolvimento",lead:"Um espaço para criar, explorar e transformar possibilidades em projetos.",render:()=>homeMarkup},
     projetos:{title:"Projetos",eyebrow:"ESPAÇO DE CRIAÇÃO",lead:"Cada ideia começa em algum lugar. Reúna seus experimentos e acompanhe o que está construindo.",render:()=>[
       '<div class="project-command"><div><span class="micro-label">ÁREA DE TRABALHO</span><strong>Seus projetos</strong></div><button class="action-primary" data-action="new-project">＋ Novo projeto</button></div>',
-      '<section class="project-feature"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">EXPERIMENTO · 001</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p><div class="project-progress"><span style="width:32%"></span></div><div class="project-progress-meta"><span>Progresso do projeto</span><strong>32%</strong></div></div><div class="project-feature-status"><i></i> EM DESENVOLVIMENTO</div></section>',
-      '<div class="section-heading"><span>SEUS PROJETOS</span><span id="project-count">01 PROJETO</span></div><div class="project-table" id="project-list"><div class="project-line"><span class="project-line-index">01</span><div class="project-line-main"><strong>Aurora Playground</strong><small>Experimento inicial · Criado para explorar a estação</small></div><span class="project-line-state"><i></i>Ativo</span><span class="project-line-arrow">↗</span></div></div><div class="quiet-hint">Projetos criados nesta prévia permanecem disponíveis apenas durante a sessão atual.</div>'
+      '<section class="project-feature" data-open-project role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">EXPERIMENTO · 001</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p><div class="project-progress"><span style="width:32%"></span></div><div class="project-progress-meta"><span>Progresso do projeto</span><strong>32%</strong></div></div><div class="project-feature-status"><i></i> EM DESENVOLVIMENTO</div></section>',
+      '<div class="section-heading"><span>SEUS PROJETOS</span><span id="project-count">01 PROJETO</span></div><div class="project-table" id="project-list"><div class="project-line" data-open-project role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><span class="project-line-index">01</span><div class="project-line-main"><strong>Aurora Playground</strong><small>Experimento inicial · Criado para explorar a estação</small></div><span class="project-line-state"><i></i>Ativo</span><span class="project-line-arrow">↗</span></div></div><div class="quiet-hint">Projetos criados nesta prévia permanecem disponíveis apenas durante a sessão atual.</div>'
+    ].join("")},
+    propriedades:{title:"Aurora Playground",eyebrow:"PROPRIEDADES DO PROJETO",lead:"Informações, composição técnica, estrutura e preferências visuais do projeto.",render:()=>[
+      '<div class="property-toolbar"><button class="property-back" type="button" data-back-projects>← Voltar para projetos</button><span class="property-status"><i></i> EXPERIMENTO · ATIVO</span></div>',
+      '<section class="property-identity"><div class="property-project-mark"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 3.5 43 14v20L24 44.5 5 34V14z"/><path d="m15 17 9 16 9-16M16.5 28h15"/></svg></div><div class="property-identity-copy"><span class="micro-label">PROJETO / 001</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p></div><span class="property-kind">PROJETO LOCAL</span></section>',
+      '<section class="property-section"><div class="section-heading"><span>IDENTIFICAÇÃO</span><span>DADOS GERAIS</span></div><div class="property-fields"><label class="property-field property-name-field">Nome<input id="project-name" value="Aurora Playground"></label><label class="property-field property-description-field">Descrição<textarea id="project-description" rows="2">Ambiente experimental para explorar recursos e possibilidades da estação.</textarea></label><div class="property-field"><span>AID · Aurora Identificator</span><strong class="property-mono">AUR-EDS-0001-PLAY</strong></div><div class="property-field"><span>Data de criação</span><strong>30 de outubro de 2026</strong></div><div class="property-field"><span>Última modificação</span><strong id="project-modified">30 de outubro de 2026 · 12:00</strong></div></div></section>',
+      '<section class="property-section"><div class="section-heading"><span>COMPOSIÇÃO DO PROJETO</span><span>LINGUAGENS · 100%</span></div><div class="language-bar" role="img" aria-label="JavaScript 45%, HTML 30%, CSS 20%, Rust 5%"><span class="language-segment language-js" style="width:45%"></span><span class="language-segment language-html" style="width:30%"></span><span class="language-segment language-css" style="width:20%"></span><span class="language-segment language-rust" style="width:5%"></span></div><div class="language-legend"><div><i class="language-js"></i><span>JavaScript</span><strong>45%</strong></div><div><i class="language-html"></i><span>HTML</span><strong>30%</strong></div><div><i class="language-css"></i><span>CSS</span><strong>20%</strong></div><div><i class="language-rust"></i><span>Rust</span><strong>5%</strong></div></div><p class="property-footnote">Distribuição ilustrativa da composição do projeto nesta prévia.</p></section>',
+      '<section class="property-section"><div class="section-heading"><span>TECNOLOGIAS UTILIZADAS</span><span>STACK</span></div><div class="technology-list"><span><b class="tech-js">JS</b>JavaScript</span><span><b class="tech-html">5</b>HTML5</span><span><b class="tech-css">#</b>CSS3</span><span><b class="tech-rust">R</b>Rust</span><span><b class="tech-git">⌘</b>Git</span></div></section>',
+      '<section class="property-section"><div class="section-heading"><span>ESTRUTURA DE ARQUIVOS</span><span>EXPLORADOR</span></div><div class="file-explorer"><div class="file-explorer-head"><span>⌘ &nbsp; AURORA-PLAYGROUND</span><span>PRÉ-VISUALIZAÇÃO</span></div><div class="file-tree"><div class="tree-row tree-folder"><span class="tree-chevron">⌄</span><svg class="tree-icon folder-icon" viewBox="0 0 20 20"><path d="M2 5.5h6l2 2h8v8.8H2z"/></svg><span>src</span></div><div class="tree-row tree-child"><span class="tree-spacer"></span><span class="tree-chevron">⌄</span><svg class="tree-icon folder-icon" viewBox="0 0 20 20"><path d="M2 5.5h6l2 2h8v8.8H2z"/></svg><span>components</span></div><div class="tree-row tree-file tree-level-two"><span class="tree-spacer"></span><span class="tree-spacer"></span><svg class="tree-icon icon-js" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="M10 6v7c0 2-1 2-2 1M12 12c0 2 3 2 3 0 0-1-3-1-3-3 0-2 3-2 3 0"/></svg><span>playground.js</span></div><div class="tree-row tree-file tree-level-two"><span class="tree-spacer"></span><span class="tree-spacer"></span><svg class="tree-icon icon-js" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="M10 6v7c0 2-1 2-2 1M12 12c0 2 3 2 3 0 0-1-3-1-3-3 0-2 3-2 3 0"/></svg><span>main.js</span></div><div class="tree-row tree-folder"><span class="tree-chevron">⌄</span><svg class="tree-icon folder-icon" viewBox="0 0 20 20"><path d="M2 5.5h6l2 2h8v8.8H2z"/></svg><span>public</span></div><div class="tree-row tree-file"><span class="tree-chevron"></span><svg class="tree-icon icon-html" viewBox="0 0 20 20"><path d="M4 2h8l4 4v12H4z"/><path d="M12 2v4h4M7 9l-2 2 2 2m6-4 2 2-2 2m-2-5-2 6"/></svg><span>index.html</span></div><div class="tree-row tree-file"><span class="tree-chevron"></span><svg class="tree-icon icon-css" viewBox="0 0 20 20"><path d="M4 2h8l4 4v12H4z"/><path d="M12 2v4h4M7 9h6M7 12h5M7 15h3"/></svg><span>styles.css</span></div><div class="tree-row tree-folder"><span class="tree-chevron">⌄</span><svg class="tree-icon folder-icon" viewBox="0 0 20 20"><path d="M2 5.5h6l2 2h8v8.8H2z"/></svg><span>config</span></div><div class="tree-row tree-file"><span class="tree-chevron"></span><svg class="tree-icon icon-json" viewBox="0 0 20 20"><path d="M4 2h8l4 4v12H4z"/><path d="M12 2v4h4M8 9c-2 0-2 2-2 2s0 2 2 2m4-4c2 0 2 2 2 2s0 2-2 2"/></svg><span>project.json</span></div><div class="tree-row tree-file"><span class="tree-chevron"></span><svg class="tree-icon icon-rust" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="2"/><path d="m7 6 3 3-3 3m5 0h3"/></svg><span>engine.rs</span></div><div class="tree-row tree-file"><span class="tree-chevron"></span><svg class="tree-icon icon-doc" viewBox="0 0 20 20"><path d="M4 2h8l4 4v12H4z"/><path d="M12 2v4h4M7 10h6M7 13h6M7 16h4"/></svg><span>README.md</span></div></div></div></section>',
+      '<section class="property-section"><div class="section-heading"><span>CONFIGURAÇÕES VISUAIS</span><span>AMBIENTE DO PROJETO</span></div><div class="visual-settings"><label class="visual-setting"><span><strong>Tema do projeto</strong><small>Esquema de cores utilizado no ambiente.</small></span><select id="project-theme"><option value="aurora">Aurora Boreal</option><option value="midnight">Meia-noite</option><option value="light">Claro</option></select></label><label class="visual-setting"><span><strong>Fonte do editor</strong><small>Família tipográfica da área de edição.</small></span><select id="project-font"><option>JetBrains Mono</option><option>Fira Code</option><option>Source Code Pro</option><option>Consolas</option></select></label><label class="visual-setting"><span><strong>Minimapa</strong><small>Exibir visão geral do arquivo no editor.</small></span><input class="switch" type="checkbox" checked data-project-setting="minimap"></label><label class="visual-setting"><span><strong>Quebra automática de linha</strong><small>Ajustar linhas longas à largura do editor.</small></span><input class="switch" type="checkbox" checked data-project-setting="word-wrap"></label><label class="visual-setting"><span><strong>Ícones coloridos de arquivos</strong><small>Identificar tipos de arquivo pelo ícone.</small></span><input class="switch" type="checkbox" checked data-project-setting="file-icons"></label></div><p class="property-footnote">As preferências desta tela são demonstrativas e ficam apenas nesta interface. A gravação permanente será integrada posteriormente.</p></section>',
+      '<div class="property-actions"><button class="property-back" type="button" data-back-projects>← Voltar para projetos</button><button class="action-primary" type="button" data-save-project>Aplicar alterações <span>↗</span></button></div>'
     ].join("")},
     mentoria:{title:"Mentoria",eyebrow:"APRENDIZADO E EVOLUÇÃO",lead:"Desenvolva autonomia técnica. Avance dos fundamentos até a construção de sistemas completos.",render:()=>[
       '<section class="mentoria-intro"><div class="mentoria-copy"><span class="micro-label">SUA JORNADA COMEÇA AQUI</span><h2>Aprender a programar é aprender a construir.</h2><p>Uma trilha progressiva para transformar curiosidade em conhecimento prático e conhecimento em projetos reais.</p><a class="action-primary inline-action" href="https://site.korczaktech.com.br/#/mentoria">Conhecer a mentoria <span>↗</span></a></div><div class="mentoria-orbit" aria-hidden="true"><span class="orbit orbit-a"></span><span class="orbit orbit-b"></span><span class="orbit-core">A<span>.</span></span></div></section>',
@@ -90,18 +100,40 @@
   };
   const showPage = key => {
     const page = pages[key] || pages.inicio;
-    navItems.forEach(item => item.classList.toggle("is-active", item.dataset.page === key));
+    navItems.forEach(item => item.classList.toggle("is-active", item.dataset.page === (key === "propriedades" ? "projetos" : key)));
     main.classList.toggle("app-page", key !== "inicio");
+    main.classList.remove("page-propriedades");
+    if (key === "propriedades") main.classList.add("page-propriedades");
     main.innerHTML = key === "inicio" ? homeMarkup : `<div class="main-atmosphere" aria-hidden="true"><span class="star star-a"></span><span class="star star-b"></span><span class="star star-c"></span><div class="aurora-ribbon ribbon-one"></div><div class="aurora-ribbon ribbon-two"></div><div class="aurora-ribbon ribbon-three"></div></div><div class="page-shell"><div class="page-eyebrow">${page.eyebrow}</div><h1 class="page-title">${page.title}</h1><p class="page-lead">${page.lead}</p>${page.render()}</div>`;
     if (projectsSidebar) projectsSidebar.hidden = key !== "inicio";
     document.title = "Aurora EDS — " + page.title;
+    if (key === "propriedades") {
+      const theme = document.getElementById("project-theme"); const font = document.getElementById("project-font");
+      if (theme) theme.value = localStorage.getItem("aurora-project-theme") || "aurora";
+      if (font) font.value = localStorage.getItem("aurora-project-font") || "JetBrains Mono";
+      main.querySelectorAll("[data-project-setting]").forEach(input => { const saved = localStorage.getItem("aurora-project-setting-" + input.dataset.projectSetting); if (saved !== null) input.checked = saved === "true"; });
+    }
     if (key === "anotacoes") renderNotes();
     if (key === "repositorios") renderRepos();
     main.scrollTop = 0;
   };
   navItems.forEach(item => item.addEventListener("click", () => showPage(item.dataset.page)));
+  document.querySelector(".project-entry")?.addEventListener("click", () => showPage("propriedades"));
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
+    if (event.target.closest("[data-open-project]")) { showPage("propriedades"); return; }
+    if (event.target.closest("[data-back-projects]")) { showPage("projetos"); return; }
+    if (event.target.closest("[data-save-project]")) {
+      const name = document.getElementById("project-name")?.value.trim();
+      const description = document.getElementById("project-description")?.value.trim();
+      if (!name) { notify("O nome do projeto não pode ficar vazio."); return; }
+      document.querySelectorAll(".project-feature-copy h2,.project-line-main strong").forEach(node => node.textContent = name);
+      if (description) document.querySelector(".project-feature-copy p").textContent = description;
+      const modified = document.getElementById("project-modified");
+      if (modified) modified.textContent = new Intl.DateTimeFormat("pt-BR",{dateStyle:"long",timeStyle:"short"}).format(new Date());
+      notify("Alterações aplicadas nesta prévia.");
+      return;
+    }
     const noteButton = event.target.closest("[data-note-index]");
     if (noteButton) {
       const note = notes[Number(noteButton.dataset.noteIndex)];
@@ -128,6 +160,9 @@
     }
     if (action === "extension") { event.target.closest("button").textContent = "Solicitada"; event.target.closest("button").disabled = true; notify("Extensão marcada para instalação futura."); }
   });
+  main.addEventListener("keydown", event => {
+    if ((event.target.matches("[data-open-project]")) && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); showPage("propriedades"); }
+  });
   main.addEventListener("input", event => {
     if (event.target.id === "note-search") renderNotes();
     if (event.target.id === "extension-search") {
@@ -136,6 +171,8 @@
     }
   });
   main.addEventListener("change", event => {
+    if (event.target.matches("[data-project-setting]")) localStorage.setItem("aurora-project-setting-" + event.target.dataset.projectSetting, String(event.target.checked));
+    if (event.target.id === "project-theme" || event.target.id === "project-font") localStorage.setItem("aurora-" + event.target.id, event.target.value);
     if (event.target.matches("[data-setting]")) localStorage.setItem("aurora-setting-" + event.target.dataset.setting, String(event.target.checked));
   });
   main.addEventListener("submit", event => {

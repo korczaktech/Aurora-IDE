@@ -535,3 +535,57 @@
 .welcome-actions .learn-button{margin-top:0}
 .develop-button{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:12px 19px;border:1px solid rgba(130,203,176,.23);border-radius:5px;background:rgba(9,17,14,.58);color:#b7c9bf;font:600 11px Manrope,system-ui,sans-serif;letter-spacing:.12px;cursor:default;box-shadow:inset 0 1px rgba(204,239,214,.025)}
 @media(max-width:460px){.welcome-actions{gap:9px}.welcome-actions .learn-button,.develop-button{padding:11px 12px;font-size:10px}}
+
+
+/* Propriedades do projeto Aurora */
+.app-page.page-propriedades .page-shell{max-width:1040px}
+.app-page .property-toolbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 22px}
+.app-page .property-back{padding:8px 0;border:0;background:transparent;color:#91b99c;font:10px Manrope,sans-serif;cursor:pointer}
+.app-page .property-back:hover{color:#d5ead9}
+.app-page .property-status{color:#83b791;font:8px 'DM Mono',monospace;letter-spacing:1px}
+.app-page .property-status i{display:inline-block;width:6px;height:6px;margin-right:8px;border-radius:50%;background:#80c18e;box-shadow:0 0 8px #80c18e66}
+.app-page .property-identity{display:flex;align-items:center;gap:20px;padding:24px 0 30px;border-top:1px solid rgba(135,182,148,.17);border-bottom:1px solid rgba(135,182,148,.17)}
+.app-page .property-project-mark{width:62px;height:62px;display:grid;place-items:center;border:1px solid rgba(111,163,128,.25);background:radial-gradient(circle,rgba(40,101,62,.25),transparent 72%)}
+.app-page .property-project-mark svg{width:37px;fill:none;stroke:#9bd1aa;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.app-page .property-identity-copy{min-width:0;flex:1}
+.app-page .property-identity-copy h2{margin:6px 0;color:#e2eee6;font-size:23px;font-weight:600;letter-spacing:-.7px}
+.app-page .property-identity-copy p{margin:0;color:#809087;font-size:10px;line-height:1.8}
+.app-page .property-kind{color:#607969;font:8px 'DM Mono',monospace;letter-spacing:.7px}
+.app-page .property-section{margin-top:37px}
+.app-page .property-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 28px}
+.app-page .property-field{display:grid;gap:9px;align-content:start;padding:17px 0;border-bottom:1px solid rgba(135,182,148,.1);color:#71877a;font-size:9px}
+.app-page .property-field strong{color:#d1e0d5;font-size:10px;font-weight:500}
+.app-page .property-field input,.app-page .property-field textarea{width:100%;padding:9px 10px;border:1px solid rgba(135,182,148,.17);border-radius:3px;outline:0;resize:vertical;background:rgba(7,17,12,.65);color:#dce9df;font:10px Manrope,sans-serif}
+.app-page .property-field input:focus,.app-page .property-field textarea:focus{border-color:rgba(125,190,146,.55)}
+.app-page .property-name-field,.app-page .property-description-field{grid-column:1/-1}
+.app-page .property-mono{font:10px 'DM Mono',monospace!important;letter-spacing:.5px}
+.app-page .language-bar{display:flex;height:12px;overflow:hidden;margin:22px 0 17px;border-radius:2px;background:#17251d}
+.app-page .language-segment{height:100%}
+.app-page .language-js{background:#e5c84c}.app-page .language-html{background:#df7952}.app-page .language-css{background:#5c91d7}.app-page .language-rust{background:#b77b55}
+.app-page .language-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.app-page .language-legend>div{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:7px;align-items:center;color:#93a398;font-size:9px}
+.app-page .language-legend i{width:8px;height:8px;border-radius:2px}
+.app-page .language-legend strong{color:#d5e3d9;font:9px 'DM Mono',monospace}
+.app-page .property-footnote{margin:13px 0 0;color:#607268;font-size:9px;line-height:1.7}
+.app-page .technology-list{display:flex;flex-wrap:wrap;gap:10px;padding-top:18px}
+.app-page .technology-list>span{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid rgba(135,182,148,.14);color:#aebdb2;font-size:9px}
+.app-page .technology-list b{width:20px;height:20px;display:grid;place-items:center;border-radius:3px;font:700 9px 'DM Mono',monospace}
+.app-page .tech-js{background:#e5c84c;color:#25210d}.app-page .tech-html{background:#df7952;color:#2a130d}.app-page .tech-css{background:#5c91d7;color:#101e31}.app-page .tech-rust{background:#b77b55;color:#25150e}.app-page .tech-git{background:#9b806c;color:#21170f}
+.app-page .file-explorer{margin-top:17px;border:1px solid rgba(135,182,148,.16);background:rgba(5,12,8,.56)}
+.app-page .file-explorer-head{display:flex;justify-content:space-between;gap:12px;padding:12px 15px;border-bottom:1px solid rgba(135,182,148,.13);color:#9db5a3;font:8px 'DM Mono',monospace;letter-spacing:.7px}
+.app-page .file-explorer-head span+span{color:#5f7667}
+.app-page .file-tree{padding:9px 12px 13px}
+.app-page .tree-row{min-height:31px;display:flex;align-items:center;gap:9px;padding:3px 8px;color:#b2c2b6;font:10px 'DM Mono',monospace}
+.app-page .tree-row:hover{background:rgba(89,139,102,.1)}
+.app-page .tree-folder{color:#d2e1d5}.app-page .tree-child{padding-left:24px}.app-page .tree-level-two{padding-left:49px}
+.app-page .tree-chevron{width:9px;color:#728c79;font-size:12px}.app-page .tree-spacer{width:9px;flex:none}
+.app-page .tree-icon{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round}
+.app-page .folder-icon{color:#d3b66e;fill:#d3b66e22}.app-page .icon-js{color:#e5c84c}.app-page .icon-html{color:#df7952}.app-page .icon-css{color:#5c91d7}.app-page .icon-json{color:#b9a56b}.app-page .icon-rust{color:#c58b65}.app-page .icon-doc{color:#8eaaa0}
+.app-page .visual-settings{margin-top:7px}
+.app-page .visual-setting{min-height:65px;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:13px 2px;border-bottom:1px solid rgba(135,182,148,.1);cursor:pointer}
+.app-page .visual-setting>span{display:grid;gap:5px}
+.app-page .visual-setting strong{color:#d3e0d7;font-size:10px;font-weight:550}
+.app-page .visual-setting small{color:#74847a;font-size:9px}
+.app-page .visual-setting select{min-width:155px;padding:8px 28px 8px 10px;border:1px solid rgba(135,182,148,.2);border-radius:3px;background:#0b1710;color:#c8d9cc;font:9px Manrope,sans-serif}
+.app-page .property-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:30px;padding-top:18px;border-top:1px solid rgba(135,182,148,.14)}
+@media(max-width:650px){.app-page .property-identity{align-items:flex-start;flex-wrap:wrap}.app-page .property-kind{width:100%;padding-left:82px}.app-page .property-fields{grid-template-columns:1fr}.app-page .property-field{grid-column:1}.app-page .language-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.app-page .property-toolbar{align-items:flex-start;flex-direction:column}.app-page .visual-setting select{min-width:130px;max-width:48%}.app-page .property-actions{align-items:flex-start;flex-direction:column}}
