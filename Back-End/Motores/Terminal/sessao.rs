@@ -5,7 +5,7 @@ use std::{
     io::{Read, Write},
     path::PathBuf,
     sync::{
-        mpsc::{sync_channel, Receiver, SyncSender, TryRecvError},
+        mpsc::{sync_channel, Receiver, SyncSender, TryRecvError, TrySendError},
         Arc, Mutex,
     },
     thread,
@@ -32,12 +32,12 @@ struct TerminalSession {
     writer: Box<dyn Write + Send>,
     child: Box<dyn Child + Send + Sync>,
     output_rx: Receiver<Vec<u8>>,
-    closed: bool,
+    status: TerminalSessionStatus,\n    exit_code: Option<u32>,
 }
 
 impl TerminalSession {
     fn write(&mut self, bytes: &[u8]) -> TerminalResult<()> {
-        if self.closed {
+        self.refresh_status()?;\n        if self.status != TerminalSessionStatus::Running {
             return Err(TerminalError::SessionClosed(self.info.id.clone()));
         }
         self.writer.write_all(bytes)?;
@@ -67,7 +67,7 @@ impl TerminalSession {
         Ok(())
     }
 
-    fn drain_output(&self, limit: usize) -> Vec<Vec<u8>> {
+    fn refresh_status(&mut self) -> TerminalResult<()> {\n        if self.status != TerminalSessionStatus::Running { return Ok(()); }\n        if let Some(status) = self.child.try_wait().map_err(|error| TerminalError::Pty(error.to_string()))? {\n            self.status = TerminalSessionStatus::Exited;\n            self.exit_code = Some(status.exit_code());\n        }\n        self.info.status = self.status;\n        self.info.exit_code = self.exit_code;\n        Ok(())\n    }\n\n    fn drain_output(&self, limit: usize) -> Vec<Vec<u8>> {
         let mut output = Vec::new();
         for _ in 0..limit {
             match self.output_rx.try_recv() {
@@ -125,7 +125,7 @@ impl TerminalManager {
             .sessions
             .lock()
             .map_err(|_| TerminalError::InternalState)?;
-        if sessions.len() >= self.config.max_sessions {
+        for session in sessions.values() {\n            session.lock().map_err(|_| TerminalError::InternalState)?.refresh_status()?;\n        }\n        let running = sessions.values().filter(|session| session.lock().map(|s| s.status == TerminalSessionStatus::Running).unwrap_or(false)).count();\n        if running >= self.config.max_sessions {
             return Err(TerminalError::SessionLimitReached);
         }
 
@@ -179,7 +179,7 @@ impl TerminalManager {
             writer,
             child,
             output_rx: rx,
-            closed: false,
+            status: TerminalSessionStatus::Running,\n            exit_code: None,
         };
         sessions.insert(info.id.clone(), Arc::new(Mutex::new(session)));
         Ok(info)
