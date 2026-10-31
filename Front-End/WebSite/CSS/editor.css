@@ -11,7 +11,7 @@
   --header-line: #8be8bd;
   --header-search-background: #020706;
   --header-height: 58px;
-  --menu-travel: calc(50vw - 55px);
+  --menu-travel: calc(50vw - 55px);\n  --menu-scale: 25;
 }
 
 * { box-sizing: border-box; }
@@ -73,7 +73,7 @@ body {
   animation: menu-third-travel 760ms cubic-bezier(.2,.75,.25,1) both;
 }
 .menu-button.is-open .menu-line-middle {
-  animation: menu-middle-journey 1450ms cubic-bezier(.2,.75,.25,1) 560ms both;
+  animation: menu-middle-journey 1450ms cubic-bezier(.2,.75,.25,1) 760ms both;
 }
 @keyframes menu-third-travel {
   0% { transform: translateX(0); }
@@ -83,7 +83,7 @@ body {
   0% { transform: translateX(0) rotate(0deg) scaleX(1); }
   42% { transform: translateX(calc(var(--menu-travel) / 2)) rotate(0deg) scaleX(1); }
   58% { transform: translateX(calc(var(--menu-travel) / 2)) rotate(90deg) scaleX(1); }
-  72% { transform: translateX(calc(var(--menu-travel) / 2)) rotate(90deg) scaleX(calc(1 + var(--menu-travel) / 14px)); }
+  72% { transform: translateX(calc(var(--menu-travel) / 2)) rotate(90deg) scaleX(var(--menu-scale)); }
   82% { transform: translateX(calc(var(--menu-travel) / 2)) translateY(-7px) rotate(90deg) scaleX(calc(1 + var(--menu-travel) / 14px)); }
   100% { transform: translateX(calc(var(--menu-travel) / 2)) translateY(7px) rotate(90deg) scaleX(calc(1 + var(--menu-travel) / 14px)); }
 }
