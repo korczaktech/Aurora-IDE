@@ -23,6 +23,7 @@ impl MongoStorage {
             sessions_database: sessions_database.into(),
         };
         storage.ping().await?;
+        storage.ensure_auth_indexes().await?;
         Ok(storage)
     }
 
@@ -242,7 +243,7 @@ impl MongoStorage {
     }
 
     pub async fn revoke_session(&self, token_hash: &str) -> mongodb::error::Result<()> {
-        self.collection("sessoes")
+        self.sessions_collection()
             .update_one(
                 doc! { "tokenHash": token_hash, "revokedAt": mongodb::bson::Bson::Null },
                 doc! { "$set": { "revokedAt": DateTime::now() } },
