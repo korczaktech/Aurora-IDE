@@ -1,0 +1,7 @@
+[package]
+name = "deploy-placeholder"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Nenhuma dependência necessária para apenas passar o deploy
