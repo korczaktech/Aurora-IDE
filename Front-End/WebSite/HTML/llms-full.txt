@@ -9,7 +9,7 @@
 - Desenvolvedor: Korczak Technologies.
 - Versão pública informada: 0.0.1.
 - Idioma: pt-BR.
-- Website: https://korczaktech.github.io/Aurora-IDE/
+- Website: https://aurora.korczaktech.com.br/index.html
 - Website institucional do desenvolvedor: https://site.korczaktech.com.br/
 
 ## Objetivo
@@ -41,16 +41,16 @@ Aurora é um ambiente de desenvolvimento em construção. A proposta é reunir e
 ## Páginas oficiais
 
 ### Página inicial
-https://korczaktech.github.io/Aurora-IDE/
+https://aurora.korczaktech.com.br/
 
 ### Sobre o Aurora
-https://korczaktech.github.io/Aurora-IDE/sobre.html
+https://aurora.korczaktech.com.br/sobre.html
 
 ### Recursos e estado atual
-https://korczaktech.github.io/Aurora-IDE/recursos.html
+https://aurora.korczaktech.com.br/recursos.html
 
 ### Interface experimental do editor
-https://korczaktech.github.io/Aurora-IDE/editor.html
+https://aurora.korczaktech.com.br/editor.html
 Observação: esta rota é experimental e está marcada como noindex.
 
 ## Indexação e descoberta
