@@ -158,11 +158,14 @@
   };
 
   const settingDefaults = { animations: true, contrast: false, compact: false, "start-home": true, confirm: true, local: true };
-  const getSetting = key => {
+  const settingsState = { ...settingDefaults };
+  Object.keys(settingDefaults).forEach(key => {
     const saved = storageGet("aurora-setting-" + key);
-    return saved === null ? settingDefaults[key] : saved === "true";
-  };
+    if (saved !== null) settingsState[key] = saved === "true";
+  });
+  const getSetting = key => settingsState[key] ?? settingDefaults[key];
   const saveSetting = (key, value) => {
+    settingsState[key] = Boolean(value);
     if (key === "local" || getSetting("local")) storageSet("aurora-setting-" + key, String(value));
   };
   const applyAppearance = () => {
@@ -392,6 +395,9 @@
       saveSetting(key, event.target.checked);
       if (key === "local" && !event.target.checked) {
         ["animations","contrast","compact","start-home","confirm"].forEach(name => { try { window.localStorage.removeItem("aurora-setting-" + name); } catch (_) {} });
+      }
+      if (key === "local" && event.target.checked) {
+        Object.keys(settingDefaults).filter(name => name !== "local").forEach(name => storageSet("aurora-setting-" + name, String(settingsState[name])));
       }
       applyAppearance();
       recordActivity("Preferência alterada: " + key, "Uma opção da estação foi atualizada.", "PREFERÊNCIA");
