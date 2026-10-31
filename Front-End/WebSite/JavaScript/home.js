@@ -110,15 +110,6 @@
     collapseButton.setAttribute("aria-expanded", String(!collapsed));
     expandButton.setAttribute("aria-expanded", String(collapsed));
   };
-  rail.addEventListener("click", event => {
-    const toggle = event.target.closest("#railToggle");
-    if (toggle) { event.preventDefault(); setCollapsed(true); return; }
-    const item = event.target.closest(".rail-item[data-page]");
-    if (item && rail.contains(item)) {
-      event.preventDefault();
-      showPage(item.dataset.page);
-    }
-  }, true);
   expandButton.addEventListener("click", event => { event.preventDefault(); setCollapsed(false); });
 
   const escapeHTML = value => String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[char]));
@@ -171,6 +162,30 @@
     if (key === "repositorios") renderRepos();
     main.scrollTop = 0;
   };
+
+  // Navegação global delegada: continua funcionando mesmo quando a sidebar
+  // é reconstruída, recebe elementos internos ou muda de estado visual.
+  document.addEventListener("click", event => {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    if (!target) return;
+
+    const collapse = target.closest("#railToggle");
+    if (collapse) {
+      event.preventDefault();
+      setCollapsed(true);
+      return;
+    }
+
+    const navigationItem = target.closest(".rail-item[data-page]");
+    if (navigationItem && rail.contains(navigationItem)) {
+      const destination = navigationItem.dataset.page;
+      if (Object.prototype.hasOwnProperty.call(pages, destination)) {
+        event.preventDefault();
+        showPage(destination);
+      }
+    }
+  }, true);
+
   workspace.addEventListener("click", event => { const entry = event.target.closest(".project-entry"); if (!entry) return; selectedProjectId = entry.dataset.projectId || "aurora-playground"; showPage("propriedades"); });
   document.querySelector(".wordmark")?.addEventListener("click", event => { event.preventDefault(); showPage("inicio"); });
   main.addEventListener("click", event => {
