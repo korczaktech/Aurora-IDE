@@ -589,3 +589,11 @@
 .app-page .visual-setting select{min-width:155px;padding:8px 28px 8px 10px;border:1px solid rgba(135,182,148,.2);border-radius:3px;background:#0b1710;color:#c8d9cc;font:9px Manrope,sans-serif}
 .app-page .property-actions{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-top:30px;padding-top:18px;border-top:1px solid rgba(135,182,148,.14)}
 @media(max-width:650px){.app-page .property-identity{align-items:flex-start;flex-wrap:wrap}.app-page .property-kind{width:100%;padding-left:82px}.app-page .property-fields{grid-template-columns:1fr}.app-page .property-field{grid-column:1}.app-page .language-legend{grid-template-columns:repeat(2,minmax(0,1fr))}.app-page .property-toolbar{align-items:flex-start;flex-direction:column}.app-page .visual-setting select{min-width:130px;max-width:48%}.app-page .property-actions{align-items:flex-start;flex-direction:column}}
+
+/* File tree interativa: expansão e recolhimento local */
+.app-page .tree-row[role="treeitem"]{user-select:none}
+.app-page .tree-folder{cursor:pointer}
+.app-page .tree-folder:focus-visible{outline:1px solid rgba(133,195,150,.65);outline-offset:-1px}
+.app-page .tree-chevron{display:inline-block;text-align:center;transition:transform .16s ease}
+.app-page .tree-folder[aria-expanded="false"] .tree-chevron{transform:translateX(1px)}
+.app-page .tree-row[hidden]{display:none!important}
