@@ -5,7 +5,7 @@ mod state;
 use axum::http::{header, HeaderValue, Method};
 use config::AppConfig;
 use state::AppState;
-use std::{net::SocketAddr, str::FromStr};
+use std::net::SocketAddr;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::EnvFilter;
 
