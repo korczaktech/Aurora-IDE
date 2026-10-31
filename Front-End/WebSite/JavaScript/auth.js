@@ -6,8 +6,9 @@
   const ACCOUNT_KEY = "aurora-account";
   const page = window.location.pathname.split("/").pop() || "index.html";
   const isEditor = page === "editor.html";
+  const isProfile = page === "perfil.html";
 
-  if (isEditor) document.documentElement.style.visibility = "hidden";
+  if (isEditor || isProfile) document.documentElement.style.visibility = "hidden";
 
   const readToken = () => {
     try {
@@ -233,7 +234,7 @@
         menu.addEventListener("click", event => {
           if (event.target.closest("[data-account-profile]")) {
             closeMenu();
-            document.querySelector('.rail-item[data-page="configuracoes"]')?.click();
+            window.location.href = "perfil.html";
           }
         });
         document.addEventListener("click", event => {
@@ -248,6 +249,45 @@
       }
     } catch (_) {
       clearSession();
+    }
+  }
+
+
+  async function protectProfile() {
+    const token = readToken();
+    if (!token) {
+      window.location.replace("entrar.html?next=perfil.html");
+      return;
+    }
+    try {
+      const account = await currentAccount(token);
+      const name = account.name || account.Nome || "Conta Aurora";
+      const email = account.email || account.Email || "Não informado";
+      const initial = String(name).trim().charAt(0).toUpperCase() || "A";
+      const nameNode = document.getElementById("profileName");
+      const emailNode = document.getElementById("profileEmail");
+      const avatarNode = document.getElementById("profileAvatar");
+      if (nameNode) nameNode.textContent = name;
+      if (emailNode) emailNode.textContent = email;
+      if (avatarNode) avatarNode.textContent = initial;
+      const list = document.getElementById("profileDetails");
+      if (list) {
+        list.replaceChildren();
+        for (const [label, value] of [["Nome", name], ["E-mail", email], ["Conta", "Korczak Technologies"]]) {
+          const item = document.createElement("div");
+          item.className = "profile-detail";
+          const title = document.createElement("span");
+          title.textContent = label;
+          const content = document.createElement("strong");
+          content.textContent = value;
+          item.append(title, content);
+          list.appendChild(item);
+        }
+      }
+      document.documentElement.style.visibility = "visible";
+    } catch (_) {
+      clearSession();
+      window.location.replace("entrar.html?next=perfil.html");
     }
   }
 
@@ -282,5 +322,6 @@
 
     if (page === "index.html" || page === "") initializeHome();
     if (isEditor) protectEditor();
+    if (isProfile) protectProfile();
   });
 })();
