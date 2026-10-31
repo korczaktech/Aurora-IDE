@@ -187,7 +187,7 @@
     const event = { title, description, kind, at: new Date().toISOString() };
     activityEvents.unshift(event);
     activityEvents = activityEvents.slice(0, 100);
-    if (getSetting("local")) storageSet("aurora-activity", JSON.stringify(activityEvents));
+    storageSet("aurora-activity", JSON.stringify(activityEvents));
   };
   const formatActivityTime = value => {
     const date = new Date(value);
@@ -204,7 +204,7 @@
     if (count) count.textContent = String(activityEvents.length).padStart(2, "0") + " EVENTOS";
     if (projectMetric) projectMetric.textContent = String(projects.length).padStart(2, "0");
     if (noteMetric) noteMetric.textContent = String(notes.length).padStart(2, "0");
-    if (storageMetric) storageMetric.textContent = getSetting("local") ? "Local" : "Sessão";
+    if (storageMetric) storageMetric.textContent = "Local";
     list.innerHTML = activityEvents.length ? activityEvents.map(item => `<div class="activity-event"><span class="event-node"></span><time>${escapeHTML(formatActivityTime(item.at))}</time><div><strong>${escapeHTML(item.title)}</strong><p>${escapeHTML(item.description || "")}</p></div><span class="event-kind">${escapeHTML(item.kind || "SISTEMA")}</span></div>`).join("") : '<div class="empty-state"><strong>Nenhuma atividade registrada</strong><p>Suas ações nesta estação aparecerão aqui.</p></div>';
   };
   const refreshStorageStatus = () => {
@@ -215,7 +215,7 @@
     if (notesStatus) notesStatus.textContent = getSetting("local") ? `${notes.length} NOTA(S) · LOCAL` : `${notes.length} NOTA(S) · SESSÃO`;
     if (projectsStatus) projectsStatus.textContent = getSetting("local") ? `${projects.length} PROJETO(S) · LOCAL` : `${projects.length} PROJETO(S) · SESSÃO`;
     if (reposStatus) reposStatus.textContent = `${repos.length} REPOSITÓRIO(S) · SESSÃO`;
-    if (activityStatus) activityStatus.textContent = getSetting("local") ? "LOCAL" : "SESSÃO";
+    if (activityStatus) activityStatus.textContent = "LOCAL";
   };
   let notes = [];
   try { notes = JSON.parse(storageGet("aurora-notes", "[]")); } catch {}
@@ -358,7 +358,7 @@
     if (action === "clear-activity") {
       if (getSetting("confirm") && !window.confirm("Deseja limpar todo o histórico de atividade deste navegador?")) return;
       activityEvents = [];
-      if (getSetting("local")) storageSet("aurora-activity", "[]");
+      storageSet("aurora-activity", "[]");
       renderActivity();
       notify("Histórico de atividade limpo.");
     }
@@ -368,9 +368,9 @@
       const body = document.getElementById("note-body").value.trim();
       if (!title && !body) { notify("Escreva algo antes de salvar."); return; }
       notes.unshift({ title, body, updatedAt:Date.now() });
-      if (getSetting("local")) storageSet("aurora-notes", JSON.stringify(notes));
+      storageSet("aurora-notes", JSON.stringify(notes));
       recordActivity("Anotação salva: " + (title || "Sem título"), "Uma anotação foi criada nesta estação.", "ANOTAÇÃO");
-      renderNotes(); notify(getSetting("local") ? "Anotação salva neste navegador." : "Anotação disponível nesta sessão.");
+      renderNotes(); notify("Anotação salva neste navegador.");
     }
     if (action === "extension") {
       const button = event.target.closest("button");
@@ -402,7 +402,7 @@
       const key = event.target.dataset.setting;
       saveSetting(key, event.target.checked);
       if (key === "local" && !event.target.checked) {
-        ["animations","contrast","compact","start-home","confirm"].forEach(name => { try { window.localStorage.removeItem("aurora-setting-" + name); } catch (_) {} });
+        ["animations","contrast","compact","start-home","confirm","last-page"].forEach(name => { try { window.localStorage.removeItem(name === "last-page" ? "aurora-last-page" : "aurora-setting-" + name); } catch (_) {} });
       }
       if (key === "local" && event.target.checked) {
         Object.keys(settingDefaults).filter(name => name !== "local").forEach(name => storageSet("aurora-setting-" + name, String(settingsState[name])));
