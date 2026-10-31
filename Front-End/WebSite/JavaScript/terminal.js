@@ -3,7 +3,7 @@
   const API="https://aurora-api-cc1d.onrender.com";
   const token=()=>localStorage.getItem("aurora-access-token")||sessionStorage.getItem("aurora-access-token")||"";
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
-  let root=null,sessions=[],activeId=null,view="terminal",socket=null,terminal=null,fitAddon=null,resizeObserver=null,closed=false,history=[],historyIndex=0;
+  let root=null,sessions=[],activeId=null,view="terminal",socket=null,terminal=null,fitAddon=null,resizeObserver=null,terminals=new Map(),closed=false,history=[],historyIndex=0;
   const views=[["terminal","TERMINAL"],["output","OUTPUT"],["debug","DEBUG CONSOLE"],["problems","PROBLEMS"],["ports","PORTS"]];
   async function api(path,options={}) {
     const response=await fetch(API+path,{...options,headers:{Accept:"application/json",Authorization:"Bearer "+token(),...(options.body?{"Content-Type":"application/json"}:{}),...options.headers}});
@@ -16,7 +16,8 @@
   function current(){return sessions.find(s=>s.id===activeId);}
   function status(text){const n=root?.querySelector("[data-terminal-status]");if(n)n.textContent=text;}
   function stopSocket(){if(socket){socket.onclose=null;socket.close();socket=null;}}
-  function disposeTerminal(){if(resizeObserver){resizeObserver.disconnect();resizeObserver=null;}if(terminal){terminal.dispose();terminal=null;fitAddon=null;}}
+  function detachTerminal(){if(resizeObserver){resizeObserver.disconnect();resizeObserver=null;}terminal=null;fitAddon=null;}
+  function disposeSessionTerminal(id){const instance=terminals.get(id);if(instance){instance.terminal.dispose();terminals.delete(id);}if(activeId===id)detachTerminal();}
   function fit(){if(!terminal||!fitAddon||!socket||socket.readyState!==WebSocket.OPEN)return;try{fitAddon.fit();send({type:"resize",columns:terminal.cols,rows:terminal.rows});}catch(_){}}
   function connect(){
     stopSocket();
@@ -52,27 +53,42 @@
   }
   async function closeSession(){
     const session=current();if(!session)return;
-    stopSocket();disposeTerminal();
+    stopSocket();
     await api("/terminal/sessions/"+encodeURIComponent(session.id),{method:"DELETE"});
+    disposeSessionTerminal(session.id);
     sessions=sessions.filter(s=>s.id!==session.id);activeId=sessions[0]?.id||null;render();
     if(activeId)connect();else await create();
   }
   function buildTerminal(stage){
-    disposeTerminal();
+    detachTerminal();
     if(!window.Terminal||!window.FitAddon?.FitAddon){
       stage.append(el("p","editor-empty-message","Não foi possível carregar o emulador xterm.js. Verifique a conexão e recarregue o editor."));return;
     }
-    const host=el("div","aurora-xterm-host");stage.append(host);
-    terminal=new window.Terminal({cursorBlink:true,convertEol:true,scrollback:5000,fontSize:12,fontFamily:'"SFMono-Regular",Consolas,"Liberation Mono",monospace',theme:{background:"#050a0b",foreground:"#c5d5cd",cursor:"#8fe0b4",selectionBackground:"#315343"}});
-    fitAddon=new window.FitAddon.FitAddon();terminal.loadAddon(fitAddon);terminal.open(host);
-    terminal.onData(data=>send({type:"input",data}));
-    terminal.onResize(size=>send({type:"resize",columns:size.cols,rows:size.rows}));
-    resizeObserver=new ResizeObserver(()=>fit());resizeObserver.observe(host);
+    let instance=terminals.get(activeId);
+    if(instance){
+      terminal=instance.terminal;
+      fitAddon=instance.fitAddon;
+      stage.append(instance.host);
+    }else{
+      const host=el("div","aurora-xterm-host");stage.append(host);
+      terminal=new window.Terminal({cursorBlink:true,convertEol:true,scrollback:5000,fontSize:12,fontFamily:'"SFMono-Regular",Consolas,"Liberation Mono",monospace',theme:{background:"#050a0b",foreground:"#c5d5cd",cursor:"#8fe0b4",selectionBackground:"#315343"}});
+      fitAddon=new window.FitAddon.FitAddon();terminal.loadAddon(fitAddon);terminal.open(host);
+      terminal.onData(data=>send({type:"input",data}));
+      terminal.onResize(size=>send({type:"resize",columns:size.cols,rows:size.rows}));
+      instance={host,terminal,fitAddon};
+      terminals.set(activeId,instance);
+    }
+    resizeObserver=new ResizeObserver(()=>fit());resizeObserver.observe(instance.host);
     requestAnimationFrame(()=>{fitAddon?.fit();terminal?.focus();fit();});
   }
   function renderStage(){
+    detachTerminal();
     const stage=root.querySelector("[data-terminal-stage]");stage.replaceChildren();
-    if(view==="terminal"){buildTerminal(stage);return;}
+    if(view==="terminal"){
+      if(activeId)buildTerminal(stage);
+      else stage.append(el("p","editor-empty-message","Crie um terminal para iniciar o Bash."));
+      return;
+    }
     const messages={
       output:"A saída do Bash em tempo real aparece na aba TERMINAL.",
       debug:"O adaptador de depuração não faz parte da Fase 2.",
@@ -113,6 +129,6 @@
     content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,foot);container.append(shell);
     load().catch(error=>{status("Falha ao iniciar");stage.replaceChildren(el("p","editor-empty-message",error.message));});
   }
-  function unmount(){closed=true;stopSocket();disposeTerminal();root=null;}
+  function unmount(){closed=true;stopSocket();detachTerminal();root=null;}
   window.AuroraTerminal={mount,unmount};
 })();
