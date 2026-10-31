@@ -678,3 +678,8 @@ body {
 .code-input{font-size:var(--code-font-size,13px)}
 .code-gutter{font-size:var(--code-font-size,13px)}
 @media(max-width:700px){.header-actions{gap:0}.header-action-button{width:31px;height:34px;padding:7px}.editor-floating-panel{right:8px;width:min(390px,calc(100vw - 16px))}.editor-preview-panel,.editor-terminal-panel{left:8px;right:8px;width:auto}}
+
+.editor-preview-panel .editor-panel-content { display:flex; flex:1; flex-direction:column; min-height:0; }
+.editor-terminal-panel .editor-panel-content { display:flex; flex:1; flex-direction:column; min-height:0; }
+.editor-terminal-output { flex:1; min-height:100px; overflow:auto; }
+.editor-terminal-form { flex:0 0 auto; }
