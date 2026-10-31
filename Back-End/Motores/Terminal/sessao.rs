@@ -463,12 +463,20 @@ mod tests {
         const EXPECTED_Z_BYTES: usize = 524_288;
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
+
+        manager
+            . write(&session.id, b"stty -echo\\n")
+            .expect("desativar eco do terminal");
+        thread::sleep(Duration::from_millis(50));
+        let _ = manager.read_output(&session.id, 256).expect("limpar eco inicial");
+
         manager
             .write(
                 &session.id,
-                b"stty -echo; yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
+                b"yes Z | head -c 1048576; printf '\\nAURORA_FLOOD_DONE\\n'\\n",
             )
-            .expect("comando");
+            .expect("comando de saída intensa");
+
         let deadline = Instant::now() + Duration::from_secs(15);
         let mut output = Vec::new();
         while Instant::now() < deadline {
@@ -483,6 +491,7 @@ mod tests {
             }
             thread::sleep(Duration::from_millis(10));
         }
+
         let z_bytes = output.iter().filter(|byte| **byte == b'Z').count();
         assert_eq!(z_bytes, EXPECTED_Z_BYTES, "nenhum byte pode ser descartado");
         assert!(
