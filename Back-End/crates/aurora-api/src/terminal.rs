@@ -274,16 +274,12 @@ async fn close_session(
         ));
     }
 
-    state
-        .terminal
-        .manager
-        .close_session(&id)
-        .map_err(|error| {
-            (
-                StatusCode::NOT_FOUND,
-                Json(json!({"error":error.to_string()})),
-            )
-        })?;
+    state.terminal.manager.close_session(&id).map_err(|error| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(json!({"error":error.to_string()})),
+        )
+    })?;
     state
         .terminal
         .owners
@@ -304,15 +300,12 @@ async fn create_ticket(
     Path(id): Path<String>,
 ) -> Result<Json<Value>, (StatusCode, Json<Value>)> {
     let account = admin_account(&state, &headers).await?;
-    let value = state
-        .terminal
-        .ticket(&account.id, &id)
-        .map_err(|_| {
-            (
-                StatusCode::NOT_FOUND,
-                Json(json!({"error":"Sessão não encontrada"})),
-            )
-        })?;
+    let value = state.terminal.ticket(&account.id, &id).map_err(|_| {
+        (
+            StatusCode::NOT_FOUND,
+            Json(json!({"error":"Sessão não encontrada"})),
+        )
+    })?;
     Ok(Json(json!({"ticket":value,"expires_in_seconds":30})))
 }
 
@@ -323,11 +316,7 @@ fn protocol_ticket(headers: &HeaderMap) -> Option<String> {
         .ok()?
         .split(',')
         .map(str::trim)
-        .find_map(|value| {
-            value
-                .strip_prefix("aurora-ticket.")
-                .map(str::to_owned)
-        })
+        .find_map(|value| value.strip_prefix("aurora-ticket.").map(str::to_owned))
 }
 
 async fn websocket(
@@ -445,7 +434,10 @@ async fn serve(mut socket: WebSocket, state: AppState, id: String) {
 
 pub fn router(state: AppState) -> Router {
     Router::new()
-        .route("/terminal/sessions", get(list_sessions).post(create_session))
+        .route(
+            "/terminal/sessions",
+            get(list_sessions).post(create_session),
+        )
         .route("/terminal/sessions/{id}", delete(close_session))
         .route("/terminal/sessions/{id}/ticket", post(create_ticket))
         .route("/terminal/ws", get(websocket))
