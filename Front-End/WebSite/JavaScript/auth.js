@@ -187,14 +187,52 @@
       if (accountName) accountName.textContent = account.name;
       if (initial) initial.textContent = (account.name || "A").trim().charAt(0).toUpperCase();
       if (avatar) {
-        avatar.title = "Sair da conta";
-        avatar.setAttribute("aria-label", "Sair da conta");
-        avatar.addEventListener("click", async () => {
-          avatar.disabled = true;
-          try { await api("/auth/logout", { method: "POST", token }); } catch (_) {}
-          clearSession();
-          window.location.reload();
-        }, { once: true });
+        const menu = document.createElement("div");
+        menu.className = "account-menu";
+        menu.id = "accountMenu";
+        menu.hidden = true;
+        menu.setAttribute("role", "menu");
+        menu.innerHTML = `
+          <div class="account-menu-heading">
+            <span class="account-menu-avatar">${(account.name || "A").trim().charAt(0).toUpperCase()}</span>
+            <span class="account-menu-identity"><strong>${String(account.name || "Conta Aurora").replace(/[&<>"]/g, "")}</strong><small>Conta Korczak</small></span>
+          </div>
+          <div class="account-menu-divider"></div>
+          <a class="account-menu-item" role="menuitem" href="https://vault.korczaktech.com.br/"><span class="account-menu-icon">▣</span><span>Korczak Vault</span><span class="account-menu-arrow">↗</span></a>
+          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/contato"><span class="account-menu-icon">✳</span><span>FeedBack</span><span class="account-menu-arrow">↗</span></a>
+          <a class="account-menu-item" role="menuitem" href="https://site.korczaktech.com.br/#/planos"><span class="account-menu-icon">◇</span><span>Planos do EDS</span><span class="account-menu-arrow">↗</span></a>
+          <button class="account-menu-item" type="button" role="menuitem" data-account-profile><span class="account-menu-icon">◎</span><span>Meu perfil</span><span class="account-menu-arrow">→</span></button>
+        `;
+        accountArea.appendChild(menu);
+        avatar.title = "Abrir menu da conta";
+        avatar.setAttribute("aria-label", "Abrir menu da conta");
+        avatar.setAttribute("aria-haspopup", "menu");
+        avatar.setAttribute("aria-expanded", "false");
+        const closeMenu = () => {
+          menu.hidden = true;
+          avatar.setAttribute("aria-expanded", "false");
+        };
+        avatar.addEventListener("click", event => {
+          event.stopPropagation();
+          const opening = menu.hidden;
+          menu.hidden = !opening;
+          avatar.setAttribute("aria-expanded", String(opening));
+        });
+        menu.addEventListener("click", event => {
+          if (event.target.closest("[data-account-profile]")) {
+            closeMenu();
+            document.querySelector('.rail-item[data-page="configuracoes"]')?.click();
+          }
+        });
+        document.addEventListener("click", event => {
+          if (!accountArea.contains(event.target)) closeMenu();
+        });
+        document.addEventListener("keydown", event => {
+          if (event.key === "Escape") {
+            closeMenu();
+            avatar.focus();
+          }
+        });
       }
     } catch (_) {
       clearSession();
