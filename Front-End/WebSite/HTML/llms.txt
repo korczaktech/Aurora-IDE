@@ -11,7 +11,7 @@ Endereço canônico atual: https://aurora.korczaktech.com.br/index.html
 
 ## Páginas públicas
 
-- [Página inicial](https://aurora.korczaktech.com.br/): apresentação oficial da Aurora EDS.
+- [Página inicial](https://aurora.korczaktech.com.br/index.html): apresentação oficial da Aurora EDS.
 - [Sobre o Aurora](https://aurora.korczaktech.com.br/sobre.html): identidade, objetivo e estado do produto.
 - [Recursos e estado atual](https://aurora.korczaktech.com.br/recursos.html): descrição das ferramentas existentes e das limitações da versão 0.0.1.
 
