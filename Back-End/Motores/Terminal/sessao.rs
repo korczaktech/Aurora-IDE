@@ -81,7 +81,11 @@ impl TerminalSession {
 
     fn refresh_status(&mut self) -> TerminalResult<()> {
         if self.status == TerminalSessionStatus::Running {
-            if let Some(status) = self.child.try_wait().map_err(|e| TerminalError::Pty(e.to_string()))? {
+            if let Some(status) = self
+                .child
+                .try_wait()
+                .map_err(|e| TerminalError::Pty(e.to_string()))?
+            {
                 self.status = TerminalSessionStatus::Exited;
                 self.exit_code = Some(status.exit_code());
                 self.info.status = self.status;
@@ -211,7 +215,12 @@ impl TerminalManager {
         };
         let writer = match pair.master.take_writer() {
             Ok(writer) => writer,
-            Err(error) => { let mut child = child; let _ = child.kill(); let _ = child.wait(); return Err(TerminalError::Pty(error.to_string())); }
+            Err(error) => {
+                let mut child = child;
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(TerminalError::Pty(error.to_string()));
+            }
         };
         let (tx, rx) = sync_channel::<Vec<u8>>(128);
         spawn_reader(reader, tx);
@@ -420,7 +429,9 @@ mod tests {
     fn detecta_saida_espontanea_e_libera_vaga() {
         let manager = manager(1);
         let first = manager.create_session(None).expect("primeira sessão");
-        manager.write(&first.id, b"exit 7\n").expect("encerrar shell");
+        manager
+            .write(&first.id, b"exit 7\n")
+            .expect("encerrar shell");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut state = TerminalSessionStatus::Running;
         let mut exit_code = None;
@@ -444,7 +455,10 @@ mod tests {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
         manager
-            .write(&session.id, b"yes AURORA_FLOOD | head -c 2000000; echo AURORA_FLOOD_DONE\n")
+            .write(
+                &session.id,
+                b"yes AURORA_FLOOD | head -c 2000000; echo AURORA_FLOOD_DONE\n",
+            )
             .expect("comando");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut completed = false;
