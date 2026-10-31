@@ -45,7 +45,12 @@
       </div>
     </form>
 
-    <div class="header-actions" aria-hidden="true"></div>
+    <div class="header-actions" aria-label="Painéis do editor">
+      <button class="header-action-button" id="header-layout" type="button" data-header-action="layout" aria-label="Layout" title="Layout" aria-pressed="false"><img src="../SVG/editor-layout.svg" alt=""></button>
+      <button class="header-action-button" id="header-notes" type="button" data-header-action="notes" aria-label="Anotações" title="Anotações" aria-pressed="false"><img src="../SVG/editor-notes.svg" alt=""></button>
+      <button class="header-action-button" id="header-repositories" type="button" data-header-action="repositories" aria-label="Repositórios" title="Repositórios" aria-pressed="false"><img src="../SVG/editor-repositories.svg" alt=""></button>
+      <button class="header-action-button" id="header-settings" type="button" data-header-action="settings" aria-label="Configurações" title="Configurações" aria-pressed="false"><img src="../SVG/editor-settings.svg" alt=""></button>
+    </div>
   </header>
 
   <main class="editor-workspace" aria-label="Área de desenvolvimento">
@@ -388,6 +393,19 @@ startProject();`
         });
       });
 
+      window.AuroraEditor = {
+        get files() { return { ...codeFiles }; },
+        get activeFile() { return activeCodeFile; },
+        get textarea() { return codeInput; },
+        openFile: openCodeFile,
+        setFiles(files, activeName) {
+          Object.entries(files || {}).forEach(([name, content]) => {
+            if (typeof content === "string" && /^[\w.-]+$/.test(name)) codeFiles[name] = content;
+          });
+          openCodeFile(activeName && codeFiles[activeName] ? activeName : activeCodeFile);
+        }
+      };
+
       openCodeFile("index.html");
 
       // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
@@ -396,5 +414,6 @@ startProject();`
     })();
   </script>
   <script src="../JavaScript/editor-gutter.js"></script>
+  <script src="../JavaScript/editor-controls.js"></script>
 </body>
 </html>
