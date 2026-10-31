@@ -207,10 +207,9 @@ impl TerminalManager {
 
         let mut command = CommandBuilder::new(self.config.shell_path.to_string_lossy().as_ref());
         command.arg("--noprofile");
+        command.arg("--norc");
         command.arg("-i");
-        let (history_file, rc_file) = prepare_history(&directory)?;
-        command.arg("--rcfile");
-        command.arg(rc_file.to_string_lossy().as_ref());
+        let history_file = prepare_history(&directory)?;
         command.env_clear();
         command.cwd(&directory);
         command.env("PATH", "/usr/local/bin:/usr/bin:/bin");
@@ -222,6 +221,10 @@ impl TerminalManager {
         command.env("HISTSIZE", "10000");
         command.env("HISTFILESIZE", "20000");
         command.env("HISTCONTROL", "ignoreboth");
+        command.env(
+            "PROMPT_COMMAND",
+            "shopt -s histappend; history -a; history -n",
+        );
         for (key, value) in &self.config.environment {
             command.env(key, value);
         }
@@ -380,33 +383,20 @@ impl Drop for TerminalManager {
     }
 }
 
-fn prepare_history(directory: &std::path::Path) -> TerminalResult<(PathBuf, PathBuf)> {
+fn prepare_history(directory: &std::path::Path) -> TerminalResult<PathBuf> {
     use std::fs::OpenOptions;
     let history = directory.join(".aurora_history");
-    let rc = directory.join(".aurora-bashrc");
     let history_handle = OpenOptions::new()
         .create(true)
         .append(true)
         .open(&history)?;
     drop(history_handle);
-    let rc_contents = concat!(
-        "umask 077\n",
-        "shopt -s histappend\n",
-        "HISTCONTROL=ignoreboth\n",
-        "HISTSIZE=10000\n",
-        "HISTFILESIZE=20000\n",
-        "PROMPT_COMMAND='history -a; history -n'\n"
-    );
-    if !rc.exists() {
-        std::fs::write(&rc, rc_contents)?;
-    }
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(&history, std::fs::Permissions::from_mode(0o600))?;
-        std::fs::set_permissions(&rc, std::fs::Permissions::from_mode(0o600))?;
     }
-    Ok((history, rc))
+    Ok(history)
 }
 
 fn validate_session_environment(environment: &BTreeMap<String, String>) -> TerminalResult<()> {
