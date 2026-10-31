@@ -114,7 +114,7 @@
     });
 
     middleLine.addEventListener("animationend", (event) => {
-      if (event.animationName === "menu-middle-journey") revealToolRail();
+      if (event.animationName === "menu-middle-journey" && !menuMark.classList.contains("is-returning")) revealToolRail();
     });
 
     // A sequência é automática: o símbolo se desfaz e libera a barra de ferramentas.
