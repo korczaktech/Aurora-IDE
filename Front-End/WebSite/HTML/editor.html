@@ -127,13 +127,23 @@
       menuMark.classList.add("is-open");
     });
 
-    menuMark.addEventListener("animationend", (event) => {
-      if (event.target !== thirdLine || event.animationName !== "menu-third-travel" || !menuMark.classList.contains("is-returning")) return;
+    function finishMenuReturn() {
+      if (!menuMark.classList.contains("is-returning")) return;
       menuMark.classList.remove("is-open", "is-returning");
       menuMark.classList.add("is-returned");
-      openButton.disabled = false;
       toolRail.classList.remove("is-visible", "is-closing");
+      backButton.hidden = true;
+      backButton.disabled = true;
+      openButton.disabled = false;
+      openButton.setAttribute("aria-label", "Abrir ferramentas");
+      openButton.title = "Abrir ferramentas";
+    }
+
+    // O listener fica diretamente no terceiro traço, que encerra a última etapa do retorno.
+    thirdLine.addEventListener("animationend", (event) => {
+      if (event.animationName === "menu-third-travel") finishMenuReturn();
     });
+    thirdLine.addEventListener("animationcancel", finishMenuReturn);
 
     middleLine.addEventListener("animationend", (event) => {
       if (event.animationName === "menu-middle-journey" && !menuMark.classList.contains("is-returning")) revealToolRail();
