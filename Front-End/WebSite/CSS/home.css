@@ -801,3 +801,38 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .plans-bottom-line{margin-top:28px}
 @media(max-width:760px){.plans-intro{grid-template-columns:auto minmax(0,1fr)}.plans-publication{grid-column:2;justify-self:start}.plans-feature-grid{grid-template-columns:1fr}.plans-feature{min-height:0;padding:18px 4px}.plans-feature+.plans-feature{border-left:0;border-top:1px solid rgba(135,182,148,.13);padding-left:4px}}
 @media(max-width:560px){.profile-overview-top{align-items:flex-start;flex-wrap:wrap}.profile-live{margin-left:82px}.profile-section-head,.plans-section-heading{font-size:8px}.profile-detail{align-items:flex-start;flex-direction:column;gap:7px}.profile-detail strong{text-align:left}.profile-footer,.plans-bottom-line{align-items:flex-start;flex-direction:column;line-height:1.8}.plans-intro{grid-template-columns:1fr}.plans-publication{grid-column:auto}.aurora-content-page .page-shell{padding:40px 20px 55px}}
+
+
+/* Planos pagos do Aurora EDS */
+.eds-plans-heading{position:relative;z-index:1;display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin:34px 0 22px;padding:0 0 18px;border-bottom:1px solid rgba(135,182,148,.17)}
+.eds-plans-heading-copy h2{margin:9px 0 7px;color:#e1ece4;font-size:clamp(19px,2.2vw,25px);font-weight:650;letter-spacing:-.7px}
+.eds-plans-heading-copy p{margin:0;color:#899a8f;font-size:11px;line-height:1.8}
+.eds-plans-unit{display:grid;gap:6px;flex:none;text-align:right}
+.eds-plans-unit span{color:#708c79;font:8px 'DM Mono',monospace;letter-spacing:1.5px}
+.eds-plans-unit strong{color:#b4d1bc;font:10px 'DM Mono',monospace;letter-spacing:1px}
+.eds-plans-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.eds-plan-card{position:relative;min-width:0;padding:22px 21px 20px;border:1px solid rgba(135,182,148,.18);background:linear-gradient(145deg,rgba(18,31,24,.86),rgba(7,12,11,.9));box-shadow:0 15px 38px rgba(0,0,0,.13);transition:border-color .2s,transform .2s,background .2s}
+.eds-plan-card:hover{transform:translateY(-3px);border-color:rgba(139,199,160,.48);background:linear-gradient(145deg,rgba(22,40,29,.94),rgba(8,14,12,.94))}
+.eds-plan-top{display:flex;justify-content:space-between;align-items:center}
+.eds-plan-index{color:#71947c;font:8px 'DM Mono',monospace;letter-spacing:1.2px}
+.eds-plan-mark{color:#62816b;font:9px 'DM Mono',monospace;letter-spacing:2px}
+.eds-plan-card h3{margin:22px 0 13px;color:#e1ece4;font-size:19px;font-weight:650;letter-spacing:-.5px}
+.eds-plan-price{display:flex;align-items:flex-start;gap:7px;color:#dcebe0}
+.eds-currency{padding-top:9px;color:#9bc5a6;font:12px 'DM Mono',monospace}
+.eds-plan-price strong{font-size:clamp(35px,4vw,43px);line-height:1;font-weight:600;letter-spacing:-2px}
+.eds-plan-unit{margin-top:7px;color:#82968a;font:9px 'DM Mono',monospace;letter-spacing:.5px}
+.eds-plan-divider{height:1px;margin:22px 0 15px;background:linear-gradient(90deg,rgba(135,182,148,.23),rgba(135,182,148,.04))}
+.eds-plan-capacity{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.eds-plan-capacity span{color:#82958a;font-size:10px}
+.eds-plan-capacity strong{color:#d4e6d9;font:500 13px 'DM Mono',monospace}
+.eds-plan-capacity strong.eds-unlimited{color:#a9d5b5;font-size:11px}
+.eds-plan-capacity-bar{height:2px;margin-top:14px;overflow:hidden;background:rgba(135,182,148,.1)}
+.eds-plan-capacity-bar i{display:block;height:100%;background:linear-gradient(90deg,#527b60,#a0d2ac)}
+.eds-plan-card-unlimited{border-color:rgba(139,199,160,.34);background:linear-gradient(145deg,rgba(24,43,31,.92),rgba(8,14,12,.94))}
+.eds-plan-card-unlimited .eds-plan-mark{color:#9ac9a5}
+.eds-plan-card-unlimited .eds-plan-capacity-bar i{width:100%;background:linear-gradient(90deg,#527b60,#b4e2bd)}
+.eds-plans-footnote{position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px;max-width:780px;margin-top:25px;color:#84978b}
+.eds-footnote-symbol{color:#8bc7a0;font-size:16px}
+.eds-plans-footnote p{margin:0;font-size:10px;line-height:1.85}
+@media(max-width:900px){.eds-plans-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.eds-plans-heading{align-items:flex-start;flex-direction:column}.eds-plans-unit{text-align:left}.eds-plans-grid{grid-template-columns:1fr}.eds-plan-card{padding:20px}.eds-plan-card h3{margin-top:17px}.eds-plan-price strong{font-size:40px}}
