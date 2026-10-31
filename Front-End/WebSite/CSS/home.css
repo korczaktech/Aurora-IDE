@@ -597,3 +597,66 @@
 .app-page .tree-chevron{display:inline-block;text-align:center;transition:transform .16s ease}
 .app-page .tree-folder[aria-expanded="false"] .tree-chevron{transform:translateX(1px)}
 .app-page .tree-row[hidden]{display:none!important}
+
+
+/* Mentoria Korczak — apresentação institucional e trilha personalizada */
+.app-page.page-mentoria .page-shell{max-width:1120px}
+.app-page .mentoria-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(220px,.75fr);gap:44px;align-items:center;padding:32px 0 43px;border-top:1px solid rgba(135,182,148,.17)}
+.app-page .mentoria-hero-copy h2{max-width:680px;margin:15px 0 16px;color:#e4efe7;font-size:clamp(30px,4.2vw,49px);line-height:1.13;letter-spacing:-1.8px;font-weight:560}
+.app-page .mentoria-hero-copy p{max-width:650px;margin:0 0 24px;color:#89978e;font-size:11px;line-height:2}
+.app-page .mentoria-hero-mark{position:relative;min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;overflow:hidden}
+.app-page .mentoria-hero-mark:before{content:"";position:absolute;width:190px;height:120px;border-radius:50%;background:radial-gradient(ellipse,rgba(41,112,70,.25),transparent 70%);filter:blur(15px)}
+.app-page .mentoria-mark-orbit{position:absolute;width:190px;height:100px;border:1px solid rgba(113,184,135,.25);border-radius:50%;transform:rotate(-28deg)}
+.app-page .mentoria-hero-mark strong{z-index:1;color:#e4f1e7;font-size:76px;font-weight:650;letter-spacing:-7px;text-shadow:0 0 35px rgba(107,192,131,.2)}
+.app-page .mentoria-hero-mark strong span,.app-page .certificate-emblem span{color:#83c49a}
+.app-page .mentoria-hero-mark small{z-index:1;color:#718d79;font:7px 'DM Mono',monospace;letter-spacing:1.4px}
+.app-page .mentoria-manifesto{margin:0 0 44px;padding:23px 26px;border-left:2px solid #78b68b;background:linear-gradient(90deg,rgba(41,91,54,.16),transparent 82%)}
+.app-page .mentoria-manifesto p{max-width:850px;margin:10px 0 0;color:#a9b9ad;font-size:clamp(14px,1.8vw,19px);line-height:1.7}
+.app-page .mentoria-manifesto strong{color:#e1eee4;font-weight:600}
+.app-page .mentoria-courses{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;border-top:1px solid rgba(135,182,148,.16);border-bottom:1px solid rgba(135,182,148,.16)}
+.app-page .mentoria-course{min-width:0;padding:19px 17px 21px 0;border-right:1px solid rgba(135,182,148,.12)}
+.app-page .mentoria-course+.mentoria-course{padding-left:17px}
+.app-page .mentoria-course:last-child{border-right:0}
+.app-page .mentoria-course-top{display:flex;align-items:center;justify-content:space-between}
+.app-page .course-index{color:#6f8c77;font:9px 'DM Mono',monospace}
+.app-page .course-symbol{color:#86bd95;font-size:20px}
+.app-page .mentoria-course h3{margin:17px 0 8px;color:#e0ece4;font-size:16px;font-weight:600}
+.app-page .mentoria-course p{min-height:58px;margin:0;color:#819087;font-size:9px;line-height:1.8}
+.app-page .course-levels{display:flex;flex-wrap:wrap;gap:5px;margin-top:16px}
+.app-page .course-levels span{padding:6px 7px;border:1px solid rgba(135,182,148,.16);color:#a4b7a8;font-size:8px}
+.app-page .course-custom{background:linear-gradient(180deg,rgba(39,89,54,.09),transparent)}
+.app-page .mentoria-duration{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,.9fr);gap:35px;align-items:center;margin:43px 0;padding:24px 0;border-top:1px solid rgba(135,182,148,.15);border-bottom:1px solid rgba(135,182,148,.15)}
+.app-page .mentoria-duration h2,.app-page .opportunity-heading h2,.app-page .mentoria-final h2{margin:9px 0;color:#e1ede4;font-size:clamp(20px,2.5vw,28px);font-weight:550;letter-spacing:-.7px}
+.app-page .mentoria-duration p,.app-page .opportunity-heading p,.app-page .mentoria-final p{max-width:560px;margin:0;color:#829188;font-size:10px;line-height:1.9}
+.app-page .duration-options{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.app-page .duration-options>div{display:grid;gap:5px;justify-items:center;padding:13px 8px;border:1px solid rgba(135,182,148,.17);background:rgba(7,17,12,.35)}
+.app-page .duration-options strong{color:#dcebe0;font:500 27px 'DM Mono',monospace}
+.app-page .duration-options span{color:#78917f;font:8px 'DM Mono',monospace;letter-spacing:1px}
+.app-page .mentoria-process{position:relative;margin:6px 0 43px}
+.app-page .process-step{display:grid;grid-template-columns:45px minmax(0,1fr);gap:17px;padding:19px 0;border-bottom:1px solid rgba(135,182,148,.1)}
+.app-page .process-step>span{width:34px;height:34px;display:grid;place-items:center;border:1px solid rgba(112,173,132,.3);border-radius:50%;color:#9dcaa8;font:10px 'DM Mono',monospace}
+.app-page .process-step h3{margin:1px 0 6px;color:#dce9df;font-size:12px;font-weight:600}
+.app-page .process-step p{max-width:780px;margin:0;color:#7f8f84;font-size:10px;line-height:1.85}
+.app-page .mentoria-certificate{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:21px;align-items:center;margin:44px 0;padding:24px 0;border-top:1px solid rgba(135,182,148,.17);border-bottom:1px solid rgba(135,182,148,.17)}
+.app-page .certificate-emblem{width:58px;height:58px;display:grid;place-items:center;border:1px solid rgba(119,184,139,.34);border-radius:50%;background:radial-gradient(circle,rgba(42,107,67,.25),transparent 75%);color:#dcebe0;font-size:25px;font-weight:700}
+.app-page .mentoria-certificate h2{margin:8px 0;color:#e0ece4;font-size:19px;font-weight:550}
+.app-page .mentoria-certificate p{max-width:700px;margin:0;color:#819087;font-size:10px;line-height:1.9}
+.app-page .certificate-types{display:grid;gap:10px;color:#8bb997;font:8px 'DM Mono',monospace;white-space:nowrap}
+.app-page .mentoria-opportunity{margin:44px 0;padding:27px 0;border-top:1px solid rgba(135,182,148,.17);border-bottom:1px solid rgba(135,182,148,.17)}
+.app-page .opportunity-heading{max-width:790px;margin-bottom:22px}
+.app-page .opportunity-heading h2{font-size:clamp(22px,2.8vw,31px)}
+.app-page .opportunity-heading p strong{color:#d8e7dc}
+.app-page .opportunity-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0}
+.app-page .opportunity-option{padding:20px 24px 20px 0;border-top:1px solid rgba(135,182,148,.14);border-bottom:1px solid rgba(135,182,148,.14)}
+.app-page .opportunity-option+.opportunity-option{padding-left:24px;border-left:1px solid rgba(135,182,148,.14)}
+.app-page .option-number{color:#82b993;font:8px 'DM Mono',monospace;letter-spacing:.8px}
+.app-page .opportunity-option h3{margin:12px 0;color:#e0ece4;font-size:17px;font-weight:600}
+.app-page .opportunity-option p{min-height:78px;margin:0 0 18px;color:#829188;font-size:10px;line-height:1.9}
+.app-page .opportunity-option>strong{color:#a4c8aa;font:8px 'DM Mono',monospace;letter-spacing:.4px}
+.app-page .opportunity-company{background:linear-gradient(90deg,rgba(39,89,54,.1),transparent)}
+.app-page .opportunity-note{margin:15px 0 0;color:#697b70;font-size:9px;line-height:1.8}
+.app-page .mentoria-final{display:flex;flex-direction:column;align-items:flex-start;margin:42px 0 8px;padding:25px 0 5px;border-top:1px solid rgba(135,182,148,.16)}
+.app-page .mentoria-final h2{font-size:clamp(24px,3vw,34px)}
+.app-page .mentoria-final p{margin-bottom:19px}
+@media(max-width:900px){.app-page .mentoria-courses{grid-template-columns:repeat(2,minmax(0,1fr))}.app-page .mentoria-course:nth-child(2){border-right:0}.app-page .mentoria-course:nth-child(n+3){border-top:1px solid rgba(135,182,148,.12)}.app-page .mentoria-course:nth-child(3){padding-left:0}.app-page .mentoria-course p{min-height:45px}}
+@media(max-width:650px){.app-page .mentoria-hero{grid-template-columns:1fr;gap:8px;padding-top:23px}.app-page .mentoria-hero-mark{min-height:135px}.app-page .mentoria-hero-mark strong{font-size:55px}.app-page .mentoria-mark-orbit{width:145px;height:75px}.app-page .mentoria-manifesto{padding:18px}.app-page .mentoria-courses{grid-template-columns:1fr}.app-page .mentoria-course,.app-page .mentoria-course+.mentoria-course{padding:17px 0;border-right:0;border-bottom:1px solid rgba(135,182,148,.1)}.app-page .mentoria-course:last-child{border-bottom:0}.app-page .mentoria-course p{min-height:0}.app-page .mentoria-duration{grid-template-columns:1fr;gap:19px}.app-page .mentoria-certificate{grid-template-columns:55px minmax(0,1fr);gap:14px}.app-page .certificate-emblem{width:49px;height:49px}.app-page .certificate-types{grid-column:2;display:flex;flex-wrap:wrap;gap:13px}.app-page .opportunity-options{grid-template-columns:1fr}.app-page .opportunity-option,.app-page .opportunity-option+.opportunity-option{padding:19px 0;border-left:0}.app-page .opportunity-option p{min-height:0}.app-page .mentoria-final .action-primary{max-width:100%;white-space:normal}}
