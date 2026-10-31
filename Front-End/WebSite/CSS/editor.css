@@ -683,3 +683,13 @@ body {
 .editor-terminal-panel .editor-panel-content { display:flex; flex:1; flex-direction:column; min-height:0; }
 .editor-terminal-output { flex:1; min-height:100px; overflow:auto; }
 .editor-terminal-form { flex:0 0 auto; }
+
+.editor-terminal-integrated{top:auto;right:16px;bottom:12px;left:16px;width:auto;height:min(360px,58%);max-height:calc(100% - 24px);box-shadow:0 -14px 45px #0008}
+.editor-terminal-integrated .editor-panel-content{display:flex;flex:1;min-height:0;padding:10px 13px 13px}
+.editor-terminal-shell{display:flex;flex:1;min-height:0;flex-direction:column;gap:9px}
+.editor-terminal-output{flex:1;min-height:0;overflow:auto;padding:12px 14px;border:1px solid #1e3030;border-radius:4px;background:#050a0b;color:#c5d5cd;font:11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;overflow-wrap:anywhere}
+.terminal-output-line{margin:2px 0}.terminal-accent{color:#8fe0b4}.terminal-muted{color:#82968d}.terminal-command{color:#e0ece6}.terminal-error{color:#e5a08f}
+.editor-terminal-integrated .editor-terminal-form{margin:0;gap:9px}
+.editor-terminal-integrated .editor-terminal-form input{padding:10px 12px;font:11px ui-monospace,SFMono-Regular,Consolas,monospace}
+.terminal-prompt{color:#8fe0b4;font:15px ui-monospace,monospace}
+@media(max-width:700px){.editor-terminal-integrated{left:8px;right:8px;bottom:8px;height:min(390px,65%)}.editor-terminal-integrated .editor-panel-heading{padding:12px 13px}.editor-terminal-integrated .editor-panel-content{padding:8px}}
