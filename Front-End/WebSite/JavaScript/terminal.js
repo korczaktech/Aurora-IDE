@@ -3,7 +3,7 @@
   const API="https://aurora-api-cc1d.onrender.com";
   const token=()=>localStorage.getItem("aurora-access-token")||sessionStorage.getItem("aurora-access-token")||"";
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
-  let root=null,sessions=[],activeId=null,view="terminal",socket=null,terminal=null,fitAddon=null,resizeObserver=null,terminals=new Map(),closed=false,history=[],historyIndex=0;
+  let root=null,sessions=[],activeId=null,view="terminal",socket=null,terminal=null,fitAddon=null,resizeObserver=null,terminals=new Map(),outputLogs=new Map(),outputDecoders=new Map(),closed=false,history=[],historyIndex=0;
   const views=[["terminal","TERMINAL"],["output","OUTPUT"],["debug","DEBUG CONSOLE"],["problems","PROBLEMS"],["ports","PORTS"]];
   async function api(path,options={}) {
     const response=await fetch(API+path,{...options,headers:{Accept:"application/json",Authorization:"Bearer "+token(),...(options.body?{"Content-Type":"application/json"}:{}),...options.headers}});
@@ -15,6 +15,28 @@
   function send(message){if(socket?.readyState===WebSocket.OPEN)socket.send(JSON.stringify(message));}
   function current(){return sessions.find(s=>s.id===activeId);}
   function status(text){const n=root?.querySelector("[data-terminal-status]");if(n)n.textContent=text;}
+  function appendOutput(id,text){
+    if(!text)return;
+    const limit=262144;
+    let value=(outputLogs.get(id)||"")+text;
+    if(value.length>limit)value=value.slice(-limit);
+    outputLogs.set(id,value);
+    if(view==="output"&&activeId===id){
+      const panel=root?.querySelector("[data-terminal-output]");
+      if(panel){const follow=panel.scrollHeight-panel.scrollTop-panel.clientHeight<32;panel.textContent=value||"Nenhuma saída recebida.";if(follow)panel.scrollTop=panel.scrollHeight;}
+    }
+  }
+  function recordBinaryOutput(id,bytes){
+    let decoder=outputDecoders.get(id);
+    if(!decoder){decoder=new TextDecoder();outputDecoders.set(id,decoder);}
+    appendOutput(id,decoder.decode(bytes,{stream:true}));
+  }
+  function renderOutput(stage){
+    const panel=el("pre","aurora-terminal-output",outputLogs.get(activeId)||"Nenhuma saída recebida nesta sessão.");
+    panel.dataset.terminalOutput="";
+    stage.append(panel);
+    panel.scrollTop=panel.scrollHeight;
+  }
   function stopSocket(){if(socket){socket.onopen=null;socket.onmessage=null;socket.onerror=null;socket.onclose=null;socket.close();socket=null;}}
   function detachTerminal(){if(resizeObserver){resizeObserver.disconnect();resizeObserver=null;}terminal=null;fitAddon=null;}
   function disposeSessionTerminal(id){const instance=terminals.get(id);if(instance){instance.terminal.dispose();terminals.delete(id);}if(activeId===id)detachTerminal();}
@@ -51,13 +73,14 @@
   async function create(){
     status("Criando sessão Bash…");
     const result=await api("/terminal/sessions",{method:"POST",body:"{}"});
-    sessions.push(result.session);activeId=result.session.id;history=[];historyIndex=0;render();connect();
+    sessions.push(result.session);activeId=result.session.id;history=[];historyIndex=0;outputLogs.set(activeId,"");outputDecoders.delete(activeId);render();connect();
   }
   async function closeSession(){
     const session=current();if(!session)return;
     stopSocket();
     await api("/terminal/sessions/"+encodeURIComponent(session.id),{method:"DELETE"});
     disposeSessionTerminal(session.id);
+    outputLogs.delete(session.id);outputDecoders.delete(session.id);
     sessions=sessions.filter(s=>s.id!==session.id);activeId=sessions[0]?.id||null;render();
     if(activeId)connect();else await create();
   }
@@ -91,8 +114,8 @@
       else stage.append(el("p","editor-empty-message","Crie um terminal para iniciar o Bash."));
       return;
     }
+    if(view==="output"){renderOutput(stage);return;}
     const messages={
-      output:"A saída do Bash em tempo real aparece na aba TERMINAL.",
       debug:"O adaptador de depuração não faz parte da Fase 2.",
       problems:"Nenhum analisador de problemas foi conectado nesta fase.",
       ports:"Encaminhamento de portas não faz parte da Fase 2."

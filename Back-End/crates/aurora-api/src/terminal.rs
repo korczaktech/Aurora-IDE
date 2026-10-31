@@ -46,6 +46,14 @@ impl TerminalRuntime {
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from("/tmp/aurora-workspaces"));
         std::fs::create_dir_all(&workspace_root)?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(
+                &workspace_root,
+                std::fs::Permissions::from_mode(0o700),
+            )?;
+        }
 
         let config = TerminalConfig {
             default_working_directory: workspace_root.clone(),
