@@ -17,3 +17,32 @@
 @media(max-width:850px){.left-rail{width:184px}}
 @media(max-width:620px){.left-rail{width:174px}.rail-nav{padding-left:9px;padding-right:9px}.rail-item{height:39px}}
 @media(max-width:460px){.left-rail{width:162px}.rail-nav{padding-left:7px;padding-right:7px}.rail-item{height:38px;gap:11px;padding-left:11px}.rail-item span{font-size:10px}.rail-toggle{right:8px}}
+
+
+/* Identidade EDS */
+.wordmark{display:flex;align-items:baseline;gap:0}
+.wordmark-name{color:#edf2ef}
+.wordmark-category{margin-left:9px;color:#59615f;font:500 10px 'DM Mono',monospace;letter-spacing:2.2px;transform:translateY(-1px)}
+.welcome-kicker{letter-spacing:1.45px;font-size:8px}
+.learn-button{display:inline-flex;align-items:center;justify-content:center;gap:18px;margin-top:31px;padding:13px 19px;border:1px solid rgba(116,178,139,.42);border-radius:5px;background:linear-gradient(110deg,rgba(21,49,34,.82),rgba(12,29,24,.8));color:#c9e5d2;text-decoration:none;font-size:11px;font-weight:650;letter-spacing:.12px;box-shadow:0 8px 30px rgba(12,51,31,.14),inset 0 1px rgba(204,239,214,.04);transition:transform .2s,border-color .2s,background .2s,box-shadow .2s}
+.learn-button span{font-size:15px;color:#8fc6a0;transition:transform .2s}
+.learn-button:hover{transform:translateY(-2px);border-color:rgba(135,207,159,.75);background:linear-gradient(110deg,rgba(27,66,43,.9),rgba(14,39,30,.9));box-shadow:0 10px 34px rgba(18,76,43,.23),inset 0 1px rgba(204,239,214,.07)}
+.learn-button:hover span{transform:translate(2px,-2px)}
+/* Faixas de aurora boreal verdes no fundo central */
+.home-main{background:radial-gradient(ellipse at 52% 52%,rgba(18,67,42,.23),transparent 48%),radial-gradient(ellipse at 18% 8%,rgba(12,49,36,.13),transparent 36%),#050708}
+.aurora-ribbon{filter:blur(38px);mix-blend-mode:screen}
+.ribbon-one{height:48%;top:4%;left:14%;width:91%;opacity:.19;background:linear-gradient(112deg,transparent 2%,rgba(13,83,48,.3) 22%,rgba(38,119,67,.48) 38%,rgba(19,91,62,.34) 54%,rgba(10,53,45,.2) 69%,transparent 91%);transform:rotate(-13deg)}
+.ribbon-two{height:39%;top:19%;left:0;width:100%;opacity:.13;background:linear-gradient(105deg,transparent 2%,rgba(18,78,49,.26) 24%,rgba(35,112,67,.4) 43%,rgba(13,72,55,.3) 62%,transparent 92%);transform:rotate(11deg)}
+.ribbon-three{height:31%;top:39%;left:13%;width:91%;opacity:.11;background:linear-gradient(100deg,transparent,rgba(17,79,49,.26) 25%,rgba(34,111,66,.34) 48%,rgba(10,65,49,.2) 70%,transparent);transform:rotate(-7deg)}
+.main-atmosphere:after{content:"";position:absolute;inset:-12% -8%;pointer-events:none;opacity:.2;filter:blur(28px);background:linear-gradient(116deg,transparent 19%,rgba(34,116,64,.16) 34%,rgba(19,83,61,.2) 42%,transparent 57%),linear-gradient(72deg,transparent 42%,rgba(22,91,55,.15) 54%,transparent 68%);transform:rotate(-8deg)}
+/* Aurora azul discreta na navegação lateral */
+.left-rail{background:radial-gradient(ellipse at 10% 18%,rgba(17,67,125,.24),transparent 48%),radial-gradient(ellipse at 92% 67%,rgba(13,47,103,.19),transparent 48%),linear-gradient(180deg,rgba(5,13,29,.98),rgba(4,9,20,.99) 58%,rgba(4,10,24,.98));border-right-color:rgba(77,130,197,.15)}
+.left-rail:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.58;background:linear-gradient(155deg,transparent 12%,rgba(27,78,145,.09) 30%,transparent 48%),linear-gradient(25deg,transparent 54%,rgba(20,69,135,.1) 70%,transparent 87%);filter:blur(15px)}
+.rail-nav,.rail-toggle,.rail-bottom{position:relative;z-index:1}
+.rail-item.is-active{color:#a9c9ed;background:linear-gradient(100deg,rgba(24,55,96,.68),rgba(13,29,55,.48));border-color:rgba(102,151,211,.23);box-shadow:inset 2px 0 0 #6f9ed6}
+.rail-item.is-active span{color:#c4d9f2}
+.rail-item:hover{color:#d0e1f7;background:rgba(23,49,83,.58);border-color:rgba(110,151,205,.16)}
+.rail-toggle{color:#8299b8}
+.rail-toggle:hover{color:#d0e1f7;background:#172b4788}
+.rail-version{color:#536987}
+@media(max-width:620px){.wordmark-category{font-size:9px;letter-spacing:1.8px}.learn-button{margin-top:25px;padding:12px 15px;font-size:10px}}
