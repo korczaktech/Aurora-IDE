@@ -1,21 +1,54 @@
-# Aurora EDS
+# Aurora IDE
 
-> Aurora EDS é uma Estação de Desenvolvimento de Sistemas criada pela Korczak Technologies. A versão pública 0.0.1 apresenta uma interface web em desenvolvimento para organizar projetos, explorar arquivos e editar código.
-
-A Aurora está em desenvolvimento. Não afirme que autenticação, contas, sincronização em nuvem, execução de código, terminal, instalação de extensões ou integração remota com Git já estejam disponíveis. A interface contém recursos experimentais e dados locais de demonstração.
+Aurora é um ambiente de desenvolvimento de software da Korczak Technologies, acessível pela web. O produto reúne uma interface de projetos, editor de código, autenticação de contas e um serviço de terminal remoto destinado exclusivamente a administradores.
 
 Idioma principal: português brasileiro (pt-BR).
-Responsável pelo produto: Korczak Technologies.
-Versão informada: 0.0.1.
-Endereço canônico atual: https://aurora.korczaktech.com.br/index.html
+Desenvolvedor: Korczak Technologies.
+Website: https://aurora.korczaktech.com.br/
+
+## Visão geral
+
+A aplicação é dividida entre uma interface web estática e uma API em Rust. A interface é publicada como site estático. A API executa separadamente e integra os serviços de autenticação, persistência de sessões e terminal.
+
+## Recursos implementados
+
+- Cadastro e login de contas.
+- Consulta da conta autenticada e encerramento de sessão.
+- Interface principal com navegação por áreas de trabalho e projetos.
+- Editor web para HTML, CSS e JavaScript, com pré-visualização no navegador.
+- Salvamento local do projeto de demonstração no armazenamento do navegador.
+- Terminal Bash remoto por sessão, com comunicação WebSocket e saída binária.
+- Controle de acesso administrativo para criação e uso do terminal.
+
+## Limites e segurança
+
+- O editor web de demonstração salva seus arquivos no armazenamento local do navegador; ele não representa, por si só, um sistema de arquivos remoto.
+- A pré-visualização executa HTML, CSS e JavaScript no navegador. Isso não equivale a um compilador ou ambiente de execução para Rust, C ou C++.
+- O terminal inicia um processo Bash no ambiente do servidor. Não é um sandbox de execução. Por esse motivo, o acesso está restrito a contas administrativas e não deve ser liberado a usuários comuns.
+- As áreas de depuração, problemas e encaminhamento de portas não possuem adaptadores funcionais conectados.
+- A disponibilidade da API depende da configuração do serviço e da conexão com o MongoDB.
 
 ## Páginas públicas
 
-- [Página inicial](https://aurora.korczaktech.com.br/index.html): apresentação oficial da Aurora EDS.
-- [Sobre o Aurora](https://aurora.korczaktech.com.br/sobre.html): identidade, objetivo e estado do produto.
-- [Recursos e estado atual](https://aurora.korczaktech.com.br/recursos.html): descrição das ferramentas existentes e das limitações da versão 0.0.1.
+- [Início](https://aurora.korczaktech.com.br/index.html)
+- [Sobre](https://aurora.korczaktech.com.br/sobre.html)
+- [Recursos](https://aurora.korczaktech.com.br/recursos.html)
+- [Planos](https://aurora.korczaktech.com.br/planos.html)
 
-## Recursos complementares
+## Serviços
 
-- [Sitemap XML](https://aurora.korczaktech.com.br/sitemap.xml): lista de URLs públicas indexáveis.
-- [Robots](https://aurora.korczaktech.com.br/robots.txt): orientação de rastreamento.
+- API: https://aurora-api-cc1d.onrender.com
+- Verificação de saúde: https://aurora-api-cc1d.onrender.com/health
+- Verificação de prontidão: https://aurora-api-cc1d.onrender.com/ready
+
+## Tecnologias principais
+
+- Frontend: HTML, CSS e JavaScript.
+- Backend: Rust, Tokio e Axum.
+- Persistência: MongoDB.
+- Terminal: portable-pty, Bash e WebSocket.
+- Emulação de terminal no navegador: xterm.js.
+
+## Repositório
+
+https://github.com/korczaktech/Aurora-IDE

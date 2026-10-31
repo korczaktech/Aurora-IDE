@@ -4,73 +4,66 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#080d0f">
-  <meta name="description" content="Conheça a Aurora EDS, sua proposta, desenvolvedor e estado atual da Estação de Desenvolvimento de Sistemas da Korczak Technologies.">
-  <title>Sobre o Aurora EDS — Korczak Technologies</title>
+  <meta name="description" content="Conheça a Aurora IDE, ambiente de desenvolvimento de software da Korczak Technologies.">
+  <title>Sobre a Aurora IDE — Korczak Technologies</title>
   <link rel="canonical" href="https://aurora.korczaktech.com.br/sobre.html">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="CSS/seo.css">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta property="og:type" content="article">
   <meta property="og:locale" content="pt_BR">
-  <meta property="og:site_name" content="Aurora EDS">
-  <meta property="og:title" content="Sobre o Aurora EDS">
-  <meta property="og:description" content="A proposta e o estágio atual da Estação de Desenvolvimento de Sistemas Aurora.">
+  <meta property="og:site_name" content="Aurora IDE">
+  <meta property="og:title" content="Sobre a Aurora IDE">
+  <meta property="og:description" content="Conheça o ambiente de desenvolvimento Aurora e sua arquitetura.">
   <meta property="og:url" content="https://aurora.korczaktech.com.br/sobre.html">
   <meta property="og:image" content="https://aurora.korczaktech.com.br/og-image.svg">
-  <meta property="og:image:alt" content="Aurora EDS — Estação de Desenvolvimento de Sistemas">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Sobre o Aurora EDS">
-  <meta name="twitter:description" content="A proposta e o estágio atual da Estação de Desenvolvimento de Sistemas Aurora.">
-  <meta name="twitter:image" content="https://aurora.korczaktech.com.br/og-image.svg">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "AboutPage",
-    "name": "Sobre o Aurora EDS",
+    "name": "Sobre a Aurora IDE",
     "url": "https://aurora.korczaktech.com.br/sobre.html",
     "inLanguage": "pt-BR",
     "about": {
       "@type": "SoftwareApplication",
-      "name": "Aurora EDS",
+      "name": "Aurora IDE",
       "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "Web",
-      "softwareVersion": "0.0.1"
+      "operatingSystem": "Web"
     }
   }
   </script>
 </head>
 <body>
-  <header class="seo-header"><a href="./" class="seo-brand">Aurora<span>.</span><small>EDS</small></a><a href="./">Voltar ao início</a></header>
+  <header class="seo-header"><a href="./" class="seo-brand">Aurora<span>.</span><small>IDE</small></a><a href="./">Voltar ao início</a></header>
   <main class="seo-main">
-    <nav class="seo-breadcrumb" aria-label="Navegação estrutural"><a href="./">Início</a><span aria-hidden="true">/</span><span>Sobre o Aurora</span></nav>
-    <p class="seo-kicker">KORCZAK TECHNOLOGIES · PRODUTO 001</p>
-    <h1>Sobre o <span>Aurora EDS.</span></h1>
-    <p class="seo-lead">A Aurora é uma Estação de Desenvolvimento de Sistemas criada pela Korczak Technologies para reunir, em uma interface de trabalho, ferramentas de organização de projetos e desenvolvimento de software.</p>
+    <nav class="seo-breadcrumb" aria-label="Navegação estrutural"><a href="./">Início</a><span aria-hidden="true">/</span><span>Sobre</span></nav>
+    <p class="seo-kicker">KORCZAK TECHNOLOGIES · AMBIENTE DE DESENVOLVIMENTO</p>
+    <h1>Sobre a <span>Aurora IDE.</span></h1>
+    <p class="seo-lead">A Aurora IDE é um ambiente de desenvolvimento de software da Korczak Technologies. Sua arquitetura combina uma interface web com serviços de backend para autenticação e ferramentas de desenvolvimento.</p>
     <section>
       <h2>O propósito</h2>
-      <p>A proposta da Aurora é oferecer um espaço organizado para transformar ideias em projetos, aproximando a navegação por arquivos, a edição de código e ferramentas de apoio ao desenvolvimento. O produto está sendo construído por etapas, começando pela experiência da interface web.</p>
+      <p>A Aurora busca reunir em um único ambiente a organização de projetos, a edição de código e ferramentas que apoiam o trabalho de desenvolvimento. A experiência é construída em torno de uma interface web e de serviços independentes.</p>
     </section>
     <section>
-      <h2>Identificação do produto</h2>
-      <dl class="seo-facts">
-        <div><dt>Nome</dt><dd>Aurora EDS</dd></div>
-        <div><dt>Categoria</dt><dd>Estação de Desenvolvimento de Sistemas</dd></div>
-        <div><dt>Desenvolvedor</dt><dd>Korczak Technologies</dd></div>
-        <div><dt>Versão pública</dt><dd>0.0.1</dd></div>
-        <div><dt>Plataforma atual</dt><dd>Interface web</dd></div>
-        <div><dt>Idioma</dt><dd>Português brasileiro</dd></div>
-      </dl>
+      <h2>Como é construída</h2>
+      <p>A interface utiliza HTML, CSS e JavaScript. Os serviços de backend são desenvolvidos em Rust, com API HTTP e comunicação WebSocket para o terminal. O armazenamento de contas e sessões utiliza MongoDB, respeitando a estrutura compartilhada de contas da Korczak Technologies.</p>
     </section>
     <section>
-      <h2>Estado de desenvolvimento</h2>
-      <p>A versão 0.0.1 é uma etapa inicial. Algumas ferramentas da interface armazenam informações localmente no navegador. Autenticação, sincronização remota, execução de programas, terminal e conexões remotas com repositórios ainda não estão disponíveis como serviços funcionais.</p>
+      <h2>Estado dos recursos</h2>
+      <p>O cadastro e o login são integrados à API. O editor web de demonstração trabalha com HTML, CSS e JavaScript, mantém os arquivos no armazenamento local do navegador e oferece pré-visualização no próprio navegador. O terminal remoto utiliza Bash no servidor e permanece restrito a administradores.</p>
+      <p>Nem todas as áreas visíveis da interface representam integrações concluídas. Recursos de depuração, análise de problemas e encaminhamento de portas ainda não possuem serviços funcionais conectados.</p>
     </section>
     <section>
-      <h2>Desenvolvimento e responsabilidade</h2>
-      <p>A Aurora EDS é desenvolvida pela Korczak Technologies. Informações sobre a empresa podem ser consultadas no <a href="https://site.korczaktech.com.br/">website institucional</a>.</p>
+      <h2>Segurança do terminal</h2>
+      <p>O terminal executa Bash no ambiente do servidor e não é um sandbox. Por isso, seu uso é limitado a administradores confiáveis. Ele não deve ser disponibilizado a usuários comuns nem utilizado para executar código não confiável.</p>
+    </section>
+    <section>
+      <h2>Desenvolvimento</h2>
+      <p>A Aurora IDE é desenvolvida pela Korczak Technologies. Saiba mais no <a href="https://site.korczaktech.com.br/">website institucional</a> ou consulte o <a href="https://github.com/korczaktech/Aurora-IDE">repositório do projeto</a>.</p>
     </section>
     <div class="seo-actions"><a class="seo-primary" href="recursos.html">Conhecer os recursos</a><a href="https://site.korczaktech.com.br/">Korczak Technologies ↗</a></div>
   </main>
-  <footer class="seo-footer">AURORA EDS · VERSÃO 0.0.1</footer>
+  <footer class="seo-footer">AURORA IDE · KORCZAK TECHNOLOGIES</footer>
 </body>
 </html>

@@ -1,58 +1,104 @@
-# Aurora EDS — Contexto completo
-
-> Documento de referência factual sobre o produto Aurora EDS, mantido pela Korczak Technologies.
+# Aurora IDE — Referência do produto e da arquitetura
 
 ## Identidade
 
-- Nome: Aurora EDS.
-- Categoria: Estação de Desenvolvimento de Sistemas.
+- Produto: Aurora IDE.
 - Desenvolvedor: Korczak Technologies.
-- Versão pública informada: 0.0.1.
-- Idioma: pt-BR.
-- Website: https://aurora.korczaktech.com.br/index.html
-- Website institucional do desenvolvedor: https://site.korczaktech.com.br/
+- Idioma da interface: português brasileiro.
+- Website: https://aurora.korczaktech.com.br/
+- Repositório: https://github.com/korczaktech/Aurora-IDE
+- API configurada: https://aurora-api-cc1d.onrender.com
 
-## Objetivo
+## Visão do produto
 
-Aurora é um ambiente de desenvolvimento em construção. A proposta é reunir em uma única interface ferramentas para organizar projetos, navegar por arquivos e trabalhar com código. A interface web é a etapa atual do desenvolvimento; o motor/backend ainda não deve ser descrito como disponível.
+Aurora IDE é um ambiente de desenvolvimento de software com interface web e serviços de backend. A interface apresenta áreas para projetos, arquivos, edição, preferências e ferramentas de desenvolvimento. Os recursos disponíveis devem ser entendidos conforme o comportamento efetivamente implementado, sem presumir que itens visuais sejam integrações completas.
 
-## O que existe na interface pública
+## Arquitetura
 
-- Página inicial institucional da Aurora EDS.
-- Interface experimental do editor de código.
-- Explorador lateral com pastas e arquivos demonstrativos.
-- Abas para exemplos de arquivos HTML, CSS e JavaScript.
-- Campo de edição de código no navegador e numeração lateral de linhas.
-- Área de projetos com registros locais no navegador.
-- Anotações e preferências locais na interface principal.
-- Páginas institucionais sobre o produto e seus recursos.
+### Interface web
 
-## Limitações importantes
+O frontend está em `Front-End/WebSite` e é composto por HTML, CSS, JavaScript e recursos SVG. A aplicação web é estática e se comunica com a API quando o recurso exige autenticação ou processamento no servidor.
 
-- Login e cadastro são telas demonstrativas; não existe autenticação funcional nesta versão.
-- Não existe sincronização remota de projetos ou arquivos.
-- Dados locais dependem do navegador e do dispositivo utilizados.
-- A interface de repositórios não representa uma conexão Git remota funcional.
-- A área de extensões não instala extensões nesta versão.
-- Terminal e execução/build de projetos ainda não estão disponíveis.
-- Não afirmar integração de produção com Rust, APIs ou serviços externos.
-- Não atribuir à Aurora funcionalidades que estejam apenas no planejamento.
+O editor web de demonstração mantém arquivos no armazenamento local do navegador. Ele oferece edição de HTML, CSS e JavaScript e pré-visualização por meio de um documento carregado em iframe. Esse editor não deve ser confundido com acesso remoto ao sistema de arquivos do servidor.
 
-## Páginas oficiais
+### API
 
-### Página inicial
-https://aurora.korczaktech.com.br/index.html
+O backend está em `Back-End` e utiliza Rust, Tokio e Axum. A API fornece endpoints de saúde, prontidão, autenticação e operações do terminal. A configuração é obtida por variáveis de ambiente. O CORS é limitado às origens configuradas.
 
-### Sobre o Aurora
-https://aurora.korczaktech.com.br/sobre.html
+Rotas principais:
+- `GET /`: identificação e estado básico do serviço.
+- `GET /health`: liveness HTTP.
+- `GET /ready`: prontidão, incluindo verificação das conexões com os bancos.
+- `POST /auth/register`: cadastro.
+- `POST /auth/login`: autenticação.
+- `GET /auth/me`: consulta da conta autenticada.
+- `POST /auth/logout`: revogação da sessão atual.
+- `GET /admin/health`: verificação administrativa.
 
-### Recursos e estado atual
-https://aurora.korczaktech.com.br/recursos.html
+As rotas protegidas recebem token Bearer no cabeçalho Authorization.
 
-### Interface experimental do editor
-https://aurora.korczaktech.com.br/editor.html
-Observação: esta rota é experimental e está marcada como noindex.
+### Contas e sessões
 
-## Indexação e descoberta
+A integração de contas utiliza a estrutura compartilhada da Korczak Technologies:
+- Database `Contas`, coleção `contas`: registros centrais das contas.
+- Database `Aurora`, coleção `sessoes`: sessões de autenticação do Aurora.
 
-O sitemap público lista somente a página inicial, a página Sobre e a página de Recursos. Páginas de autenticação e a interface experimental do editor usam a diretiva noindex e não fazem parte do sitemap.
+A implementação não cria coleções adicionais na database `Contas`. Os índices de autenticação são criados na coleção de sessões do Aurora. Senhas são armazenadas como hashes bcrypt. O token de sessão é armazenado no banco somente em forma de resumo SHA-256; a validade padrão da sessão é de 30 dias e há índice TTL para expiração.
+
+O modelo de conta consultado inclui os campos `id`, `Nome`, `Email`, `Conta.Status`, `Conta.Role` e `Autenticacao.SenhaHash`. Contas precisam estar com status `active`; as funções reconhecidas são `admin` e `user`.
+
+### Terminal
+
+O motor de terminal está em `Back-End/Motores/Terminal` e usa `portable-pty` para criar sessões PTY. A API gerencia sessões e fornece uma conexão WebSocket autenticada por ticket temporário. As sessões são associadas à conta proprietária e o backend limita a quantidade de sessões e o tamanho de entrada.
+
+O diretório de trabalho padrão é `/tmp/aurora-workspaces`, substituível pela variável `AURORA_TERMINAL_WORKDIR`. Cada conta recebe um diretório próprio com permissões restritas no sistema operacional.
+
+**Aviso de segurança:** o terminal executa Bash no host do serviço. Ele não é um sandbox e não oferece isolamento de sistema operacional por usuário. O acesso deve permanecer restrito a administradores confiáveis. Não exponha essa capacidade a contas comuns nem execute código não confiável nesse ambiente.
+
+### Comunicação do terminal
+
+O frontend solicita um ticket de curta duração à API e usa esse ticket na negociação WebSocket. A conexão transmite entrada, redimensionamento e saída do processo PTY. A saída pode ser transmitida em formato binário para preservar os bytes do terminal.
+
+A interface possui abas para Terminal, Output, Debug Console, Problems e Ports. Atualmente, Terminal e Output possuem integração de sessão/saída. As abas Debug Console, Problems e Ports são apenas áreas de interface, sem motores de depuração, análise estática ou encaminhamento de portas conectados.
+
+## Recursos da interface
+
+- Cadastro, login, consulta de conta e logout integrados à API.
+- Navegação da área principal e visualização de projetos.
+- Editor web para HTML, CSS e JavaScript.
+- Pré-visualização no navegador e console de saída da pré-visualização.
+- Salvamento local do editor de demonstração no navegador.
+- Interface de terminal com sessões Bash e saída do processo.
+
+## Limites funcionais
+
+- Salvamento local do editor não equivale à persistência de arquivos em um workspace remoto.
+- A pré-visualização do editor não compila nem executa linguagens nativas.
+- Não há garantia de integração funcional de cada item de interface apenas por ele estar visível.
+- Debug Console, Problems e Ports não possuem implementação operacional conectada.
+- O terminal não é adequado para execução de código de usuários não confiáveis.
+
+## Configuração operacional
+
+A API utiliza variáveis de ambiente para porta, URI do MongoDB, nomes das databases e origens CORS permitidas. Os nomes concretos das variáveis devem ser conferidos em `Back-End/crates/aurora-api/src/config.rs`; valores secretos não devem ser incluídos em documentação, commits ou logs públicos.
+
+O serviço deve iniciar com MongoDB configurado para que autenticação e prontidão estejam disponíveis. Sem URI de banco, a API pode iniciar sem persistência, mas os recursos que dependem de contas não estarão operacionais.
+
+## Estrutura do repositório
+
+- `Front-End/WebSite/HTML`: páginas HTML públicas e da aplicação.
+- `Front-End/WebSite/CSS`: estilos.
+- `Front-End/WebSite/JavaScript`: lógica da interface.
+- `Front-End/WebSite/SVG`: ícones e ilustrações vetoriais.
+- `Back-End/crates/aurora-api`: servidor HTTP e rotas.
+- `Back-End/crates/aurora-auth`: autenticação e autorização.
+- `Back-End/crates/aurora-storage-mongodb`: persistência MongoDB.
+- `Back-End/crates/aurora-users`: tipos e papéis de usuário.
+- `Back-End/Motores/Terminal`: motor PTY.
+- `Documentos`: documentação técnica do projeto.
+
+## Endereços
+
+- Site: https://aurora.korczaktech.com.br/
+- API: https://aurora-api-cc1d.onrender.com
+- Repositório: https://github.com/korczaktech/Aurora-IDE
