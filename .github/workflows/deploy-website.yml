@@ -52,6 +52,64 @@ jobs:
             node --check "$file"
           done < <(find Front-End/WebSite -type f -name '*.js' -not -path '*/node_modules/*' | sort)
 
+
+      - name: Validate inline HTML JavaScript
+        if: steps.detect.outputs.mode == 'static' || steps.detect.outputs.mode == 'root'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import subprocess
+          import tempfile
+
+          class InlineScriptParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_script = False
+                  self.is_javascript = False
+                  self.parts = []
+                  self.scripts = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() != "script":
+                      return
+                  attrs = dict(attrs)
+                  script_type = attrs.get("type", "").lower()
+                  self.in_script = True
+                  self.is_javascript = not script_type or script_type in (
+                      "text/javascript", "application/javascript", "module"
+                  )
+                  self.parts = []
+
+              def handle_data(self, data):
+                  if self.in_script and self.is_javascript:
+                      self.parts.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.in_script:
+                      source = "".join(self.parts)
+                      if source.strip():
+                          self.scripts.append(source)
+                      self.in_script = False
+                      self.is_javascript = False
+                      self.parts = []
+
+          html_files = sorted(Path("Front-End/WebSite").rglob("*.html"))
+          checked = 0
+          with tempfile.TemporaryDirectory() as temp_dir:
+              for html_file in html_files:
+                  parser = InlineScriptParser()
+                  parser.feed(html_file.read_text(encoding="utf-8"))
+                  for index, source in enumerate(parser.scripts, 1):
+                      temp_file = Path(temp_dir) / f"inline-{checked + 1}.js"
+                      temp_file.write_text(source, encoding="utf-8")
+                      print(f"Validando script inline {index}: {html_file}")
+                      subprocess.run(["node", "--check", str(temp_file)], check=True)
+                      checked += 1
+          print(f"{checked} scripts inline validados.")
+          PY
+
       - name: Setup Node.js
         if: steps.detect.outputs.mode == 'react'
         uses: actions/setup-node@v4
