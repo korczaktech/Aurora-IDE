@@ -13,7 +13,7 @@
     <div class="header-start">
       <button class="icon-button menu-button" id="editor-menu-toggle" type="button"
         aria-label="Abrir ou recolher painel lateral" aria-expanded="false" title="Painel lateral">
-        <svg class="menu-motion-icon" viewBox="0 0 24 24" role="img" aria-hidden="true">
+        <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
           <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
           <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
           <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
@@ -49,7 +49,28 @@
 
   <script>
     const menuToggle = document.getElementById("editor-menu-toggle");
-    const updateMenuScale = () => {\n      const travel = Math.max(0, window.innerWidth / 2 - 55);\n      document.documentElement.style.setProperty("--menu-scale", String(1 + travel / 14));\n    };\n    updateMenuScale();\n    window.addEventListener("resize", updateMenuScale);\n    menuToggle.addEventListener("click", () => {
+    const searchField = document.querySelector(".search-field");
+
+    function measureMenuMotion() {
+      const buttonRect = menuToggle.getBoundingClientRect();
+      const searchRect = searchField.getBoundingClientRect();
+      const svgScale = menuToggle.querySelector("svg").getBoundingClientRect().width / 24;
+      const firstLineX = buttonRect.left + 5 * svgScale;
+      const thirdLineX = buttonRect.left + 19 * svgScale;
+      const targetX = searchRect.left + 12;
+      const travel = Math.max(0, targetX - thirdLineX);
+      const lineLength = 15 * svgScale;
+      const scale = Math.max(1, (targetX - firstLineX) / lineLength);
+
+      document.documentElement.style.setProperty("--menu-travel", travel + "px");
+      document.documentElement.style.setProperty("--menu-half-travel", travel / 2 + "px");
+      document.documentElement.style.setProperty("--menu-scale", String(scale));
+    }
+
+    measureMenuMotion();
+    window.addEventListener("resize", measureMenuMotion);
+
+    menuToggle.addEventListener("click", () => {
       const opened = menuToggle.classList.toggle("is-open");
       menuToggle.setAttribute("aria-expanded", String(opened));
     });
