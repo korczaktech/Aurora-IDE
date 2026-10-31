@@ -49,10 +49,7 @@ impl TerminalRuntime {
         #[cfg(unix)]
         {
             use std::os::unix::fs::PermissionsExt;
-            std::fs::set_permissions(
-                &workspace_root,
-                std::fs::Permissions::from_mode(0o700),
-            )?;
+            std::fs::set_permissions(&workspace_root, std::fs::Permissions::from_mode(0o700))?;
         }
 
         let config = TerminalConfig {
