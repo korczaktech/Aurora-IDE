@@ -453,17 +453,27 @@ body {
   background: #080d0f;
 }
 .code-gutter {
+  display: flex;
   flex: 0 0 57px;
+  flex-direction: column;
+  align-items: stretch;
   min-width: 57px;
   padding: 0 15px 0 0;
   overflow: hidden;
-  color: #40504e;
+  color: #657773;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 22px;
   text-align: right;
-  white-space: pre;
+  white-space: normal;
   user-select: none;
+}
+.code-gutter-line {
+  display: block;
+  flex: 0 0 22px;
+  height: 22px;
+  line-height: 22px;
+  white-space: nowrap;
 }
 .code-input-wrap {
   position: relative;
