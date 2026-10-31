@@ -52,7 +52,7 @@
       socket.binaryType="arraybuffer";
       socket.onopen=()=>{status("Conectado · Bash real");fit();terminal?.focus();};
       socket.onmessage=event=>{
-        if(event.data instanceof ArrayBuffer){terminal?.write(new Uint8Array(event.data));return;}
+        if(event.data instanceof ArrayBuffer){const bytes=new Uint8Array(event.data);recordBinaryOutput(session.id,bytes);terminal?.write(bytes);return;}
         let message;try{message=JSON.parse(event.data);}catch(_){return;}
         if(message.type==="ready"){status("Conectado · Bash real");}
         else if(message.type==="output"){terminal?.write(message.data||"");}
