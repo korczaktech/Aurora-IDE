@@ -13,3 +13,4 @@ tracing-subscriber.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 aurora-storage-mongodb = { path = "../aurora-storage-mongodb" }
+aurora-auth = { path = "../aurora-auth" }
