@@ -161,7 +161,6 @@ async fn logout(
     Ok(StatusCode::NO_CONTENT)
 }
 
-
 async fn admin_health(
     State(state): State<AppState>,
     headers: HeaderMap,
