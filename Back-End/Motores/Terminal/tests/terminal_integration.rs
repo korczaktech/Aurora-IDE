@@ -91,7 +91,9 @@ fn ctrl_c_interrompe_comando_e_preserva_shell() {
 fn ctrl_d_encerra_shell_e_registra_codigo_de_saida() {
     let manager = manager();
     let session = manager.create_session(None).expect("criar sessão");
-    manager.write(&session.id, b"\x04").expect("enviar Ctrl+D");
+    manager
+        .write(&session.id, b"printf 'CTRL_D_READY'\n\x04")
+        .expect("comando e Ctrl+D");
     let deadline = Instant::now() + Duration::from_secs(8);
     loop {
         let current = manager.list_sessions().expect("listar");

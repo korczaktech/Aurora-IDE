@@ -628,7 +628,9 @@ mod tests {
     fn ctrl_d_encerra_shell_interativo() {
         let manager = manager(1);
         let session = manager.create_session(None).expect("Bash real");
-        manager.write(&session.id, b"\x04").expect("EOF");
+        manager
+            .write(&session.id, b"printf 'CTRL_D_READY'\n\x04")
+            .expect("comando e EOF");
         let deadline = Instant::now() + Duration::from_secs(5);
         let mut state = TerminalSessionStatus::Running;
         while Instant::now() < deadline {
