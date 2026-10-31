@@ -15,12 +15,13 @@
       <button class="menu-back-button" id="editor-menu-back" type="button" aria-label="Voltar ao menu" title="Voltar" disabled>
         <img src="../SVG/editor-back.svg" alt="">
       </button>
-      <button class="menu-open-button" id="editor-menu-open" type="button" aria-label="Abrir ferramentas" title="Abrir ferramentas" disabled></button>
-      <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
-        <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
-        <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
-      </svg>
+      <button class="menu-open-button" id="editor-menu-open" type="button" aria-label="Abrir ferramentas" title="Abrir ferramentas" disabled>
+        <svg class="menu-motion-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path class="menu-line menu-line-first" d="M5 4.5V19.5"/>
+          <path class="menu-line menu-line-middle" d="M12 4.5V19.5"/>
+          <path class="menu-line menu-line-third" d="M19 4.5V19.5"/>
+        </svg>
+      </button>
     </div>
     <nav class="editor-tool-rail" id="editor-tool-rail" aria-label="Ferramentas principais" aria-hidden="true">
       <button class="tool-icon" type="button" data-tool="files" aria-label="Arquivos" title="Arquivos" aria-pressed="false"><img src="../SVG/editor-files.svg" alt=""></button>
@@ -58,7 +59,7 @@
 
     function measureMenuMotion() {
       const searchRect = searchField.getBoundingClientRect();
-      const svgRect = menuMark.querySelector("svg").getBoundingClientRect();
+      const svgRect = menuMark.querySelector(".menu-motion-icon").getBoundingClientRect();
       const svgScale = svgRect.width / 24;
 
       const firstX = svgRect.left + 5 * svgScale;
