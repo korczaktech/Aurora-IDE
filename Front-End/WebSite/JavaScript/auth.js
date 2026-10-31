@@ -5,7 +5,7 @@
   const TOKEN_KEY = "aurora-access-token";
   const ACCOUNT_KEY = "aurora-account";
   const page = window.location.pathname.split("/").pop() || "index.html";
-  const isEditor = page === "editor.html";
+  const isEditor = page === "editor.html" || page === "terminal.html";
   const isProfile = page === "perfil.html";
 
   if (isEditor || isProfile) document.documentElement.style.visibility = "hidden";
@@ -294,7 +294,7 @@
   async function protectEditor() {
     const token = readToken();
     if (!token) {
-      window.location.replace("entrar.html?next=editor.html");
+      window.location.replace("entrar.html?next=" + (page === "terminal.html" ? "terminal.html" : "editor.html"));
       return;
     }
     try {
