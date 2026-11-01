@@ -497,8 +497,7 @@
     Object.keys(files).forEach(path => {
       if (Object.prototype.hasOwnProperty.call(previousFiles, path)) files[path] = previousFiles[path];
     });
-    const active = previousActive && files[previousActive] !== undefined ? previousActive :
-      (Object.keys(files).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))[0] || "");
+    const active = previousActive && files[previousActive] !== undefined ? previousActive : "";
     const open = previousOpen.filter(path => files[path] !== undefined);
     editor.replaceProject(files, currentProjectName, active, open, true);
     renderEntries(entries);
