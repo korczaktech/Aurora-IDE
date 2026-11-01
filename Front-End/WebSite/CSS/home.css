@@ -866,3 +866,40 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .aurora-access-secondary{border:1px solid rgba(139,199,160,.17);background:transparent;color:#91a497}
 .aurora-access-footnote{display:block;margin-top:15px;color:#64776a;text-align:center;font-size:9px;line-height:1.6}
 @media(max-width:520px){.aurora-access-panel{padding:23px 19px 20px}.aurora-access-label{font-size:7px}.aurora-access-structure{grid-template-columns:1fr}.aurora-access-tree{padding-left:26px}}
+
+
+/* Criação de projetos e propriedades reais do armazenamento .aurora */
+.aurora-new-project-dialog{width:min(490px,calc(100vw - 30px));max-width:none;padding:0;border:1px solid rgba(139,199,160,.28);border-radius:15px;background:#09110e;color:#e6f0e8;box-shadow:0 28px 90px rgba(0,0,0,.65)}
+.aurora-new-project-dialog::backdrop{background:rgba(1,5,4,.78);backdrop-filter:blur(8px)}
+.aurora-new-project-panel{padding:30px;background:radial-gradient(ellipse at 80% 0,rgba(83,139,99,.15),transparent 50%),#09110e}
+.aurora-new-project-panel h2{margin:12px 0 9px;color:#edf5ef;font-size:25px;letter-spacing:-.8px}
+.aurora-new-project-panel>p{color:#94a89a;font-size:12px;line-height:1.8}
+.aurora-new-project-panel>p strong{color:#d4e8d8;font-family:'DM Mono',monospace}
+.aurora-new-project-panel label{display:block;margin:22px 0 8px;color:#a6c0ac;font:9px 'DM Mono',monospace;letter-spacing:1px;text-transform:uppercase}
+.aurora-new-project-panel input{width:100%;height:46px;padding:0 13px;border:1px solid rgba(139,199,160,.25);border-radius:7px;outline:none;background:#0d1912;color:#e8f2ea;font:13px 'Manrope',sans-serif}
+.aurora-new-project-panel input:focus{border-color:#91c69d;box-shadow:0 0 0 3px rgba(139,199,160,.1)}
+.aurora-new-project-message{min-height:20px;margin:9px 0 0!important;color:#e2b98a!important;font-size:10px!important}
+.aurora-new-project-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:14px}
+.aurora-new-project-actions button{min-height:41px;padding:0 15px;border-radius:7px;font:600 10px 'DM Mono',monospace;cursor:pointer}
+.aurora-new-project-cancel{border:1px solid rgba(139,199,160,.18);background:transparent;color:#9eafa3}
+.aurora-new-project-submit{border:1px solid #9bc9a5;background:linear-gradient(120deg,#b8dfbf,#82b890);color:#07100a}
+.aurora-new-project-submit:disabled{opacity:.6;cursor:wait}
+.real-project-loading,.real-project-empty{padding:30px 20px;border:1px solid rgba(135,182,148,.14);background:rgba(11,20,14,.48);color:#9aab9f;font-size:12px;line-height:1.8}
+.real-project-empty{text-align:center;padding:38px 18px}
+.real-project-empty strong{color:#cfe3d3;font-size:15px}
+.real-project-empty p{margin:7px 0 0;color:#819488}
+.real-project-muted{color:#778a7d!important;font-size:10px}
+.real-language-bar{display:flex;gap:2px;height:9px;overflow:hidden;border-radius:3px;background:rgba(160,174,164,.23)}
+.real-language-bar.is-empty{background:#59635c}
+.real-language-bar i{display:block;min-width:2px;height:100%;background:#83b997}
+.real-language-bar i:nth-child(4n+2){background:#b0c9a4}.real-language-bar i:nth-child(4n+3){background:#7898aa}.real-language-bar i:nth-child(4n){background:#b69b78}
+.real-language-legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px 18px;margin-top:14px}
+.real-language-legend>div{display:flex;justify-content:space-between;gap:10px;color:#9eafa3;font-size:10px}
+.real-language-legend strong{color:#d2e4d6;font:10px 'DM Mono',monospace}
+.real-technology-list{display:flex;flex-wrap:wrap;gap:8px}
+.real-tech-chip{padding:7px 10px;border:1px solid rgba(139,199,160,.18);border-radius:5px;background:rgba(24,42,29,.55);color:#c4d9c9;font:10px 'DM Mono',monospace}
+.real-file-tree{display:grid;gap:0;max-height:520px;overflow:auto;padding:8px 0}
+.real-tree-row{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:center;min-height:31px;padding:4px 12px 4px calc(12px + (var(--depth) - 1)*17px);border-bottom:1px solid rgba(135,182,148,.06);color:#b3c3b7;font:10px 'DM Mono',monospace}
+.real-tree-row.is-folder>span:first-child{color:#a4c9a9}.real-tree-row small{color:#687b6e;font-size:9px}
+.real-project-identity{overflow-wrap:anywhere}
+@media(max-width:560px){.aurora-new-project-panel{padding:23px 20px}.real-language-legend{grid-template-columns:1fr 1fr}}
