@@ -70,10 +70,7 @@
   }
 
   function isTextPath(path) {
-    const ext = extension(path);
-    if (binaryExtensions.has(ext)) return false;
-    return textExtensions.has(ext) || baseName(path).startsWith(".") ||
-      ["Dockerfile", "Makefile", "Justfile", "LICENSE", "README"].includes(baseName(path));
+    return !binaryExtensions.has(extension(path));
   }
 
   function showError(error, action) {
