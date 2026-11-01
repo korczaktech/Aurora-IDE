@@ -280,23 +280,92 @@ startProject();`
         if (window.AuroraSyntaxHighlight) return window.AuroraSyntaxHighlight.highlight(source, file);
         return escapeCode(source) + (source.endsWith("\n") ? " " : "");
       }
+      let gutterMeasureNode = null;
+      let gutterSyncFrame = 0;
+
+      function syncCodeScroll() {
+        if (gutterSyncFrame) cancelAnimationFrame(gutterSyncFrame);
+        gutterSyncFrame = requestAnimationFrame(() => {
+          gutterSyncFrame = 0;
+          codeHighlight.scrollTop = codeInput.scrollTop;
+          codeHighlight.scrollLeft = codeInput.scrollLeft;
+          codeGutter.scrollTop = codeInput.scrollTop;
+          codeGutter.scrollLeft = 0;
+        });
+      }
+
+      function measureVisualLineHeights(lines) {
+        const style = getComputedStyle(codeInput);
+        const lineHeight = Number.parseFloat(style.lineHeight) || 22;
+        const wrapping = style.whiteSpace.includes("wrap");
+        if (!wrapping) return lines.map(() => lineHeight);
+
+        if (!gutterMeasureNode) {
+          gutterMeasureNode = document.createElement("div");
+          gutterMeasureNode.setAttribute("aria-hidden", "true");
+          Object.assign(gutterMeasureNode.style, {
+            position: "fixed", left: "-100000px", top: "0", visibility: "hidden",
+            pointerEvents: "none", margin: "0", border: "0", padding: "0",
+            boxSizing: "content-box", height: "auto", overflow: "visible"
+          });
+          document.body.appendChild(gutterMeasureNode);
+        }
+
+        const contentWidth = Math.max(1, codeInput.clientWidth
+          - (Number.parseFloat(style.paddingLeft) || 0)
+          - (Number.parseFloat(style.paddingRight) || 0));
+        Object.assign(gutterMeasureNode.style, {
+          width: contentWidth + "px",
+          fontFamily: style.fontFamily,
+          fontSize: style.fontSize,
+          fontWeight: style.fontWeight,
+          fontStyle: style.fontStyle,
+          lineHeight: style.lineHeight,
+          letterSpacing: style.letterSpacing,
+          tabSize: style.tabSize,
+          whiteSpace: "pre-wrap",
+          overflowWrap: style.overflowWrap,
+          wordBreak: style.wordBreak
+        });
+
+        return lines.map(line => {
+          const measureLine = document.createElement("div");
+          Object.assign(measureLine.style, {
+            display: "block", minHeight: lineHeight + "px",
+            margin: "0", padding: "0", border: "0",
+            font: style.font, lineHeight: style.lineHeight,
+            letterSpacing: style.letterSpacing,
+            whiteSpace: "pre-wrap", overflowWrap: style.overflowWrap,
+            wordBreak: style.wordBreak, tabSize: style.tabSize
+          });
+          measureLine.textContent = line || " ";
+          gutterMeasureNode.appendChild(measureLine);
+          const height = Math.max(lineHeight, measureLine.getBoundingClientRect().height);
+          gutterMeasureNode.removeChild(measureLine);
+          return height;
+        });
+      }
+
       function updateCodeSurface() {
         const source = codeInput.value;
         codeHighlight.innerHTML = highlightCode(source, activeCodeFile);
 
-        // Uma linha visual por linha real do textarea, inclusive linhas vazias.
-        const lineCount = source.split(/\r\n|\r|\n/).length;
+        const lines = source.split(/\r\n|\r|\n/);
+        const heights = measureVisualLineHeights(lines);
         const lineNumbers = document.createDocumentFragment();
-        for (let index = 1; index <= lineCount; index += 1) {
+        heights.forEach((height, index) => {
           const lineNumber = document.createElement("span");
           lineNumber.className = "code-gutter-line";
-          lineNumber.textContent = String(index);
+          lineNumber.textContent = String(index + 1);
+          lineNumber.style.height = height + "px";
+          lineNumber.style.minHeight = height + "px";
+          lineNumber.style.flex = "0 0 " + height + "px";
           lineNumbers.appendChild(lineNumber);
-        }
+        });
         codeGutter.replaceChildren(lineNumbers);
-        codeGutter.scrollTop = codeInput.scrollTop;
         document.getElementById("codeFileStatus").textContent = activeCodeFile;
         updateCodeCursor();
+        syncCodeScroll();
       }
       function updateCodeCursor() {
         const before = codeInput.value.slice(0, codeInput.selectionStart);
@@ -328,11 +397,13 @@ startProject();`
         codeFiles[activeCodeFile] = codeInput.value;
         updateCodeSurface();
       });
-      codeInput.addEventListener("scroll", () => {
-        codeHighlight.scrollTop = codeInput.scrollTop;
-        codeHighlight.scrollLeft = codeInput.scrollLeft;
-        codeGutter.scrollTop = codeInput.scrollTop;
+      codeInput.addEventListener("scroll", syncCodeScroll, { passive: true });
+      const codeResizeObserver = new ResizeObserver(() => {
+        updateCodeSurface();
+        syncCodeScroll();
       });
+      codeResizeObserver.observe(codeInput);
+      window.addEventListener("resize", syncCodeScroll, { passive: true });
       ["click", "keyup", "select"].forEach(type => codeInput.addEventListener(type, updateCodeCursor));
       codeInput.addEventListener("keydown", event => {
         if (event.key === "Tab") {
@@ -401,7 +472,6 @@ startProject();`
       setState("button");
     })();
   </script>
-  <script src="../JavaScript/editor-gutter.js"></script>
   <script src="../JavaScript/editor-controls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
