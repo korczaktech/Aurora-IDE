@@ -343,7 +343,7 @@ jobs:
                       item = {
                         name: childName, kind: "file",
                         async getFile() { const copy = bytes.slice(); return { size: copy.length, arrayBuffer: async () => copy.buffer }; },
-                        async createWritable() { return { async write(value) { bytes = new Uint8Array(value); }, async close() {} }; },
+                        async createWritable() { return { async write(value) { bytes = typeof value === "string" ? new TextEncoder().encode(value) : value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value); }, async close() {} }; },
                         get bytes() { return bytes.slice(); }
                       };
                       children.set(childName, item);
@@ -356,7 +356,7 @@ jobs:
                     children.set(childName, {
                       name: childName, kind: "file",
                       async getFile() { const copy = bytes.slice(); return { size: copy.length, arrayBuffer: async () => copy.buffer }; },
-                      async createWritable() { return { async write(value) { bytes = new Uint8Array(value); }, async close() {} }; },
+                      async createWritable() { return { async write(value) { bytes = typeof value === "string" ? new TextEncoder().encode(value) : value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value); }, async close() {} }; },
                       get bytes() { return bytes.slice(); }
                     });
                   }
