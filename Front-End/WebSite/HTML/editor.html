@@ -535,9 +535,10 @@ startProject();`
       });
 
       const validEditorPath = name => typeof name === "string" && name.length > 0 &&
-        !name.startsWith("/") && name.split("/").every(part =>
-          part && part !== "." && part !== ".." && !part.includes("\\\\") &&
-          !part.includes("\\0") && !/[<>:"|?*]/.test(part) && !/[. ]$/.test(part));
+        !name.startsWith("/") && !name.includes("\\") &&
+        name.split("/").every(part =>
+          part && part !== "." && part !== ".." && !part.includes("\0") &&
+          !/[<>:"|?*]/.test(part) && !/[. ]$/.test(part));
       window.AuroraEditor = {
         get files() { return { ...codeFiles }; },
         get activeFile() { return activeCodeFile; },
