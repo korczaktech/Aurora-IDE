@@ -111,18 +111,23 @@
         const contents = await file.text();
         const printed = output.join("");
         const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && printed.includes("AURORA_NEWLINE_OK") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
-        document.body.dataset.pythonSmoke = passed ? "passed" : "failed";
+        document.body.dataset.pythonSmoke = passed ? "running" : "failed";
+        document.body.dataset.terminalInputSmoke = "running";
         document.getElementById("result").textContent = passed
           ? "Python execution and project file synchronization passed."
           : JSON.stringify({ result, printed, contents });
         if (!passed) throw new Error("Base Python runtime smoke failed.");
-        const escapedTokens = window.AuroraTerminalInternals.tokenize(String.raw\`python -c "print('linha1\\nlinha2')"\`);
+        const escapedTokens = window.AuroraTerminalInternals.tokenize("python -c \"print('linha1\\nlinha2')\"");
         if (escapedTokens.length !== 3 || !escapedTokens[2].includes("\\n")) {
           throw new Error("O terminal alterou a sequência de escape \\\\n antes de entregá-la ao Python: " + JSON.stringify(escapedTokens));
         }
         const terminalFile = await root.getFileHandle("terminal-input-smoke.py", { create: true });
         const terminalWriter = await terminalFile.createWritable();
-        await terminalWriter.write("name = input('Nome: ')\\nage = int(input('Idade: '))\\nprint('AURORA_TERMINAL_INPUT_OK:' + name + ':' + str(age))\\n");
+        await terminalWriter.write([
+          "name = input('Nome: ')",
+          "age = int(input('Idade: '))",
+          "print('AURORA_TERMINAL_INPUT_OK:' + name + ':' + str(age))"
+        ].join("\n") + "\n");
         await terminalWriter.close();
         window.AuroraProjectManager = {
           rootHandle: root, projectName: "python-smoke",
@@ -141,8 +146,8 @@
           write(value) {
             const chunk = String(value);
             this.output += chunk;
-            if (chunk.includes("Nome: ")) queueMicrotask(() => this.handleData?.("Raphael\\r"));
-            if (chunk.includes("Idade: ")) queueMicrotask(() => this.handleData?.("42\\r"));
+            if (chunk.includes("Nome: ")) queueMicrotask(() => this.handleData?.("Raphael\r"));
+            if (chunk.includes("Idade: ")) queueMicrotask(() => this.handleData?.("42\r"));
             if (this.output.includes("AURORA_TERMINAL_INPUT_OK:Raphael:42")) {
               document.body.dataset.terminalInputSmoke = "passed";
               window.__auroraTerminalSmokeResolve?.();
@@ -167,6 +172,7 @@
 
       } catch (error) {
         document.body.dataset.pythonSmoke = "failed";
+        document.body.dataset.terminalInputSmoke = "failed";
         document.getElementById("result").textContent = error?.stack || String(error);
       }
     });
