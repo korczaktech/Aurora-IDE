@@ -14,5 +14,15 @@
     return permission === "granted";
   }
 
-  window.AuroraStorageAccess = Object.freeze({ requestReadWrite });
+  async function resolveStorageDirectory(selectedHandle) {
+    if (!selectedHandle || typeof selectedHandle.getDirectoryHandle !== "function") {
+      throw new Error("Selecione uma pasta válida para o armazenamento Aurora.");
+    }
+    // O seletor pode devolver a própria .aurora ou a pasta-pai que a contém.
+    return selectedHandle.name === ".aurora"
+      ? selectedHandle
+      : selectedHandle.getDirectoryHandle(".aurora", { create: true });
+  }
+
+  window.AuroraStorageAccess = Object.freeze({ requestReadWrite, resolveStorageDirectory });
 })();
