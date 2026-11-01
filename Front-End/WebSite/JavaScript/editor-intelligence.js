@@ -251,6 +251,7 @@
       if (event.key === "ArrowUp") { event.preventDefault(); selected = (selected - 1 + current.length) % current.length; highlightSelected(); return; }
       if (event.key === "Enter" || event.key === "Tab") { event.preventDefault(); accept(); return; }
       if (event.key === "Escape") { event.preventDefault(); hide(); return; }
+      if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) hide();
     }
     if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) {
       if (event.key === "Home" && !event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); smartHome(); }
