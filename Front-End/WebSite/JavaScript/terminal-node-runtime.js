@@ -6,6 +6,7 @@ const MAX_FILES = 3000;
 const MAX_FILE_BYTES = 8 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 48 * 1024 * 1024;
 let apiPromise = null;
+const activeStates = new Set();
 
 function equalBytes(a, b) {
   if (!a || !b || a.byteLength !== b.byteLength) return false;
@@ -217,6 +218,7 @@ async function ensure(session, root) {
   const projectPath = "/home/projects/" + id + "/project";
   await runtime.fs.mkdir(projectPath, { recursive: true });
   const state = { root, runtime, projectPath, base: new Map(), id };
+  activeStates.add(state);
   session.nodeRuntime = state;
   await syncFromProject(state);
   return state;
@@ -264,10 +266,18 @@ async function run(session, command, args, options = {}) {
 }
 
 function dispose(session) {
-  if (!session?.nodeRuntime) return;
-  try { session.nodeRuntime.runtime.teardown(); } catch (_) {}
-  session.nodeRuntime = null;
-  session.nodeProcess = null;
+  if (session?.nodeRuntime) {
+    const state = session.nodeRuntime;
+    try { state.runtime.teardown(); } catch (_) {}
+    activeStates.delete(state);
+    session.nodeRuntime = null;
+    session.nodeProcess = null;
+    return;
+  }
+  for (const state of activeStates) {
+    try { state.runtime.teardown(); } catch (_) {}
+  }
+  activeStates.clear();
 }
 
 window.AuroraNodeRuntime = Object.freeze({ run, dispose });
