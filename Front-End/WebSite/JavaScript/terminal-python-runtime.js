@@ -2,6 +2,7 @@
 "use strict";
 
 const PYODIDE_MODULE = "https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs";
+const PYTHON_INPUT_PROMPT = "Python input() — digite uma linha:";
 const MAX_FILES = 1500;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 const MAX_TOTAL_BYTES = 32 * 1024 * 1024;
@@ -221,7 +222,7 @@ async function run(session, code, options = {}) {
     py = await module.loadPyodide({
       fullStdLib: true,
       stdin: () => {
-        const value = window.prompt("Python input() — digite uma linha:");
+        const value = window.prompt(PYTHON_INPUT_PROMPT);
         return value === null ? null : value;
       }
     });
