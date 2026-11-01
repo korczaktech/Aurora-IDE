@@ -206,10 +206,20 @@
     let written = 0;
     let unchanged = 0;
     let conflicts = 0;
+    let skippedTooLarge = 0;
+    let syncedBytes = 0;
+    let consideredFiles = 0;
     for (const entry of entries) {
       if (entry.directory) continue;
+      consideredFiles++;
+      if (consideredFiles > DEFAULT_LIMITS.maxFiles) { skippedTooLarge++; continue; }
       const data = await fs.read_file(entry.path);
       if (!(data instanceof Uint8Array)) continue;
+      if (data.byteLength > DEFAULT_LIMITS.maxFileBytes || syncedBytes + data.byteLength > DEFAULT_LIMITS.maxTotalBytes) {
+        skippedTooLarge++;
+        continue;
+      }
+      syncedBytes += data.byteLength;
       const original = state.baseline.get(entry.path);
       if (original && sameBytes(original, data)) {
         unchanged++;
@@ -226,7 +236,7 @@
     }
 
     const deletedInGuest = [...state.baseline.keys()].filter(path => !guestPaths.has(path)).length;
-    return { written, unchanged, conflicts, createdDirectories, deletedInGuest, totalFiles: guestPaths.size };
+    return { written, unchanged, conflicts, createdDirectories, deletedInGuest, skippedTooLarge, totalFiles: guestPaths.size };
   }
 
   async function createSession(rootHandle, limits) {
