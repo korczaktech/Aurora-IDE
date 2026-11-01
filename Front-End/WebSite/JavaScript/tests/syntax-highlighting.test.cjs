@@ -6,7 +6,7 @@ const path = require("node:path");
 const test = require("node:test");
 const vm = require("node:vm");
 
-const root = path.resolve(__dirname, "..", "..");
+const root = path.resolve(__dirname, "..");
 const moduleSource = fs.readFileSync(path.join(root, "syntax-highlighting.js"), "utf8");
 const editorHTML = fs.readFileSync(path.resolve(root, "..", "HTML", "editor.html"), "utf8");
 const editorCSS = fs.readFileSync(path.resolve(root, "..", "CSS", "editor.css"), "utf8");
