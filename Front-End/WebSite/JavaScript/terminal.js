@@ -225,7 +225,7 @@ function mount(container){
  rail.dataset.terminalSessions="";tabs.dataset.terminalTabs="";stage.dataset.terminalStage="";footer.dataset.terminalStatus="";
  content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,footer);container.replaceChildren(shell);createSession();
 }
-function unmount(){for(const s of sessions.values()){s.linuxRuntime?.stop().catch(()=>{});s.worker?.terminate();s.dispose?.();}sessions.clear();rootElement=null;activeId=null;}
+function unmount(){for(const s of sessions.values()){if(s.linuxRuntime){const runtime=s.linuxRuntime;runtime.syncProject().catch(()=>{}).finally(()=>runtime.stop().catch(()=>{}));}s.worker?.terminate();s.dispose?.();}sessions.clear();rootElement=null;activeId=null;}
 window.AuroraTerminalInternals=Object.freeze({tokenize,resolvePath});
 window.AuroraTerminal=Object.freeze({mount,unmount});
 })();
