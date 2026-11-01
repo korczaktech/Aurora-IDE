@@ -100,6 +100,7 @@
           "print('AURORA_NUMPY_OK')",
           "print('AURORA_INPUT_OK')",
           "print('AURORA_NEWLINE_OK')",
+          "print('AURORA_PRINT_LINE_1\\nAURORA_PRINT_LINE_2')",
           "with open('python-smoke.txt', 'w') as file:",
           "    file.write('AURORA_FILE_SYNC_OK')"
         ].join("\n"), {
@@ -110,7 +111,7 @@
         const file = await (await root.getFileHandle("python-smoke.txt")).getFile();
         const contents = await file.text();
         const printed = output.join("");
-        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && printed.includes("AURORA_NEWLINE_OK") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
+        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && printed.includes("AURORA_NEWLINE_OK") && printed.includes("AURORA_PRINT_LINE_1\nAURORA_PRINT_LINE_2\n") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
         document.body.dataset.pythonSmoke = passed ? "running" : "failed";
         document.body.dataset.terminalInputSmoke = "running";
         document.getElementById("result").textContent = passed
