@@ -45,7 +45,13 @@ const { chromium } = require("playwright");
     const nodeSmoke = await page.locator("body").getAttribute("data-node-smoke");
     if (nodeSmoke !== "passed") throw new Error("Node WebAssembly browser smoke test failed: " + nodeSmoke + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
 
-    await page.waitForFunction(() => Boolean(document.body.dataset.npmSmoke), null, { timeout: 120000 });
+    try {
+      await page.waitForFunction(() => Boolean(document.body.dataset.npmSmoke), null, { timeout: 120000 });
+    } catch (error) {
+      const npmStatus = await page.locator("body").getAttribute("data-npm-status");
+      const npmTrace = await page.locator("body").getAttribute("data-npm-trace");
+      throw new Error("npm/TypeScript browser smoke timed out; status=" + npmStatus + " trace=" + npmTrace + " | " + error.message);
+    }
     const npmSmoke = await page.locator("body").getAttribute("data-npm-smoke");
     if (npmSmoke !== "passed") throw new Error("npm/TypeScript browser smoke test failed: " + npmSmoke + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
 
