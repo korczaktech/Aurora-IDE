@@ -239,7 +239,11 @@ async function run(session, command, args, options = {}) {
   if (command === "npm" && !rest.length) rest.push("--help");
   const cwd = state.projectPath + (options.cwd ? "/" + safePath(options.cwd) : "");
   const env = Object.fromEntries(Object.entries(options.environment || {}).map(([key, value]) => [key, String(value)]));
-  const process = await state.runtime.spawn(command, rest, { cwd, env });
+  const process = command === "tsc"
+    ? await state.runtime.tsc(cwd, rest)
+    : command === "npx" && rest[0] === "tsc"
+      ? await state.runtime.tsc(cwd, rest.slice(1))
+      : await state.runtime.spawn(command, rest, { cwd, env });
   session.nodeProcess = process;
   session.cancelExecution = () => {
     try { process.kill(); } catch (_) {}
