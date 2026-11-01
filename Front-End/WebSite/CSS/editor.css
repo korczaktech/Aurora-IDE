@@ -868,3 +868,12 @@ body {
 .tab-close:hover,.tab-close:focus-visible{background:#263638;color:#e6f2eb;opacity:1;outline:none}
 .code-tab.is-active .tab-close{opacity:1}
 @media(max-width:700px){.code-tab{min-width:88px;max-width:160px;padding:0 7px;gap:5px}.code-tab-name{max-width:95px}}
+
+.code-tab{padding:0 5px 0 9px}
+.code-tab-select{display:inline-flex;align-items:center;gap:7px;min-width:0;height:100%;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-align:left;white-space:nowrap;cursor:pointer}
+.code-tab-select:focus-visible{outline:1px solid #79d8ad;outline-offset:-2px;border-radius:2px}
+.tab-close{padding:0;border:0;background:transparent}
+.find-replace-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-top:10px}
+.find-replace-actions .editor-command,.find-replace-actions .editor-primary-button{box-sizing:border-box;justify-content:center;width:100%;min-height:32px;margin:0;padding:7px 8px;font-size:10px}
+.find-replace-actions .editor-primary-button{grid-column:1/-1}
+.find-replace-secondary{margin-top:2px}
