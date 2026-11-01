@@ -417,6 +417,7 @@ jobs:
                     });
                     document.body.dataset.nodeSmoke = nodeResult.code === 0 && nodeResult.output.includes("AURORA_NODE_READY:function") ? "passed" : "failed: " + nodeResult.output + " (exit " + nodeResult.code + ")";
                     if (nodeResult.code === 0) {
+                      try {
                       let installTrace = "";
                       document.body.dataset.npmStatus = "installing";
                       const installResult = await window.AuroraNodeRuntime.run(nodeSession, "npm", ["install", "ms@2.1.3"], {
@@ -437,6 +438,10 @@ jobs:
                         document.body.dataset.npmSmoke = npmRunResult.code === 0 && npmRunResult.output.includes("AURORA_NPM_READY:172800000") && compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: trace=" + installTrace + " install=" + installResult.code + " npmRun=" + npmRunResult.code + " npmOutput=" + npmRunResult.output + " compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
                       } else {
                         document.body.dataset.npmSmoke = "failed: npm install exit " + installResult.code + " " + installResult.output;
+                      }
+                      } catch (npmError) {
+                        document.body.dataset.npmStatus = "error";
+                        document.body.dataset.npmSmoke = "failed: " + (npmError?.stack || npmError?.message || String(npmError));
                       }
                     } else {
                       document.body.dataset.npmSmoke = "skipped: Node smoke failed";
