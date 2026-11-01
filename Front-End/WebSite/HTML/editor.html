@@ -7,6 +7,13 @@
   <meta name="description" content="Interface experimental do editor de código Aurora EDS.">
   <title>Aurora EDS — Editor experimental</title>
   <meta name="robots" content="noindex,follow">
+  <script type="importmap">
+    {
+      "imports": {
+        "esbuild-wasm": "/runtime/nodebrowser/esbuild-wasm/package/lib/browser.js"
+      }
+    }
+  </script>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="../CSS/editor.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
@@ -629,6 +636,7 @@
   <script src="../JavaScript/terminal-linux-project-bridge.js"></script>
   <script src="../JavaScript/terminal-linux-runtime.js"></script>
   <script src="../JavaScript/terminal-git.js"></script>
+  <script src="../JavaScript/terminal-node-runtime.js"></script>
   <script src="../JavaScript/terminal.js"></script>
   <script src="../JavaScript/project-manager.js"></script>
 </body>
