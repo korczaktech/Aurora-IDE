@@ -117,6 +117,7 @@
       } catch (error) {
         document.body.dataset.pythonSmoke = "failed";
         document.getElementById("result").textContent = error?.stack || String(error);
+      }
     });
   </script>
 </body>
