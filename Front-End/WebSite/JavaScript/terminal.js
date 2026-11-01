@@ -36,15 +36,21 @@ function resolvePath(input,cwd){
 const current=()=>sessions.get(activeId)||null;
 function syncLinuxToggle(){
  const button=rootElement?.querySelector("[data-terminal-linux-toggle]");
+ const restart=rootElement?.querySelector("[data-terminal-linux-restart]");
  const session=current();
  if(!button)return;
  const state=session?.linuxRuntime?.state;
  button.textContent=state==="starting"?"Iniciando Linux…":session?.linuxRuntime?"Desligar Linux":"Iniciar Linux";
  button.disabled=state==="starting"||state==="stopping";
+ if(restart)restart.disabled=state!=="running";
 }
 function status(message){const n=rootElement?.querySelector("[data-terminal-status]");if(n)n.textContent=message;}
 function append(session,text){const value=String(text??"");if(!value)return;session.output=(session.output+value).slice(-OUTPUT_LIMIT);session.terminal?.write(value.replace(/\n/g,"\r\n"));if(view==="output"&&activeId===session.id)renderOutput();}
 const print=(session,text="")=>append(session,String(text)+"\n");
+function restartLinux(session=current()){
+ if(!session?.linuxRuntime)return;
+ try{session.linuxRuntime.restart();}catch(error){print(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
+}
 async function toggleLinux(session=current()){
  if(!session)return;
  if(session.linuxRuntime){
@@ -202,9 +208,10 @@ function mount(container){
  const shell=el("div","aurora-terminal-workbench"),toolbar=el("div","aurora-terminal-toolbar"),left=el("div","aurora-terminal-toolbar-left"),right=el("div","aurora-terminal-toolbar-right");
  const add=el("button","aurora-terminal-new","+ Novo terminal");add.type="button";add.onclick=createSession;
  const linuxToggle=el("button","aurora-terminal-new","Iniciar Linux");linuxToggle.type="button";linuxToggle.dataset.terminalLinuxToggle="";linuxToggle.title="Iniciar ou encerrar o ambiente Linux emulado no navegador";linuxToggle.onclick=()=>toggleLinux(current());
+ const linuxRestart=el("button","aurora-terminal-new","Reiniciar");linuxRestart.type="button";linuxRestart.dataset.terminalLinuxRestart="";linuxRestart.title="Reiniciar o ambiente Linux ativo";linuxRestart.disabled=true;linuxRestart.onclick=()=>restartLinux(current());
  const picker=el("select","aurora-terminal-picker");picker.dataset.terminalPicker="";picker.setAttribute("aria-label","Terminais locais");
  const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=()=>{const s=current();if(!s)return;s.linuxRuntime?.stop().catch(()=>{});s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
- left.append(add,linuxToggle,picker);right.append(close);toolbar.append(left,right);
+ left.append(add,linuxToggle,linuxRestart,picker);right.append(close);toolbar.append(left,right);
  const main=el("div","aurora-terminal-main"),rail=el("aside","aurora-terminal-sessions"),content=el("section","aurora-terminal-content"),tabs=el("div","aurora-terminal-tabs"),stage=el("div","aurora-terminal-stage"),footer=el("div","aurora-terminal-status","Preparando terminal local…");
  rail.dataset.terminalSessions="";tabs.dataset.terminalTabs="";stage.dataset.terminalStage="";footer.dataset.terminalStatus="";
  content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,footer);container.replaceChildren(shell);createSession();
