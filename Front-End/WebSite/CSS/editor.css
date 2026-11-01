@@ -675,7 +675,7 @@ body {
 .editor-terminal-form{display:flex;align-items:center;gap:9px;margin-top:9px}
 .editor-terminal-form input{flex:1;min-width:0;padding:9px;border:1px solid #263638;border-radius:3px;background:#060c0e;color:#e2eee7;font:11px monospace}
 .editor-terminal-form button{padding:8px 11px;border:1px solid #2d5746;border-radius:3px;background:#14271f;color:#9ee3bc;font-size:10px;cursor:pointer}
-.editor-word-wrap .code-input{white-space:pre-wrap;overflow-wrap:anywhere}
+.editor-word-wrap .code-input,.editor-word-wrap .code-highlight{white-space:pre-wrap;overflow-wrap:anywhere}
 .editor-focus-mode .file-sidebar,.editor-wide-mode .file-sidebar{display:none}
 .code-input{font-size:var(--code-font-size,13px)}
 .code-gutter{font-size:var(--code-font-size,13px)}
