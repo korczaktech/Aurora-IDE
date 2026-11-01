@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = Object.freeze({
   wasmUrl: new URL("v86/v86.wasm", ASSET_ROOT).href,
   biosUrl: new URL("bios/seabios.bin", ASSET_ROOT).href,
   vgaBiosUrl: new URL("bios/vgabios.bin", ASSET_ROOT).href,
-  kernelUrl: new URL("kernel/buildroot-bzimage68.bin", ASSET_ROOT).href,
+  kernelUrl: "https://i.copy.sh/buildroot-bzimage68.bin",
   memorySize: 128 * 1024 * 1024,
   vgaMemorySize: 8 * 1024 * 1024,
   startupTimeoutMs: 90000
