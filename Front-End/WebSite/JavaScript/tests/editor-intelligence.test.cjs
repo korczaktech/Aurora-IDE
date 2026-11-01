@@ -90,7 +90,7 @@ test("provides find and replace with navigation, case sensitivity and replace-al
 
 
 test("parses the editor page inline JavaScript", () => {
-  const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)]
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(source => source.includes("const codeInput"));
   assert.equal(scripts.length, 1, "expected one inline editor bootstrap script");
