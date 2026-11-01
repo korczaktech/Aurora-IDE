@@ -502,7 +502,8 @@
     input.value=""; if(message)message.textContent="";
     dialog.showModal(); input.focus();
   };
-  document.getElementById("auroraNewProjectCancel")?.addEventListener("click",()=>document.getElementById("auroraNewProjectDialog")?.close());
+  document.getElementById("auroraNewProjectCancel")?.addEventListener("click",()=>{createProjectForEditor=false;document.getElementById("auroraNewProjectDialog")?.close();});
+  document.getElementById("auroraNewProjectDialog")?.addEventListener("cancel",()=>{createProjectForEditor=false;});
   document.getElementById("auroraNewProjectForm")?.addEventListener("submit",async event=>{
     event.preventDefault();
     const input=document.getElementById("auroraNewProjectName");
