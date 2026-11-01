@@ -86,6 +86,7 @@ class AuroraLinuxRuntime {
     this.finishBoot = null;
     this.abortController = null;
     this.projectSession = null;
+    this.serialWaitCancel = null;
   }
 
   async start(callbacks = {}) {
@@ -242,14 +243,17 @@ class AuroraLinuxRuntime {
       this.projectSession.seeded = true;
       this.callbacks.onProjectPrepared?.(seeded);
     }
+    if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
 
     const promptReady = this.projectSession ? this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs) : null;
     if (typeof emulator.run === "function") await emulator.run();
     else throw new Error("O emulador não oferece o método de inicialização.");
     if (promptReady) {
       await promptReady;
+      if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
       await this._mountProject();
     }
+    if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
     this.state = "running";
     const skippedCount = this.projectSession?.snapshot?.skipped?.length || 0;
     this.callbacks.onStatus?.(this.projectSession ? "Linux iniciado · projeto em /workspace" + (skippedCount ? " · " + skippedCount + " item(ns) ignorados por limite" : "") : "Linux iniciado");
@@ -266,6 +270,7 @@ class AuroraLinuxRuntime {
       const cleanup = () => {
         clearTimeout(timer);
         emulator.remove_listener?.("serial0-output-byte", listener);
+        if (this.serialWaitCancel === cancelWait) this.serialWaitCancel = null;
       };
       const finish = (error) => {
         if (settled) return;
@@ -284,6 +289,8 @@ class AuroraLinuxRuntime {
         if (pattern.test(output)) finish();
       };
       const timer = setTimeout(() => finish(new Error("O shell Linux não respondeu dentro do tempo esperado.")), timeoutMs);
+      const cancelWait = () => finish(Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" }));
+      this.serialWaitCancel = cancelWait;
       emulator.add_listener("serial0-output-byte", listener);
     });
   }
@@ -342,6 +349,7 @@ class AuroraLinuxRuntime {
     this.cancelRequested = true;
     this.state = "stopping";
     this.abortController?.abort();
+    this.serialWaitCancel?.();
     this.finishBoot?.(Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" }));
     const emulator = this.emulator;
     this.emulator = null;
