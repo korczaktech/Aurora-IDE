@@ -319,6 +319,7 @@ jobs:
             <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
             <script src="/JavaScript/terminal-linux-project-bridge.js"></script>
             <script src="/JavaScript/terminal-linux-runtime.js"></script>
+            <script src="/JavaScript/terminal-git.js"></script>
           </head>
           <body>
             <div id="terminal"></div>
@@ -371,8 +372,17 @@ jobs:
                     xtermLib: window.Terminal,
                     projectHandle: window.smokeProjectHandle
                   });
+                  const gitContext = { rootHandle: window.smokeProjectHandle, cwd: "", environment: {} };
+                  await window.AuroraGit.run(["init"], gitContext);
+                  await window.AuroraGit.run(["config", "user.name", "Aurora Smoke"], gitContext);
+                  await window.AuroraGit.run(["config", "user.email", "smoke@aurora.invalid"], gitContext);
+                  await window.AuroraGit.run(["add", "-A"], gitContext);
+                  await window.AuroraGit.run(["commit", "-m", "browser Git smoke test"], gitContext);
+                  const gitStatus = await window.AuroraGit.run(["status"], gitContext);
+                  document.body.dataset.gitSmoke = gitStatus.includes("Árvore de trabalho limpa.") ? "passed" : gitStatus;
                 } catch (error) {
                   document.body.dataset.runtimeError = error?.message || String(error);
+                  document.body.dataset.gitSmoke = "failed";
                 }
               });
             </script>
