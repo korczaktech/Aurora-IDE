@@ -56,7 +56,7 @@
     const list = document.getElementById("project-list");
     const count = document.getElementById("project-count");
     if (count) count.textContent = `${String(projects.length).padStart(2, "0")} ${projects.length === 1 ? "PROJETO" : "PROJETOS"}`;
-    if (list) list.innerHTML = projects.length ? projects.map((project, index) => `<div class="project-line" data-open-project data-project-id="${escapeHTML(project.id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(project.name)}"><span class="project-line-index">${String(index + 1).padStart(2, "0")}</span><div class="project-line-main"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.description || "Projeto criado nesta estação")}</small></div><span class="project-line-state"><i></i>${project.id === "aurora-playground" ? "Ativo" : "Novo"}</span><span class="project-line-arrow">↗</span><button class="project-line-delete" type="button" data-delete-project="${escapeHTML(project.id)}" aria-label="Excluir projeto ${escapeHTML(project.name)}" title="Excluir projeto">Excluir</button></div>`).join("") : '<div class="projects-empty"><strong>Nenhum projeto por aqui</strong><p>Crie um projeto para começar a desenvolver.</p></div>';
+    if (list) list.innerHTML = projects.length ? projects.map((project, index) => `<div class="project-line" data-open-project data-project-id="${escapeHTML(project.id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(project.name)}"><span class="project-line-index">${String(index + 1).padStart(2, "0")}</span><div class="project-line-main"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.description || "Projeto criado nesta estação")}</small></div><span class="project-line-state"><i></i>${"LOCAL"}</span><span class="project-line-arrow">↗</span><button class="project-line-delete" type="button" data-delete-project="${escapeHTML(project.id)}" aria-label="Excluir projeto ${escapeHTML(project.name)}" title="Excluir projeto">Excluir</button></div>`).join("") : '<div class="projects-empty"><strong>Nenhum projeto por aqui</strong><p>Crie um projeto para começar a desenvolver.</p></div>';
   };
   persistProjects();
   const pages = {
@@ -339,15 +339,7 @@
       event.stopPropagation();
       const project = projects.find(item => item.id === deleteProjectButton.dataset.deleteProject);
       if (!project) return;
-      if (!window.confirm("Excluir permanentemente o projeto “" + project.name + "” desta lista? Esta ação não pode ser desfeita.")) return;
-      notify("A exclusão de pastas físicas pode esperar; este controle não removerá arquivos do disco.");
-      return;
-      if (selectedProjectId === project.id) selectedProjectId = projects[0]?.id || "";
-      persistProjects();
-      renderProjectList();
-      renderProjectSidebar();
-      recordActivity("Projeto excluído: " + project.name, "O projeto foi removido da lista local do Aurora.", "PROJETO");
-      notify("Projeto excluído da lista.");
+      notify("A exclusão física de projetos pode esperar.");
       return;
     }
     const projectTrigger = event.target.closest("[data-open-project], .project-entry");
