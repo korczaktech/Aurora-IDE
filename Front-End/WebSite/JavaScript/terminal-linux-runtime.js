@@ -15,7 +15,8 @@ const DEFAULT_CONFIG = Object.freeze({
   wasmUrl: new URL("v86/v86.wasm", ASSET_ROOT).href,
   biosUrl: new URL("bios/seabios.bin", ASSET_ROOT).href,
   vgaBiosUrl: new URL("bios/vgabios.bin", ASSET_ROOT).href,
-  kernelUrl: "https://raw.githubusercontent.com/alizafarbati/WebLinux/main/images/buildroot-bzimage68.bin",
+  kernelUrl: "https://raw.githubusercontent.com/alizafarbati/WebLinux/9be9b5f435281dc7d78467131dbc1b77e10a8198/images/buildroot-bzimage68.bin",
+  kernelGitBlobSha: "39cc8e6542faefa33717eafaffad96200aa39de1",
   memorySize: 128 * 1024 * 1024,
   vgaMemorySize: 8 * 1024 * 1024,
   startupTimeoutMs: 90000
@@ -34,6 +35,9 @@ function normalizeConfig(input = {}) {
       throw new Error("O recurso Linux precisa usar HTTPS, exceto em localhost: " + key);
     }
     config[key] = url.href;
+  }
+  if (typeof config.kernelGitBlobSha !== "string" || !/^[a-f0-9]{40}$/i.test(config.kernelGitBlobSha)) {
+    throw new Error("O identificador de integridade do kernel Linux é inválido.");
   }
   if (!Number.isInteger(config.memorySize) || config.memorySize < 64 * 1024 * 1024 || config.memorySize > 512 * 1024 * 1024) {
     throw new Error("A memória do Linux deve estar entre 64 MB e 512 MB.");
@@ -126,6 +130,22 @@ class AuroraLinuxRuntime {
     }
   }
 
+  async _verifyKernel(buffer) {
+    if (!window.crypto?.subtle || typeof TextEncoder !== "function") {
+      throw new Error("Este navegador não oferece verificação criptográfica do kernel Linux.");
+    }
+    const prefix = new TextEncoder().encode("blob " + buffer.byteLength + "\0");
+    const bytes = new Uint8Array(prefix.byteLength + buffer.byteLength);
+    bytes.set(prefix, 0);
+    bytes.set(new Uint8Array(buffer), prefix.byteLength);
+    const digest = await window.crypto.subtle.digest("SHA-1", bytes);
+    const actual = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    if (actual !== this.config.kernelGitBlobSha.toLowerCase()) {
+      throw new Error("A verificação de integridade do kernel Linux falhou. O arquivo recebido não corresponde à versão fixada.");
+    }
+    return actual;
+  }
+
   async _boot() {
     await loadV86(this.config.scriptUrl);
     if (this.callbacks.projectHandle) {
@@ -156,6 +176,7 @@ class AuroraLinuxRuntime {
       if (!response.ok) throw new Error("O servidor do kernel respondeu HTTP " + response.status + ".");
       kernelBuffer = await response.arrayBuffer();
       if (!kernelBuffer.byteLength) throw new Error("O arquivo do kernel Linux está vazio.");
+      await this._verifyKernel(kernelBuffer);
     } catch (error) {
       if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
       if (downloadTimedOut) throw new Error("O download do kernel Linux excedeu o tempo limite.");
