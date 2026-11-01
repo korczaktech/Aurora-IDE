@@ -160,7 +160,7 @@ test("loads the custom SVG icon module before the editor bootstrap", () => {
   const iconScript = html.indexOf("../JavaScript/file-icons.js");
   const inlineBootstrap = html.indexOf("const codeInput");
   assert.ok(iconScript >= 0 && iconScript < inlineBootstrap);
-  assert.match(projectManager, /data-file-icon = name/);
+  assert.ok(projectManager.includes("icon.dataset.fileIcon = name"));
   assert.match(html, /icon\.innerHTML = iconForFile\(name\)/);
   assert.match(css, /\.aurora-file-svg/);
 });
