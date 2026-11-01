@@ -165,7 +165,7 @@
           setTimeout(() => reject(new Error("Tempo limite: input() não foi concluído pelo terminal.")), 60000);
         });
         terminalInstance.handleData("python terminal-input-smoke.py");
-        terminalInstance.handleData("\\r");
+        terminalInstance.handleData("\r");
         await terminalDone;
         document.body.dataset.pythonSmoke = "passed";
         document.getElementById("result").textContent = "Python runtime, terminal input(), escaped newlines, stdout e sincronização do projeto passaram.";
