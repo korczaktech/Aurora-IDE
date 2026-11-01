@@ -66,7 +66,7 @@ test("styles autocomplete as a bounded, keyboard-navigable suggestion list", () 
 
 
 test("opens and closes independent editor tabs while retaining per-file state", () => {
-  assert.match(html, /const openCodeFiles = new Set\(\["index\\.html"\]\)/);
+  assert.ok(html.includes('const openCodeFiles = new Set(["index.html"])'));
   assert.match(html, /function renderCodeTabs\(/);
   assert.match(html, /function closeCodeFile\(/);
   assert.match(html, /codeSelections\.set\(activeCodeFile/);
