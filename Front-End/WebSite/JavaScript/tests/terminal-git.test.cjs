@@ -47,7 +47,7 @@ test("filesystem Git cria diretórios recursivos e remove arquivos",async()=>{
   await adapter.promises.mkdir("/a/b/c",{recursive:true});
   await adapter.promises.writeFile("/a/b/c/file.txt","conteúdo");
   await adapter.promises.unlink("/a/b/c/file.txt");
-  assert.deepEqual(await adapter.promises.readdir("/a/b/c"),[]);
+  assert.equal((await adapter.promises.readdir("/a/b/c")).length,0);
   assert.equal((await adapter.promises.stat("/a/b")).isDirectory(),true);
 });
 
