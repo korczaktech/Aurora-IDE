@@ -99,17 +99,21 @@
     const previous = value[start - 1];
     const next = value[end];
     const matchingPair = pairs[previous] === next && ["(", "[", "{"].includes(previous);
-    const closingAhead = lang === "html" ? /^<\//.test(after.trimStart()) : /^\}/.test(after.trimStart());
+    const trimmedBefore = before.trimEnd();
+    const trimmedAfter = after.trimStart();
+    const openingTag = lang === "html" ? trimmedBefore.match(/<([a-z][\w:-]*)\b[^>]*>$/i) : null;
+    const closingTag = lang === "html" ? trimmedAfter.match(/^<\/([a-z][\w:-]*)\s*>/i) : null;
+    const matchingHtmlTags = Boolean(openingTag && closingTag && openingTag[1].toLowerCase() === closingTag[1].toLowerCase());
+    const closingAhead = lang === "html" ? /^<\//.test(trimmedAfter) : /^\}/.test(trimmedAfter);
     const increase = shouldIncreaseIndent(before, lang);
     let innerIndent = increase ? indent + INDENT : indent;
     if (closingAhead && !increase) innerIndent = indent.slice(0, Math.max(0, indent.length - INDENT.length));
 
-    if (matchingPair) {
+    if (matchingPair || matchingHtmlTags) {
       const insertion = "\n" + innerIndent + "\n" + indent;
       replace(start, end, insertion, start + 1 + innerIndent.length);
       return;
     }
-    if (closingAhead && increase) innerIndent = indent;
     replace(start, end, "\n" + innerIndent);
   }
 
