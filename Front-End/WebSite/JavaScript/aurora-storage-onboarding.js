@@ -10,6 +10,7 @@
   const DB_NAME = "AuroraProjectManager";
   const STORE_NAME = "workspace";
   const STORAGE_KEY = "auroraStorage";
+  const PROMPT_SEEN_KEY = "aurora-storage-onboarding-seen";
 
   function openDatabase() {
     return new Promise((resolve, reject) => {
@@ -77,7 +78,8 @@
       setMessage("O acesso a pastas locais requer Chrome ou Edge atualizado em uma conexão HTTPS. Você ainda pode conhecer o Aurora, mas a criação de projetos locais ficará indisponível neste navegador.");
       chooseButton.disabled = true;
       chooseButton.textContent = "Acesso a pastas indisponível";
-      dialog.showModal();
+      try { localStorage.setItem(PROMPT_SEEN_KEY, "true"); } catch (_) {}
+      if (!localStorage.getItem(PROMPT_SEEN_KEY + "-shown")) { dialog.showModal(); try { localStorage.setItem(PROMPT_SEEN_KEY + "-shown", "true"); } catch (_) {} }
       return;
     }
 
@@ -91,7 +93,9 @@
           : "O local de armazenamento já está configurado. Se o navegador solicitar novamente a permissão, autorize-a em Configurações > Armazenamento.");
         return;
       }
+      if (localStorage.getItem(PROMPT_SEEN_KEY) === "true") return;
       setMessage("Recomendado: escolha a raiz de um disco ou uma pasta principal de armazenamento. O navegador pedirá sua autorização antes de liberar o acesso.");
+      try { localStorage.setItem(PROMPT_SEEN_KEY, "true"); } catch (_) {}
     } catch (error) {
       console.warn("[Aurora Storage Setup]", error);
       setMessage("Vamos configurar o armazenamento local. Escolha uma pasta principal para criar .aurora.");
