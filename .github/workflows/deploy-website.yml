@@ -410,7 +410,7 @@ jobs:
                   try {
                     window.smokeProjectHandle.addFile("node-smoke.js", "console.log('AURORA_NODE_READY:' + typeof require('fs').readFileSync);");
                     window.smokeProjectHandle.addFile("package.json", JSON.stringify({ name: "aurora-smoke", version: "1.0.0" }));
-                    window.smokeProjectHandle.addFile("node-smoke.ts", "const answer: number = 42;\\nconsole.log(answer);\\n");
+                    window.smokeProjectHandle.addFile("node-smoke.ts", "const answer: number = 42;\nconsole.log(answer);\n");
                     const nodeSession = { cwd: "", environment: {}, nodeRuntime: null, nodeProcess: null };
                     const nodeResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["node-smoke.js"], {
                       rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
