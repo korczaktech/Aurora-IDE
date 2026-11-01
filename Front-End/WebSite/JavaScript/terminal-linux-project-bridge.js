@@ -221,6 +221,7 @@
         continue;
       }
       await writeHostFile(state.rootHandle, entry.path, data);
+      state.baseline.set(entry.path, data.slice());
       written++;
     }
 
