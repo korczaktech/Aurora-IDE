@@ -67,7 +67,6 @@ class AuroraLinuxRuntime {
     this.config = normalizeConfig(config);
     this.emulator = null;
     this.state = "idle";
-    this.decoder = new TextDecoder("utf-8");
     this.callbacks = {};
     this.startPromise = null;
     this.cancelRequested = false;
@@ -83,6 +82,10 @@ class AuroraLinuxRuntime {
     }
 
     this.callbacks = callbacks;
+    if (!callbacks.consoleContainer || typeof callbacks.consoleContainer.append !== "function") {
+      throw new Error("O contêiner do console Linux não foi preparado.");
+    }
+    if (typeof callbacks.xtermLib !== "function") throw new Error("xterm.js não está disponível para o console Linux.");
     this.cancelRequested = false;
     this.state = "starting";
     this.callbacks.onStatus?.("Carregando o emulador Linux…");
@@ -119,7 +122,14 @@ class AuroraLinuxRuntime {
       bios: { url: this.config.biosUrl },
       vga_bios: { url: this.config.vgaBiosUrl },
       cdrom: { url: this.config.imageUrl },
-      autostart: true
+      cmdline: "console=ttyS0,115200",
+      serial_console: {
+        type: "xtermjs",
+        container: this.callbacks.consoleContainer,
+        xterm_lib: this.callbacks.xtermLib
+      },
+      autostart: true,
+      fastboot: true
     });
     this.emulator = emulator;
 
@@ -128,12 +138,7 @@ class AuroraLinuxRuntime {
       const total = Number(progress?.total) || 0;
       if (total > 0) this.callbacks.onStatus?.("Baixando ambiente Linux… " + Math.floor(loaded / total * 100) + "%");
     });
-    emulator.add_listener("serial0-output-byte", byte => {
-      const value = Number(byte);
-      if (!Number.isFinite(value)) return;
-      const decoded = this.decoder.decode(Uint8Array.of(value & 255), { stream: true });
-      if (decoded) this.callbacks.onOutput?.(decoded);
-    });
+
 
     await new Promise((resolve, reject) => {
       let settled = false;
@@ -157,15 +162,6 @@ class AuroraLinuxRuntime {
     });
   }
 
-  send(data) {
-    if (!this.emulator || (this.state !== "running" && this.state !== "starting")) return false;
-    if (typeof this.emulator.serial0_send !== "function") {
-      throw new Error("O console serial não está disponível nesta versão do emulador.");
-    }
-    this.emulator.serial0_send(String(data));
-    return true;
-  }
-
   async stop() {
     this.cancelRequested = true;
     this.state = "stopping";
@@ -177,8 +173,8 @@ class AuroraLinuxRuntime {
       return;
     }
     try {
-      await Promise.resolve(emulator.stop?.());
-      this.decoder = new TextDecoder("utf-8");
+      if (typeof emulator.destroy === "function") await emulator.destroy();
+      else await Promise.resolve(emulator.stop?.());
       this.state = "idle";
       this.callbacks.onStatus?.("Terminal Linux encerrado");
     } catch (error) {
