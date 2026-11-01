@@ -360,8 +360,8 @@
     setStatus(entries.length + " itens • alterações salvas no dispositivo", "success");
   }
 
-  async function prepareAuroraStorage(locationHandle) {
-    const storage = await locationHandle.getDirectoryHandle(".aurora", { create: true });
+  async function attachAuroraStorage(storage) {
+    if (!storage || storage.name !== ".aurora") throw new Error("Selecione a pasta .aurora.");
     const granted = await permissionGranted(storage, true);
     if (!granted) throw new Error("Permissão de leitura e gravação para .aurora não concedida.");
     const projects = await storage.getDirectoryHandle("projects", { create: true });
@@ -371,6 +371,11 @@
     auroraProjectsHandle = projects;
     await persistAuroraStorage(storage);
     return { storage, projects };
+  }
+
+  async function prepareAuroraStorage(locationHandle) {
+    const storage = await locationHandle.getDirectoryHandle(".aurora", { create: true });
+    return attachAuroraStorage(storage);
   }
 
   async function createProjectOnDevice() {
@@ -443,7 +448,7 @@
     if (selected.name !== ".aurora") {
       throw new Error("Selecione a pasta .aurora para abrir o ambiente compartilhado do Aurora.");
     }
-    const { storage, projects } = await prepareAuroraStorage(selected);
+    const { storage, projects } = await attachAuroraStorage(selected);
     const projectNames = [];
     for await (const [name, handle] of projects.entries()) {
       if (handle.kind === "directory") projectNames.push(name);
