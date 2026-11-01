@@ -10,13 +10,14 @@ vm.runInNewContext(source, {
   window: windowMock,
   URL,
   TextDecoder,
-  location: { hostname: "localhost" },
+  location: { hostname: "localhost", href: "https://aurora.korczaktech.com.br/JavaScript/terminal-linux-runtime.js" },
   document: { createElement() { throw new Error("O carregamento não deve ocorrer neste teste."); } }
 });
 const { DEFAULT_CONFIG, normalizeConfig } = windowMock.AuroraLinuxRuntimeInternals;
 
 test("runtime usa versão v86 fixa e recursos HTTPS", () => {
   assert.equal(DEFAULT_CONFIG.version, "0.5.473");
+  assert.match(DEFAULT_CONFIG.scriptUrl, /aurora\\.korczaktech\\.com\\.br\\/runtime\\/linux\\/v86\\/libv86\\.js$/);
   for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "kernelUrl"]) {
     assert.equal(new URL(DEFAULT_CONFIG[key]).protocol, "https:");
   }
