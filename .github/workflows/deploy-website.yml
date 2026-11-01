@@ -165,7 +165,7 @@ jobs:
           cp "$ROOT/esbuild-wasm/package/esbuild.wasm" _site/node_modules/esbuild-wasm/esbuild.wasm
           curl -fsSL --retry 3 "https://raw.githubusercontent.com/foisalislambd/NodeBrowser/main/LICENSE" -o "$ROOT/package/LICENSE"
           curl -fsSL --retry 3 "https://raw.githubusercontent.com/foisalislambd/NodeBrowser/main/NOTICE" -o "$ROOT/package/NOTICE"
-          curl -fsSL --retry 3 "https://raw.githubusercontent.com/foisalislambd/NodeBrowser/main/vendor/quickjs/LICENSE" -o "$ROOT/package/QUICKJS-LICENSE"
+          curl -fsSL --retry 3 "https://raw.githubusercontent.com/bellard/quickjs/master/LICENSE" -o "$ROOT/package/QUICKJS-LICENSE"
           (cd "$ROOT" && sha256sum package/dist/index.js package/wasm/browsernode_kernel.js package/wasm/browsernode_kernel.wasm esbuild-wasm/package/lib/browser.js esbuild-wasm/package/esbuild.wasm > SHA256SUMS.txt)
 
       - name: Prepare browser Linux runtime assets
