@@ -244,6 +244,10 @@ async function run(session, command, args, options = {}) {
     const specs = rest.slice(1).filter(value => !value.startsWith("-"));
     const saveDev = rest.some(value => value === "-D" || value === "--save-dev");
     const logs = [];
+    if (options.debug) {
+      logs.push("DEBUG npm specs=" + JSON.stringify(specs) + " cwd=" + cwd);
+      options.onOutput?.("DEBUG npm specs=" + JSON.stringify(specs) + " cwd=" + cwd + "\n");
+    }
     try {
       await state.runtime.install(specs, cwd, {
         saveDev,
@@ -253,6 +257,13 @@ async function run(session, command, args, options = {}) {
         }
       });
       const sync = await syncToProject(state);
+      if (options.debug) {
+        const names = await state.runtime.fs.readdir(cwd + "/node_modules").catch(() => []);
+        const hasTsc = await state.runtime.fs.exists(cwd + "/node_modules/typescript/lib/tsc.js").catch(() => false);
+        const diagnostic = "DEBUG installed=" + names.join(",") + " tsc=" + hasTsc;
+        logs.push(diagnostic);
+        options.onOutput?.(diagnostic + "\n");
+      }
       return { code: 0, output: logs.join("\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
     } catch (error) {
       await syncToProject(state).catch(() => null);
