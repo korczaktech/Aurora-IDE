@@ -59,7 +59,7 @@ test("exposes selection commands in the Selection tool", () => {
 
 test("styles autocomplete as a bounded, keyboard-navigable suggestion list", () => {
   assert.match(css, /\.aurora-intellisense\s*\{/);
-  assert.match(css, /max-height:\s*230px/);
+  assert.match(css, /max-height:\s*156px/);
   assert.match(css, /\.aurora-intellisense-option\.is-active/);
   assert.match(css, /\[aria-selected="true"\]/);
 });
