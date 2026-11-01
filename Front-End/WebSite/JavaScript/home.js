@@ -34,6 +34,7 @@
   }
 
   let createProjectForEditor = false;
+  let pendingDeviceProjectStart = false;
   const editorUrlFor = project => "editor.html?project=" + encodeURIComponent(project.name);
   const openProjectInEditor = project => {
     if (!project?.name) return;
@@ -87,11 +88,13 @@
       }
       if (!auroraStorageHandle) auroraStorageHandle = await readAuroraHandle();
       if (!auroraStorageHandle) {
+        pendingDeviceProjectStart = true;
         window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
         return;
       }
       const granted = await window.AuroraStorageAccess.requestReadWrite(auroraStorageHandle);
       if (!granted) {
+        pendingDeviceProjectStart = true;
         window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
         return;
       }
@@ -674,6 +677,11 @@
     await loadRealProjects();
     refreshStorageStatus();
     if (projectPicker?.open) renderProjectPicker();
+    if (pendingDeviceProjectStart) {
+      pendingDeviceProjectStart = false;
+      renderProjectPicker();
+      if (projectPicker && !projectPicker.open) projectPicker.showModal();
+    }
   });
   const rememberedPage = storageGet("aurora-last-page", "inicio");
   const initialPage = getSetting("start-home") ? "inicio" : (Object.prototype.hasOwnProperty.call(pages, rememberedPage) ? rememberedPage : "inicio");
