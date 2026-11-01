@@ -84,7 +84,6 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
     add_listener(name, callback) { this.listeners[name] = callback; }
     async run() { ran = true; }
     restart() { restarted = true; }
-    async run() {}
     async destroy() { destroyed = true; }
   }
   const window = createRuntimeHarness(FakeV86);
@@ -113,6 +112,7 @@ test("runtime cancela a inicialização e libera a máquina sem esperar o timeou
   class FakeV86 {
     constructor() { this.listeners = {}; }
     add_listener(name, callback) { this.listeners[name] = callback; }
+    async run() {}
     async destroy() { destroyed = true; }
   }
   const window = createRuntimeHarness(FakeV86);
