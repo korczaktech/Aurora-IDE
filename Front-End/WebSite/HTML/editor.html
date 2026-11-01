@@ -77,13 +77,13 @@
           </button>
           <div class="tree-children tree-nested" data-tree-children="src">
             <button class="tree-row tree-file is-selected" type="button" data-tree-file="index.html">
-              <span class="tree-file-icon html" aria-hidden="true">5</span><span class="tree-label">index.html</span>
+              <span class="tree-file-icon" data-file-icon="index.html" aria-hidden="true"></span><span class="tree-label">index.html</span>
             </button>
             <button class="tree-row tree-file" type="button" data-tree-file="style.css">
-              <span class="tree-file-icon css" aria-hidden="true">▧</span><span class="tree-label">style.css</span>
+              <span class="tree-file-icon" data-file-icon="style.css" aria-hidden="true"></span><span class="tree-label">style.css</span>
             </button>
             <button class="tree-row tree-file" type="button" data-tree-file="script.js">
-              <span class="tree-file-icon js" aria-hidden="true">JS</span><span class="tree-label">script.js</span>
+              <span class="tree-file-icon" data-file-icon="script.js" aria-hidden="true"></span><span class="tree-label">script.js</span>
             </button>
           </div>
           <button class="tree-row tree-folder" type="button" aria-expanded="false" data-tree-toggle="assets">
@@ -122,6 +122,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="../JavaScript/syntax-highlighting.js"></script>
+  <script src="../JavaScript/file-icons.js"></script>
   <script>
     (() => {
       const menuMark = document.querySelector(".menu-mark");
@@ -378,11 +379,9 @@ startProject();`
       }
       const openCodeFiles = new Set(["index.html"]);
       function iconForFile(name) {
-        if (/\\.html?$/i.test(name)) return ["html", "5"];
-        if (/\\.css$/i.test(name)) return ["css", "▧"];
-        if (/\\.(js|mjs|cjs|ts|tsx|jsx)$/i.test(name)) return ["js", "JS"];
-        if (/\\.json$/i.test(name)) return ["json", "{}"];
-        return ["file", "·"];
+        return window.AuroraFileIcons
+          ? window.AuroraFileIcons.svgForFile(name)
+          : '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M5 3h9l5 5v13H5z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>';
       }
       function renderCodeTabs() {
         codeTabs.replaceChildren();
@@ -397,10 +396,9 @@ startProject();`
           select.setAttribute("role", "tab");
           select.setAttribute("aria-selected", String(name === activeCodeFile));
           select.setAttribute("aria-label", "Abrir " + name);
-          const [kind, glyph] = iconForFile(name);
           const icon = document.createElement("span");
-          icon.className = "code-tab-icon " + kind;
-          icon.textContent = glyph;
+          icon.className = "code-tab-icon";
+          icon.innerHTML = iconForFile(name);
           const label = document.createElement("span");
           label.className = "code-tab-name";
           label.textContent = name;
