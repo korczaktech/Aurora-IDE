@@ -208,7 +208,7 @@
       const codeHighlight = document.getElementById("codeHighlight");
       const codeGutter = document.getElementById("codeGutter");
       const codeTabs = document.getElementById("codeTabs");
-      const codeFiles = {};
+      const codeFiles = Object.create(null);
       let activeCodeFile = "index.html";
       const codeSelections = new Map();
       const escapeCode = value => String(value).replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
