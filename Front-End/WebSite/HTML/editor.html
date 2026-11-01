@@ -99,9 +99,7 @@
     <section class="editor-empty-area" aria-label="Editor de código">
       <div class="code-editor-shell">
         <div class="editor-tab-strip" id="codeTabs" role="tablist" aria-label="Arquivos abertos">
-          <button class="code-tab is-active" type="button" role="tab" aria-selected="true" data-code-file="index.html"><span class="code-tab-icon html">5</span>index.html<span class="tab-unsaved" aria-hidden="true"></span></button>
-          <button class="code-tab" type="button" role="tab" aria-selected="false" data-code-file="style.css"><span class="code-tab-icon css">▧</span>style.css</button>
-          <button class="code-tab" type="button" role="tab" aria-selected="false" data-code-file="script.js"><span class="code-tab-icon js">JS</span>script.js</button>
+          <button class="code-tab is-active" type="button" role="tab" aria-selected="true" data-code-file="index.html"><span class="code-tab-icon html">5</span><span class="code-tab-name">index.html</span><span class="tab-close" data-close-code-file="index.html" role="button" tabindex="0" aria-label="Fechar index.html" title="Fechar">×</span></button>
         </div>
         <div class="editor-context-row">
           <div class="editor-breadcrumb"><span>Meu projeto</span><span class="breadcrumb-separator">›</span><span id="activeCodeFile">index.html</span></div>
@@ -378,6 +376,55 @@ startProject();`
         const position = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
         document.getElementById("codeCursor").textContent = position;
       }
+      const openCodeFiles = new Set(["index.html"]);
+      function iconForFile(name) {
+        if (/\\.html?$/i.test(name)) return ["html", "5"];
+        if (/\\.css$/i.test(name)) return ["css", "▧"];
+        if (/\\.(js|mjs|cjs|ts|tsx|jsx)$/i.test(name)) return ["js", "JS"];
+        if (/\\.json$/i.test(name)) return ["json", "{}"];
+        return ["file", "·"];
+      }
+      function renderCodeTabs() {
+        codeTabs.replaceChildren();
+        openCodeFiles.forEach(name => {
+          const tab = document.createElement("button");
+          tab.type = "button";
+          tab.className = "code-tab" + (name === activeCodeFile ? " is-active" : "");
+          tab.dataset.codeFile = name;
+          tab.setAttribute("role", "tab");
+          tab.setAttribute("aria-selected", String(name === activeCodeFile));
+          const [kind, glyph] = iconForFile(name);
+          const icon = document.createElement("span");
+          icon.className = "code-tab-icon " + kind;
+          icon.textContent = glyph;
+          const label = document.createElement("span");
+          label.className = "code-tab-name";
+          label.textContent = name;
+          const close = document.createElement("span");
+          close.className = "tab-close";
+          close.dataset.closeCodeFile = name;
+          close.setAttribute("role", "button");
+          close.setAttribute("tabindex", "0");
+          close.setAttribute("aria-label", "Fechar " + name);
+          close.title = "Fechar";
+          close.textContent = "×";
+          tab.append(icon, label, close);
+          codeTabs.append(tab);
+        });
+      }
+      function closeCodeFile(name) {
+        if (!openCodeFiles.has(name) || openCodeFiles.size <= 1) return;
+        const ordered = [...openCodeFiles];
+        const index = ordered.indexOf(name);
+        openCodeFiles.delete(name);
+        if (name === activeCodeFile) {
+          const next = ordered[index + 1] || ordered[index - 1];
+          renderCodeTabs();
+          openCodeFile(next);
+        } else {
+          renderCodeTabs();
+        }
+      }
       function openCodeFile(name) {
         if (!(name in codeFiles)) return;
         window.AuroraEditorIntelligence?.hideAutocomplete();
@@ -387,6 +434,7 @@ startProject();`
             direction: codeInput.selectionDirection, scrollTop: codeInput.scrollTop, scrollLeft: codeInput.scrollLeft
           });
         }
+        openCodeFiles.add(name);
         activeCodeFile = name;
         codeInput.value = codeFiles[name];
         const savedSelection = codeSelections.get(name);
@@ -404,17 +452,27 @@ startProject();`
         document.getElementById("activeCodeFile").textContent = name;
         document.getElementById("activeLanguage").textContent = language;
         document.getElementById("codeLanguageStatus").textContent = language;
-        codeTabs.querySelectorAll("[data-code-file]").forEach(tab => {
-          const active = tab.dataset.codeFile === name;
-          tab.classList.toggle("is-active", active);
-          tab.setAttribute("aria-selected", String(active));
-        });
         document.querySelectorAll("[data-tree-file]").forEach(file => file.classList.toggle("is-selected", file.dataset.treeFile === name));
+        renderCodeTabs();
         updateCodeSurface();
       }
       codeTabs.addEventListener("click", event => {
+        const close = event.target.closest("[data-close-code-file]");
+        if (close) {
+          event.preventDefault();
+          event.stopPropagation();
+          closeCodeFile(close.dataset.closeCodeFile);
+          return;
+        }
         const tab = event.target.closest("[data-code-file]");
         if (tab) openCodeFile(tab.dataset.codeFile);
+      });
+      codeTabs.addEventListener("keydown", event => {
+        const close = event.target.closest("[data-close-code-file]");
+        if (close && (event.key === "Enter" || event.key === " ")) {
+          event.preventDefault();
+          closeCodeFile(close.dataset.closeCodeFile);
+        }
       });
       codeInput.addEventListener("input", () => {
         codeFiles[activeCodeFile] = codeInput.value;
@@ -429,6 +487,11 @@ startProject();`
       window.addEventListener("resize", syncCodeScroll, { passive: true });
       ["click", "keyup", "select"].forEach(type => codeInput.addEventListener(type, updateCodeCursor));
       codeInput.addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "w") {
+          event.preventDefault();
+          closeCodeFile(activeCodeFile);
+          return;
+        }
         if (event.key === "Tab") {
           event.preventDefault();
           const start = codeInput.selectionStart;
@@ -478,6 +541,8 @@ startProject();`
       window.AuroraEditor = {
         get files() { return { ...codeFiles }; },
         get activeFile() { return activeCodeFile; },
+        get openFiles() { return [...openCodeFiles]; },
+        closeFile: closeCodeFile,
         get textarea() { return codeInput; },
         openFile: openCodeFile,
         setFiles(files, activeName) {
