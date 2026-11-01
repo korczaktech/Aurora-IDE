@@ -245,7 +245,7 @@ async function run(session, command, args, options = {}) {
     const entry = safePath(rest[0]);
     const outIndex = rest.findIndex(value => value.startsWith("--outfile="));
     const separateOutIndex = rest.indexOf("--outfile");
-    const outfile = safePath(outIndex >= 0 ? rest[outIndex].slice("--outfile=".length) : separateOutIndex >= 0 ? rest[separateOutIndex + 1] || "" : "dist/" + entry.split("/").pop().replace(/\\.[^.]+$/, ".js"));
+    const outfile = safePath(outIndex >= 0 ? rest[outIndex].slice("--outfile=".length) : separateOutIndex >= 0 ? rest[separateOutIndex + 1] || "" : "dist/" + entry.split("/").pop().replace(/\.[^.]+$/, ".js"));
     const formatArg = rest.find(value => value.startsWith("--format="));
     const format = formatArg ? formatArg.slice("--format=".length) : "esm";
     if (!["esm", "cjs", "iife"].includes(format)) throw new Error("Formato esbuild inválido.");
@@ -257,7 +257,7 @@ async function run(session, command, args, options = {}) {
       projectRoot: state.projectPath
     });
     const sync = await syncToProject(state);
-    return { code: 0, output: "Build concluído: " + outfile + "\\n" + result.code.length + " caracteres gerados.", sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
+    return { code: 0, output: "Build concluído: " + outfile + "\n" + result.code.length + " caracteres gerados.", sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
   }
   if (command === "npm" && ["install", "i", "add", "ci"].includes(rest[0])) {
     const specs = rest.slice(1).filter(value => !value.startsWith("-"));
