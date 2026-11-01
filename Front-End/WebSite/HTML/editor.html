@@ -508,13 +508,6 @@ startProject();`
           closeCodeFile(activeCodeFile);
           return;
         }
-        if (event.key === "Tab") {
-          event.preventDefault();
-          const start = codeInput.selectionStart;
-          const end = codeInput.selectionEnd;
-          codeInput.setRangeText("  ", start, end, "end");
-          codeInput.dispatchEvent(new Event("input"));
-        }
       });
       const fileSidebar = document.getElementById("fileSidebar");
       const collapseTree = document.getElementById("collapseTree");
@@ -577,6 +570,7 @@ startProject();`
     })();
   </script>
   <script src="../JavaScript/editor-intelligence.js"></script>
+  <script src="../JavaScript/editor-typing.js"></script>
   <script src="../JavaScript/editor-controls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
