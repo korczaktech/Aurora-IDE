@@ -910,3 +910,34 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .settings-storage-change{padding:9px 12px;border:1px solid rgba(139,199,160,.3);border-radius:6px;background:rgba(24,42,29,.5);color:#c8dfce;font:10px 'DM Mono',monospace;cursor:pointer;white-space:nowrap;transition:background .2s,border-color .2s}
 .settings-storage-change:hover{border-color:#91c69d;background:rgba(62,105,72,.25)}
 @media(max-width:600px){.settings-storage-location{align-items:flex-start;flex-direction:column;gap:12px}.settings-storage-actions{width:100%;justify-content:space-between}}
+
+/* Seletor de projeto para iniciar a programação */
+.aurora-project-picker{width:min(560px,calc(100vw - 30px));max-width:none;max-height:min(82vh,720px);padding:0;border:1px solid rgba(139,199,160,.28);border-radius:15px;background:#09110e;color:#e6f0e8;box-shadow:0 28px 90px rgba(0,0,0,.65)}
+.aurora-project-picker::backdrop{background:rgba(1,5,4,.8);backdrop-filter:blur(8px)}
+.aurora-project-picker-panel{padding:29px;background:radial-gradient(ellipse at 85% 0,rgba(83,139,99,.15),transparent 48%),#09110e}
+.aurora-project-picker-panel h2{margin:12px 0 8px;color:#edf5ef;font-size:25px;letter-spacing:-.8px}
+.aurora-project-picker-panel>p{margin:0 0 20px;color:#94a89a;font-size:12px;line-height:1.8}
+.aurora-project-picker-list{display:grid;gap:7px;max-height:42vh;overflow:auto}
+.aurora-project-picker-item{display:flex;align-items:center;gap:13px;width:100%;min-height:65px;padding:11px 13px;border:1px solid rgba(139,199,160,.17);border-radius:7px;background:rgba(17,31,22,.68);color:#dcebe0;text-align:left;cursor:pointer;transition:border-color .18s,background .18s}
+.aurora-project-picker-item:hover{border-color:rgba(139,199,160,.55);background:rgba(34,57,39,.78)}
+.aurora-picker-folder{color:#a4d1ad;font-size:19px}
+.aurora-project-picker-item>span:nth-child(2){display:grid;gap:5px;min-width:0;flex:1}
+.aurora-project-picker-item strong{overflow-wrap:anywhere;font-size:12px;font-weight:600}
+.aurora-project-picker-item small{color:#809487;font:9px 'DM Mono',monospace}
+.aurora-picker-arrow{color:#a4d1ad}
+.aurora-picker-empty{display:grid;gap:7px;padding:24px 16px;border:1px dashed rgba(139,199,160,.2);color:#a9b9ad;text-align:center;font-size:11px}
+.aurora-picker-empty strong{color:#d5e7d9;font-size:13px}
+.aurora-project-picker-footer{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap;margin-top:20px}
+.aurora-project-picker-footer button{min-height:39px;padding:0 13px;border-radius:6px;font:600 9px 'DM Mono',monospace;cursor:pointer}
+.aurora-picker-create{border:1px solid #9bc9a5;background:linear-gradient(120deg,#b8dfbf,#82b890);color:#07100a}
+.aurora-picker-create:disabled{opacity:.45;cursor:not-allowed}
+.aurora-picker-configure{border:1px solid rgba(139,199,160,.3);background:rgba(24,42,29,.5);color:#c8dfce}
+.aurora-picker-cancel{border:1px solid rgba(139,199,160,.17);background:transparent;color:#9eafa3}
+@media(max-width:520px){.aurora-project-picker-panel{padding:22px 19px}.aurora-project-picker-footer{align-items:stretch;flex-direction:column}.aurora-project-picker-footer button{width:100%}}
+
+/* Acesso direto ao ambiente de desenvolvimento a partir das propriedades */
+.property-toolbar-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.property-enter-eds{display:inline-flex;align-items:center;gap:10px;min-height:38px;padding:0 14px;border:1px solid rgba(139,199,160,.42);border-radius:5px;background:linear-gradient(120deg,rgba(38,70,46,.85),rgba(18,39,26,.9));color:#d8ecdc;font:600 9px 'DM Mono',monospace;letter-spacing:.5px;cursor:pointer;transition:background .2s,border-color .2s}
+.property-enter-eds:hover{border-color:#a3d3ad;background:rgba(55,94,62,.85)}
+.property-enter-eds span{color:#a6d7b0;font-size:13px}
+@media(max-width:650px){.property-toolbar-actions{width:100%;justify-content:space-between}}
