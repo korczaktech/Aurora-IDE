@@ -59,7 +59,7 @@
   }
 
   async function prepareStorage(locationHandle) {
-    const storage = await locationHandle.getDirectoryHandle(".aurora", { create: true });
+    const storage = await window.AuroraStorageAccess.resolveStorageDirectory(locationHandle);
     const permission = await storage.requestPermission({ mode: "readwrite" });
     if (permission !== "granted") throw new Error("O acesso de leitura e gravação à pasta .aurora não foi autorizado.");
     await storage.getDirectoryHandle("projects", { create: true });
@@ -94,7 +94,7 @@
         return;
       }
       if (localStorage.getItem(PROMPT_SEEN_KEY) === "true") return;
-      setMessage("Recomendado: escolha a raiz de um disco ou uma pasta principal de armazenamento. O navegador pedirá sua autorização antes de liberar o acesso.");
+      setMessage("Selecione a própria pasta .aurora, caso ela já exista, ou a pasta principal onde deseja criá-la. O Aurora reconhecerá os dois formatos.");
       try { localStorage.setItem(PROMPT_SEEN_KEY, "true"); } catch (_) {}
     } catch (error) {
       console.warn("[Aurora Storage Setup]", error);
@@ -109,12 +109,12 @@
     chooseButton.disabled = true;
     laterButton.disabled = true;
     chooseButton.textContent = "Aguardando autorização…";
-    setMessage("Selecione a pasta principal no seletor do navegador. O Aurora criará .aurora dentro dela.");
+    setMessage("Selecione a própria pasta .aurora existente ou uma pasta principal para criá-la.");
     try {
       const pickerPromise = window.showDirectoryPicker({ mode: "readwrite" });
       const location = await pickerPromise;
       const storage = await prepareStorage(location);
-      setMessage("Configurado com sucesso em " + location.name + "/.aurora. Seus projetos ficarão dentro de .aurora/projects.");
+      setMessage("Configurado com sucesso em " + (location.name === ".aurora" ? location.name : location.name + "/.aurora") + ". Seus projetos ficam em .aurora/projects.");
       chooseButton.textContent = "Armazenamento configurado";
       chooseButton.disabled = true;
       laterButton.disabled = false;
