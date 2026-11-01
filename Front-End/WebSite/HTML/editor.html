@@ -111,7 +111,7 @@
           <div class="code-gutter" id="codeGutter" aria-hidden="true">1</div>
           <div class="code-input-wrap">
             <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
-            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" aria-autocomplete="list" aria-haspopup="listbox" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
+            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
           </div>
         </div>
         <footer class="code-statusbar">
@@ -380,6 +380,7 @@ startProject();`
       }
       function openCodeFile(name) {
         if (!(name in codeFiles)) return;
+        window.AuroraEditorIntelligence?.hideAutocomplete();
         if (activeCodeFile && activeCodeFile !== name) {
           codeSelections.set(activeCodeFile, {
             start: codeInput.selectionStart, end: codeInput.selectionEnd,
