@@ -34,9 +34,56 @@ function resolvePath(input,cwd){
  return parts.join("/");
 }
 const current=()=>sessions.get(activeId)||null;
+function syncLinuxToggle(){
+ const button=rootElement?.querySelector("[data-terminal-linux-toggle]");
+ const session=current();
+ if(!button)return;
+ const state=session?.linuxRuntime?.state;
+ button.textContent=state==="starting"?"Iniciando Linux…":session?.linuxRuntime?"Desligar Linux":"Iniciar Linux";
+ button.disabled=state==="starting"||state==="stopping";
+}
 function status(message){const n=rootElement?.querySelector("[data-terminal-status]");if(n)n.textContent=message;}
 function append(session,text){const value=String(text??"");if(!value)return;session.output=(session.output+value).slice(-OUTPUT_LIMIT);session.terminal?.write(value.replace(/\n/g,"\r\n"));if(view==="output"&&activeId===session.id)renderOutput();}
 const print=(session,text="")=>append(session,String(text)+"\n");
+function appendSerial(session,text){
+ const value=String(text??"");
+ if(!value)return;
+ session.output=(session.output+value).slice(-OUTPUT_LIMIT);
+ session.terminal?.write(value);
+ if(view==="output"&&activeId===session.id)renderOutput();
+}
+async function toggleLinux(session=current()){
+ if(!session)return;
+ if(session.linuxRuntime){
+  const runtime=session.linuxRuntime;
+  try{await runtime.stop();}catch(error){print(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
+  session.linuxRuntime=null;
+  session.terminal?.clear();
+  print(session,"Terminal Linux encerrado.");
+  prompt(session);
+  status("Terminal local no navegador");
+  syncLinuxToggle();
+  return;
+ }
+ if(!window.AuroraLinuxRuntime){print(session,"\\x1b[31mRuntime Linux não carregado. Recarregue o editor.\\x1b[0m");return;}
+ view="terminal";
+ renderStage();
+ const runtime=new window.AuroraLinuxRuntime();
+ session.linuxRuntime=runtime;
+ syncLinuxToggle();
+ try{
+  await runtime.start({
+   onOutput:text=>appendSerial(session,text),
+   onStatus:status,
+   onError:error=>append(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m\n")
+  });
+ }catch(error){
+  session.linuxRuntime=null;
+  print(session,"\\x1b[31mFalha ao iniciar Linux: "+(error?.message||String(error))+"\\x1b[0m");
+  prompt(session);
+  status("Falha ao iniciar Linux");
+ }finally{syncLinuxToggle();}
+}
 async function projectRoot(){
  const handle=window.AuroraProjectManager?.rootHandle;
  if(!handle)throw new Error("Nenhum projeto aberto. Abra um projeto em .aurora/projects primeiro.");
@@ -120,13 +167,17 @@ async function executeLine(session,line){
  }catch(error){print(session,"\x1b[31m"+(error?.message||String(error))+"\x1b[0m");status("Erro no comando");}
  prompt(session);
 }
-function prompt(session){session.terminal?.write("\r\n\x1b[38;2;143;224;180m"+session.name+"\x1b[0m:\x1b[38;2;130;149;140m/"+session.cwd+"\x1b[0m$ ");}
+function prompt(session){if(session.linuxRuntime)return;session.terminal?.write("\r\n\x1b[38;2;143;224;180m"+session.name+"\x1b[0m:\x1b[38;2;130;149;140m/"+session.cwd+"\x1b[0m$ ");}
 function attach(session,stage){
  if(!window.Terminal||!window.FitAddon?.FitAddon){stage.append(el("p","editor-empty-message","Emulador de terminal indisponível."));return;}
  const host=el("div","aurora-xterm-host");stage.append(host);
  const term=new window.Terminal({cursorBlink:true,convertEol:true,scrollback:5000,fontSize:12,fontFamily:'"SFMono-Regular",Consolas,"Liberation Mono",monospace',theme:{background:"#050a0b",foreground:"#c5d5cd",cursor:"#8fe0b4",selectionBackground:"#315343"}});
  const fit=new window.FitAddon.FitAddon();term.loadAddon(fit);term.open(host);session.terminal=term;session.fitAddon=fit;session.host=host;let input="";
  term.onData(data=>{
+  if(session.linuxRuntime){
+   try{session.linuxRuntime.send(data);}catch(error){append(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
+   return;
+  }
   if(data==="\r"){const line=input;input="";executeLine(session,line);}
   else if(data==="\u007f"){if(input.length){input=input.slice(0,-1);term.write("\b \b");}}
   else if(data==="\u0003"){if(session.worker){session.cancelExecution?.();session.worker?.terminate();session.worker=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
@@ -142,24 +193,25 @@ function renderStage(){const stage=rootElement?.querySelector("[data-terminal-st
 function render(){
  if(!rootElement)return;const picker=rootElement.querySelector("[data-terminal-picker]"),rail=rootElement.querySelector("[data-terminal-sessions]");picker.replaceChildren();rail.replaceChildren();
  for(const s of sessions.values()){const option=el("option","",s.name);option.value=s.id;picker.append(option);const button=el("button","aurora-terminal-session"+(s.id===activeId?" is-active":""),s.name);button.type="button";button.onclick=()=>{activeId=s.id;render();};rail.append(button);}
- picker.value=activeId||"";picker.onchange=()=>{activeId=picker.value;render();};
+ picker.value=activeId||"";picker.onchange=()=>{activeId=picker.value;render();};syncLinuxToggle();
  const tabs=rootElement.querySelector("[data-terminal-tabs]");tabs.replaceChildren();[["terminal","TERMINAL"],["output","OUTPUT"],["debug","DEBUG CONSOLE"],["problems","PROBLEMS"],["ports","PORTS"]].forEach(([key,label])=>{const b=el("button","aurora-terminal-tab"+(view===key?" is-active":""),label);b.type="button";b.onclick=()=>{view=key;renderStage();tabs.querySelectorAll("button").forEach(x=>x.classList.toggle("is-active",x===b));};tabs.append(b);});
  renderStage();status("Local no navegador · "+(window.AuroraProjectManager?.projectName||"projeto"));
 }
-function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,terminal:null,fitAddon:null,host:null,dispose:null};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
+function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,linuxRuntime:null,terminal:null,fitAddon:null,host:null,dispose:null};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
 function mount(container){
  rootElement=container;
  if(!window.AuroraProjectManager?.rootHandle){container.replaceChildren(el("p","editor-empty-message","Abra um projeto em .aurora/projects antes de iniciar o terminal."));return;}
  const shell=el("div","aurora-terminal-workbench"),toolbar=el("div","aurora-terminal-toolbar"),left=el("div","aurora-terminal-toolbar-left"),right=el("div","aurora-terminal-toolbar-right");
  const add=el("button","aurora-terminal-new","+ Novo terminal");add.type="button";add.onclick=createSession;
+ const linuxToggle=el("button","aurora-terminal-new","Iniciar Linux");linuxToggle.type="button";linuxToggle.dataset.terminalLinuxToggle="";linuxToggle.title="Iniciar ou encerrar o ambiente Linux emulado no navegador";linuxToggle.onclick=()=>toggleLinux(current());
  const picker=el("select","aurora-terminal-picker");picker.dataset.terminalPicker="";picker.setAttribute("aria-label","Terminais locais");
- const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=()=>{const s=current();if(!s)return;s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
- left.append(add,picker);right.append(close);toolbar.append(left,right);
+ const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=()=>{const s=current();if(!s)return;s.linuxRuntime?.stop().catch(()=>{});s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
+ left.append(add,linuxToggle,picker);right.append(close);toolbar.append(left,right);
  const main=el("div","aurora-terminal-main"),rail=el("aside","aurora-terminal-sessions"),content=el("section","aurora-terminal-content"),tabs=el("div","aurora-terminal-tabs"),stage=el("div","aurora-terminal-stage"),footer=el("div","aurora-terminal-status","Preparando terminal local…");
  rail.dataset.terminalSessions="";tabs.dataset.terminalTabs="";stage.dataset.terminalStage="";footer.dataset.terminalStatus="";
  content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,footer);container.replaceChildren(shell);createSession();
 }
-function unmount(){for(const s of sessions.values()){s.worker?.terminate();s.dispose?.();}sessions.clear();rootElement=null;activeId=null;}
+function unmount(){for(const s of sessions.values()){s.linuxRuntime?.stop().catch(()=>{});s.worker?.terminate();s.dispose?.();}sessions.clear();rootElement=null;activeId=null;}
 window.AuroraTerminalInternals=Object.freeze({tokenize,resolvePath});
 window.AuroraTerminal=Object.freeze({mount,unmount});
 })();
