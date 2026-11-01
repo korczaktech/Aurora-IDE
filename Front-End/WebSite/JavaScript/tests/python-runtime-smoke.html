@@ -6,6 +6,7 @@
   <title>Aurora Python Runtime Smoke Test</title>
   <!-- Regression test for Python streams, terminal-backed asynchronous input, escaped newlines, and workspace synchronization. -->
   <script src="../terminal-python-runtime.js"></script>
+  <script src="../terminal.js"></script>
 </head>
 <body>
   <pre id="result">Aguardando runtime Python…</pre>
@@ -114,6 +115,56 @@
         document.getElementById("result").textContent = passed
           ? "Python execution and project file synchronization passed."
           : JSON.stringify({ result, printed, contents });
+        if (!passed) throw new Error("Base Python runtime smoke failed.");
+        const escapedTokens = window.AuroraTerminalInternals.tokenize(String.raw\`python -c "print('linha1\\nlinha2')"\`);
+        if (escapedTokens.length !== 3 || !escapedTokens[2].includes("\\n")) {
+          throw new Error("O terminal alterou a sequência de escape \\\\n antes de entregá-la ao Python: " + JSON.stringify(escapedTokens));
+        }
+        const terminalFile = await root.getFileHandle("terminal-input-smoke.py", { create: true });
+        const terminalWriter = await terminalFile.createWritable();
+        await terminalWriter.write("name = input('Nome: ')\\nage = int(input('Idade: '))\\nprint('AURORA_TERMINAL_INPUT_OK:' + name + ':' + str(age))\\n");
+        await terminalWriter.close();
+        window.AuroraProjectManager = {
+          rootHandle: root, projectName: "python-smoke",
+          flush: async () => {}, refresh: async () => {}
+        };
+        window.prompt = () => { throw new Error("O runtime não deve abrir prompt nativo."); };
+        class FakeTerminal {
+          static instances = [];
+          constructor() { this.output = ""; FakeTerminal.instances.push(this); }
+          loadAddon() {}
+          open() {}
+          onData(callback) { this.handleData = callback; }
+          focus() {}
+          clear() { this.output = ""; }
+          dispose() {}
+          write(value) {
+            const chunk = String(value);
+            this.output += chunk;
+            if (chunk.includes("Nome: ")) queueMicrotask(() => this.handleData?.("Raphael\\r"));
+            if (chunk.includes("Idade: ")) queueMicrotask(() => this.handleData?.("42\\r"));
+            if (this.output.includes("AURORA_TERMINAL_INPUT_OK:Raphael:42")) {
+              document.body.dataset.terminalInputSmoke = "passed";
+              window.__auroraTerminalSmokeResolve?.();
+            }
+          }
+        }
+        window.Terminal = FakeTerminal;
+        window.FitAddon = { FitAddon: class { fit() {} } };
+        const terminalContainer = document.createElement("div");
+        document.body.append(terminalContainer);
+        window.AuroraTerminal.mount(terminalContainer);
+        const terminalInstance = FakeTerminal.instances[0];
+        const terminalDone = new Promise((resolve, reject) => {
+          window.__auroraTerminalSmokeResolve = resolve;
+          setTimeout(() => reject(new Error("Tempo limite: input() não foi concluído pelo terminal.")), 60000);
+        });
+        terminalInstance.handleData("python terminal-input-smoke.py");
+        terminalInstance.handleData("\\r");
+        await terminalDone;
+        document.body.dataset.pythonSmoke = "passed";
+        document.getElementById("result").textContent = "Python runtime, terminal input(), escaped newlines, stdout e sincronização do projeto passaram.";
+
       } catch (error) {
         document.body.dataset.pythonSmoke = "failed";
         document.getElementById("result").textContent = error?.stack || String(error);
