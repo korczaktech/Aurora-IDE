@@ -83,11 +83,11 @@
     <section class="editor-empty-area" aria-label="Editor de código">
       <div class="code-editor-shell">
         <div class="editor-tab-strip" id="codeTabs" role="tablist" aria-label="Arquivos abertos">
-          <button class="code-tab is-active" type="button" role="tab" aria-selected="true" data-code-file="index.html"><span class="code-tab-icon html">5</span><span class="code-tab-name">index.html</span><span class="tab-close" data-close-code-file="index.html" role="button" tabindex="0" aria-label="Fechar index.html" title="Fechar">×</span></button>
+          
         </div>
         <div class="editor-context-row">
-          <div class="editor-breadcrumb"><span>Meu projeto</span><span class="breadcrumb-separator">›</span><span id="activeCodeFile">index.html</span></div>
-          <span class="editor-context-label" id="activeLanguage">HTML</span>
+          <div class="editor-breadcrumb"><span>Nenhum projeto</span><span class="breadcrumb-separator">›</span><span id="activeCodeFile">Nenhum arquivo aberto</span></div>
+          <span class="editor-context-label" id="activeLanguage">—</span>
         </div>
         <div class="code-viewport" id="codeViewport">
           <div class="code-gutter" id="codeGutter" aria-hidden="true">1</div>
@@ -97,8 +97,8 @@
           </div>
         </div>
         <footer class="code-statusbar">
-          <div class="code-status-left"><span class="status-dot"></span><span>Pronto</span><span class="status-divider">|</span><span id="codeFileStatus">index.html</span></div>
-          <div class="code-status-right"><span id="codeCursor">Ln 1, Col 1</span><span id="codeLanguageStatus">HTML</span><span>UTF-8</span><span>LF</span></div>
+          <div class="code-status-left"><span class="status-dot"></span><span>Pronto</span><span class="status-divider">|</span><span id="codeFileStatus">Nenhum arquivo aberto</span></div>
+          <div class="code-status-right"><span id="codeCursor">Ln 1, Col 1</span><span id="codeLanguageStatus">—</span><span>UTF-8</span><span>LF</span></div>
         </footer>
       </div>
     </section>
@@ -208,55 +208,7 @@
       const codeHighlight = document.getElementById("codeHighlight");
       const codeGutter = document.getElementById("codeGutter");
       const codeTabs = document.getElementById("codeTabs");
-      const codeFiles = {
-        "index.html": `<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu projeto</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main class="app">
-    <h1>Olá, mundo.</h1>
-    <p>Seu próximo projeto começa aqui.</p>
-  </main>
-  <script src="script.js"><\\/script>
-
-</body>
-</html>`,
-        "style.css": `:root {
-  color-scheme: dark;
-  --background: #080d0f;
-  --accent: #72d6ad;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  background: var(--background);
-  color: #e4eeee;
-  font-family: system-ui, sans-serif;
-}
-
-.app {
-  min-height: 100vh;
-  display: grid;
-  place-content: center;
-  text-align: center;
-}`,
-        "script.js": `const greeting = "Olá, mundo.";
-
-function startProject() {
-  console.log(greeting);
-}
-
-startProject();`
-      };
+      const codeFiles = {};
       let activeCodeFile = "index.html";
       const codeSelections = new Map();
       const escapeCode = value => String(value).replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
@@ -361,7 +313,7 @@ startProject();`
         const position = `Ln ${lines.length}, Col ${lines[lines.length - 1].length + 1}`;
         document.getElementById("codeCursor").textContent = position;
       }
-      const openCodeFiles = new Set(["index.html"]);
+      const openCodeFiles = new Set();
       function iconForFile(name) {
         return window.AuroraFileIcons
           ? window.AuroraFileIcons.svgForFile(name)
@@ -627,9 +579,13 @@ startProject();`
         }
       };
 
-      openCodeFile("index.html");
+      renderCodeTabs();
+      updateCodeSurface();
+      document.getElementById("activeCodeFile").textContent = "Nenhum arquivo aberto";
+      document.getElementById("activeLanguage").textContent = "—";
+      document.getElementById("codeLanguageStatus").textContent = "—";
 
-      // Estado inicial: três linhas visíveis e clicáveis. Nenhuma animação automática.
+      // Estado inicial: nenhum projeto fictício; o editor aguarda uma pasta real.
       menuMark.classList.remove("is-open", "is-returning", "is-returned");
       setState("button");
     })();
