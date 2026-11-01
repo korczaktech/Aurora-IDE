@@ -63,3 +63,23 @@ test("styles autocomplete as a bounded, keyboard-navigable suggestion list", () 
   assert.match(css, /\.aurora-intellisense-option\.is-active/);
   assert.match(css, /\[aria-selected="true"\]/);
 });
+
+
+test("opens and closes independent editor tabs while retaining per-file state", () => {
+  assert.match(html, /const openCodeFiles = new Set\(\["index\\.html"\]\)/);
+  assert.match(html, /function renderCodeTabs\(/);
+  assert.match(html, /function closeCodeFile\(/);
+  assert.match(html, /codeSelections\.set\(activeCodeFile/);
+  assert.match(html, /get openFiles\(\)/);
+  assert.match(html, /data-close-code-file/);
+});
+
+test("provides find and replace with navigation, case sensitivity and replace-all", () => {
+  assert.match(controls, /function openFindReplace\(/);
+  assert.match(controls, /function selectMatch/);
+  assert.match(controls, /caseSensitive/);
+  assert.match(controls, /replaceAll\.onclick/);
+  assert.match(controls, /for\(let i=matches\.length-1;i>=0;i--\)/);
+  assert.match(controls, /k==="f"/);
+  assert.match(controls, /k==="h"/);
+});
