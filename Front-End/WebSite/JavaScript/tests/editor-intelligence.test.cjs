@@ -13,6 +13,7 @@ const intelligence = fs.readFileSync(path.join(root, "editor-intelligence.js"), 
 const typing = fs.readFileSync(path.join(root, "editor-typing.js"), "utf8");
 const fileIcons = fs.readFileSync(path.join(root, "file-icons.js"), "utf8");
 const controls = fs.readFileSync(path.join(root, "editor-controls.js"), "utf8");
+const projectManager = fs.readFileSync(path.join(root, "project-manager.js"), "utf8");
 
 test("loads cursor, selection and autocomplete after the editor API exists", () => {
   const editorInit = html.indexOf("window.AuroraEditor =");
@@ -166,4 +167,42 @@ test("loads the custom SVG icon module before the editor bootstrap", () => {
 
 test("file icon module parses as JavaScript", () => {
   assert.doesNotThrow(() => new vm.Script(fileIcons, { filename: "file-icons.js" }));
+});
+
+
+test("integrates a real local project manager with folder and file operations", () => {
+  for (const control of ["createProject", "openProject", "newProjectFile", "newProjectFolder", "renameProjectItem", "deleteProjectItem", "projectTree", "projectStatus"]) {
+    assert.ok(html.includes('id="' + control + '"'), "missing project manager control: " + control);
+  }
+  assert.match(html, /project-manager\.js/);
+  assert.match(html, /replaceProject\(files, projectName, activeName\)/);
+  assert.match(html, /addFile\(name, content/);
+  assert.match(html, /renameFile\(oldName, newName\)/);
+  assert.match(html, /deleteFile\(name\)/);
+  assert.match(html, /aurora:editor-change/);
+});
+
+test("supports actual directory access, nested traversal, persistence and filesystem mutations", () => {
+  for (const feature of [
+    "showDirectoryPicker", "getDirectoryHandle", "getFileHandle", "entries()",
+    "createWritable", "removeEntry", "moveEntry", "copyDirectory",
+    "indexedDB.open", "requestPermission", "validRelativePath",
+    "function createProject", "function openProjectFolder", "function createFile",
+    "function createFolder", "function renameSelected", "function deleteSelected",
+    "function flushWrites", "function renderEntries"
+  ]) {
+    assert.ok(projectManager.includes(feature), "missing filesystem feature: " + feature);
+  }
+  assert.match(projectManager, /setTimeout\(\(\) => \{/);
+  assert.match(projectManager, /280\)/);
+  assert.match(projectManager, /ignoredDirectories/);
+});
+
+test("project manager and editor APIs parse as JavaScript", () => {
+  assert.doesNotThrow(() => new vm.Script(projectManager, { filename: "project-manager.js" }));
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\\/script>/g)]
+    .map(match => match[1])
+    .filter(source => source.includes("const codeInput"));
+  assert.equal(scripts.length, 1);
+  assert.doesNotThrow(() => new vm.Script(scripts[0], { filename: "editor.html:inline-script" }));
 });
