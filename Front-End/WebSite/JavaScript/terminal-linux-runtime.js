@@ -29,8 +29,9 @@ function normalizeConfig(input = {}) {
     let url;
     try { url = new URL(config[key]); }
     catch (_) { throw new Error("URL inválida para o recurso Linux: " + key); }
-    if (url.protocol !== "https:") {
-      throw new Error("O recurso Linux precisa usar HTTPS: " + key);
+    const isLocalDevelopment = url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    if (url.protocol !== "https:" && !isLocalDevelopment) {
+      throw new Error("O recurso Linux precisa usar HTTPS, exceto em localhost: " + key);
     }
     config[key] = url.href;
   }
