@@ -54,7 +54,7 @@ function createRuntimeHarness(Starter) {
   };
   vm.runInNewContext(source, {
     window, document, URL, location: { hostname: "localhost" },
-    setTimeout, clearTimeout, AbortController,
+    setTimeout, clearTimeout, AbortController, WebAssembly,
     fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(8) })
   });
   return window;
