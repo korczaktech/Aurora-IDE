@@ -587,13 +587,18 @@ startProject();`
           if (openCodeFiles.has(name)) closeCodeFile(name);
           return true;
         },
-        replaceProject(files, projectName, activeName, openNames = []) {
+        replaceProject(files, projectName, activeName, openNames = [], preserveState = false) {
           Object.keys(codeFiles).forEach(name => delete codeFiles[name]);
           Object.entries(files || {}).forEach(([name, content]) => {
             if (typeof content === "string" && validEditorPath(name)) codeFiles[name] = content;
           });
+          if (preserveState && activeCodeFile) {
+            codeSelections.set(activeCodeFile, {
+              start: codeInput.selectionStart, end: codeInput.selectionEnd,
+              direction: codeInput.selectionDirection, scrollTop: codeInput.scrollTop, scrollLeft: codeInput.scrollLeft
+            });
+          } else codeSelections.clear();
           openCodeFiles.clear();
-          codeSelections.clear();
           activeCodeFile = "";
           if (activeName && Object.prototype.hasOwnProperty.call(codeFiles, activeName)) {
             openCodeFile(activeName);
