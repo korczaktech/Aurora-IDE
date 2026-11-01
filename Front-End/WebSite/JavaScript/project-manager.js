@@ -184,7 +184,9 @@
     row.className = "tree-row " + (kind === "directory" ? "tree-folder" : "tree-file");
     row.dataset.projectPath = path;
     row.dataset.projectKind = kind;
+    row.setAttribute("role", "treeitem");
     row.style.paddingLeft = (8 + depth * 15) + "px";
+    if (kind === "directory") row.setAttribute("aria-expanded", String(expanded.has(path)));
     row.setAttribute("aria-label", (kind === "directory" ? "Pasta " : "Arquivo ") + name);
     if (kind === "directory") {
       const chevron = document.createElement("span");
@@ -238,6 +240,8 @@
     rootRow.type = "button";
     rootRow.className = "tree-row tree-project";
     rootRow.dataset.projectRoot = "true";
+    rootRow.setAttribute("role", "treeitem");
+    rootRow.setAttribute("aria-expanded", String(expanded.has("")));
     const chevron = document.createElement("span");
     chevron.className = "tree-chevron";
     chevron.textContent = expanded.has("") ? "⌄" : "›";
@@ -539,6 +543,7 @@
         if (expanded.has("")) expanded.delete(""); else expanded.add("");
         const children = row.nextElementSibling;
         children.hidden = !expanded.has("");
+        row.setAttribute("aria-expanded", String(expanded.has("")));
         row.querySelector(".tree-chevron").textContent = expanded.has("") ? "⌄" : "›";
         selectedPath = "";
         selectedKind = "directory";
@@ -551,6 +556,7 @@
         if (expanded.has(selectedPath)) expanded.delete(selectedPath); else expanded.add(selectedPath);
         const children = row.nextElementSibling;
         if (children?.classList.contains("tree-children")) children.hidden = !expanded.has(selectedPath);
+        row.setAttribute("aria-expanded", String(expanded.has(selectedPath)));
         row.querySelector(".tree-chevron").textContent = expanded.has(selectedPath) ? "⌄" : "›";
       } else {
         const file = fileHandles.get(selectedPath);
