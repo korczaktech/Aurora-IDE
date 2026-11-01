@@ -116,6 +116,29 @@
     db.close();
   }
 
+  async function persistAuroraStorage(handle) {
+    const db = await openDatabase();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("workspace", "readwrite");
+      tx.objectStore("workspace").put(handle, "auroraStorage");
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || new Error("Falha ao salvar o local de armazenamento Aurora."));
+      tx.onabort = () => reject(tx.error || new Error("Salvamento do armazenamento Aurora cancelado."));
+    });
+    db.close();
+  }
+
+  async function restoreAuroraStorage() {
+    const db = await openDatabase();
+    const handle = await new Promise((resolve, reject) => {
+      const request = db.transaction("workspace", "readonly").objectStore("workspace").get("auroraStorage");
+      request.onsuccess = () => resolve(request.result || null);
+      request.onerror = () => reject(request.error);
+    });
+    db.close();
+    return handle;
+  }
+
   async function clearPersistedRootHandle() {
     const db = await openDatabase();
     await new Promise((resolve, reject) => {
@@ -346,6 +369,7 @@
     await storage.getDirectoryHandle("workspace", { create: true });
     auroraRootHandle = storage;
     auroraProjectsHandle = projects;
+    await persistAuroraStorage(storage);
     return { storage, projects };
   }
 
@@ -357,8 +381,12 @@
       window.alert("Nome inválido. Evite barras, caracteres especiais e nomes reservados.");
       return;
     }
-    const location = await requestDirectoryPicker();
-    const { storage, projects } = await prepareAuroraStorage(location);
+    let storage = auroraRootHandle;
+    let projects = auroraProjectsHandle;
+    if (!storage || !(await permissionGranted(storage, false))) {
+      const location = await requestDirectoryPicker();
+      ({ storage, projects } = await prepareAuroraStorage(location));
+    }
     try {
       await projects.getDirectoryHandle(cleanName);
       throw new Error("Já existe um projeto com esse nome em .aurora/projects.");
@@ -695,6 +723,12 @@
 
   async function restoreLastProject() {
     try {
+      const savedStorage = await restoreAuroraStorage();
+      if (savedStorage && savedStorage.name === ".aurora" && await permissionGranted(savedStorage, false)) {
+        auroraRootHandle = savedStorage;
+        auroraProjectsHandle = await savedStorage.getDirectoryHandle("projects");
+        setStatus("Armazenamento .aurora conectado • pronto para abrir ou criar projetos.", "success");
+      }
       const saved = await restoreRootHandle();
       if (!saved) return;
       if (!saved.auroraHandle || saved.auroraHandle.name !== ".aurora") {
