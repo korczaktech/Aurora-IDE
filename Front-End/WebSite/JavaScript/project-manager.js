@@ -787,6 +787,7 @@
     validSegment,
     get projectName() { return currentProjectName; },
     get rootHandle() { return rootHandle; },
+    get isReady() { return Boolean(rootHandle); },
     get canDeleteProject() { return Boolean(rootHandle && projectParentHandle); },
     refresh: refreshProject,
     flush: flushWrites
