@@ -877,3 +877,6 @@ body {
 .find-replace-actions .editor-command,.find-replace-actions .editor-primary-button{box-sizing:border-box;justify-content:center;width:100%;min-height:32px;margin:0;padding:7px 8px;font-size:10px}
 .find-replace-actions .editor-primary-button{grid-column:1/-1}
 .find-replace-secondary{margin-top:2px}
+
+.find-replace-actions .editor-command:focus-visible,.find-replace-actions .editor-primary-button:focus-visible{outline:1px solid #79d8ad;outline-offset:2px}
+.find-replace-actions .editor-primary-button{border-color:#315343;background:#14271f;color:#a5e5c2}
