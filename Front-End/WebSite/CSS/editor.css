@@ -910,12 +910,14 @@ body {
 .project-toolbar {
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   align-items: center;
   gap: 5px;
   padding: 5px 8px;
   border-bottom: 1px solid #172326;
 }
 .project-toolbar button {
+  flex: 1 1 0;
   min-width: 0;
   min-height: 27px;
   padding: 0 8px;
@@ -927,6 +929,17 @@ body {
   font-size: 10px;
   white-space: nowrap;
   cursor: pointer;
+}
+.project-toolbar #deleteProject {
+  flex: 1 0 100%;
+  min-height: 29px;
+  border-color: #633b3b;
+  color: #e5aaa4;
+}
+.project-toolbar #deleteProject:not(:disabled):hover {
+  border-color: #a65353;
+  background: #291718;
+  color: #ffd2cc;
 }
 .project-toolbar button:hover,
 .project-toolbar button:focus-visible {
