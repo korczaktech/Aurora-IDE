@@ -381,8 +381,8 @@ jobs:
                   const gitStatus = await window.AuroraGit.run(["status"], gitContext);
                   document.body.dataset.gitSmoke = gitStatus.includes("Árvore de trabalho limpa.") ? "passed" : gitStatus;
                 } catch (error) {
-                  document.body.dataset.runtimeError = error?.message || String(error);
-                  document.body.dataset.gitSmoke = "failed";
+                  document.body.dataset.runtimeError = error?.stack || error?.message || String(error);
+                  document.body.dataset.gitSmoke = "failed: " + (error?.message || String(error));
                 }
               });
             </script>
