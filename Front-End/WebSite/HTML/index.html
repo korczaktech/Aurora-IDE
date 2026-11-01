@@ -179,14 +179,17 @@
       <div class="micro-label">AURORA EDS · AMBIENTE DE TRABALHO</div>
       <h2 id="auroraProjectPickerTitle">O que vamos construir hoje?</h2>
       <p>Escolha um projeto para abrir diretamente no editor ou crie um novo.</p>
+      <p class="aurora-project-picker-status" id="auroraProjectPickerStatus" role="status" aria-live="polite"></p>
       <div class="aurora-project-picker-list" id="auroraProjectPickerList" aria-live="polite"></div>
       <div class="aurora-project-picker-footer">
         <button type="button" class="aurora-picker-create" id="auroraPickerCreate">＋ Criar novo projeto</button>
+        <button type="button" class="aurora-picker-configure" id="auroraPickerReconnect" hidden>Reconectar .aurora</button>
         <button type="button" class="aurora-picker-configure" id="auroraPickerConfigure" hidden>Configurar armazenamento</button>
         <button type="button" class="aurora-picker-cancel" id="auroraPickerCancel">Cancelar</button>
       </div>
     </div>
   </dialog>
+  <script src="JavaScript/aurora-storage-access.js"></script>
   <script src="JavaScript/aurora-storage-onboarding.js"></script>
   <script src="JavaScript/home.js"></script>
   <script src="JavaScript/auth.js"></script>
