@@ -44,7 +44,7 @@ O bootstrap atual usa o kernel Buildroot publicado para o exemplo serial oficial
 
 ## Validação
 
-A suíte automatizada valida a versão fixada, URLs, limites de memória, timeout e rejeição de esquemas inseguros. O boot real e a disponibilidade do console serial precisam ser verificados em navegador suportado com rede habilitada; o CI de sintaxe não substitui esse teste de integração.
+A suíte automatizada valida a versão fixada, URLs, limites de memória, timeout, rejeição de esquemas inseguros e ciclo de vida. O deploy executa ainda um smoke test real em Chromium headless: baixa o kernel, inicializa o Linux, espera o prompt BusyBox, executa um comando `echo`, confirma o retorno ao prompt e encerra a máquina virtual.
 
 ## Licença de terceiros
 
