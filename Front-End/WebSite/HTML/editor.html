@@ -60,7 +60,7 @@
     <div class="project-storage-content">
       <div class="project-storage-eyebrow">NOVO PROJETO</div>
       <h2 id="projectStorageTitle">Onde deseja armazenar?</h2>
-      <p>Escolha o local em que os arquivos do projeto serão mantidos.</p>
+      <p>Escolha a pasta principal de armazenamento. O Aurora criará nela uma pasta oculta chamada .aurora e manterá todos os projetos dentro dela.</p>
       <div class="project-storage-options">
         <button class="project-storage-option is-unavailable" id="projectStorageVault" type="button" disabled aria-describedby="projectStorageVaultStatus">
           <span class="project-storage-icon" aria-hidden="true">☁</span>
@@ -69,7 +69,7 @@
         </button>
         <button class="project-storage-option" id="projectStorageDevice" type="button">
           <span class="project-storage-icon" aria-hidden="true">▣</span>
-          <span class="project-storage-option-copy"><strong>Dispositivo</strong><small>Armazenar em uma pasta deste dispositivo</small></span>
+          <span class="project-storage-option-copy"><strong>Dispositivo</strong><small>Escolher onde criar .aurora/projects</small></span>
           <span class="project-storage-status is-available">Disponível</span>
         </button>
       </div>
@@ -87,7 +87,7 @@
       </div>
       <div class="project-toolbar" aria-label="Ações do projeto">
         <button type="button" id="createProject" title="Criar projeto">Novo projeto</button>
-        <button type="button" id="openProject" title="Abrir pasta">Abrir pasta</button>
+        <button type="button" id="openProject" title="Abrir o armazenamento .aurora">Abrir .aurora</button>
         <button type="button" id="deleteProject" title="Excluir projeto" disabled>Excluir projeto</button>
       </div>
       <div class="project-toolbar project-item-toolbar" aria-label="Gerenciar arquivos e pastas">
@@ -99,7 +99,7 @@
       <div class="project-tree" id="projectTree" role="tree" aria-label="Arquivos e diretórios do projeto"></div>
       <div class="file-sidebar-footer" aria-live="polite">
         <span class="status-dot"></span><span id="projectName">Nenhum projeto aberto</span>
-        <span id="projectStatus">Crie um projeto ou abra uma pasta.</span>
+        <span id="projectStatus">Configure .aurora ou abra um projeto existente.</span>
         <span id="selectedProjectItem" class="visually-hidden">Raiz do projeto</span>
       </div>
     </aside>
