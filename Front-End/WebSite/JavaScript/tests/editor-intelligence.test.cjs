@@ -200,7 +200,7 @@ test("supports actual directory access, nested traversal, persistence and filesy
 
 test("project manager and editor APIs parse as JavaScript", () => {
   assert.doesNotThrow(() => new vm.Script(projectManager, { filename: "project-manager.js" }));
-  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\\/script>/g)]
+  const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)]
     .map(match => match[1])
     .filter(source => source.includes("const codeInput"));
   assert.equal(scripts.length, 1);
