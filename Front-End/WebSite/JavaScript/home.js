@@ -63,13 +63,45 @@
         ? '<div class="aurora-picker-empty"><strong>Permissão necessária.</strong><span>Seus projetos continuam na pasta .aurora. Reconecte o armazenamento para visualizá-los.</span></div>'
         : '<div class="aurora-picker-empty"><strong>Nenhum projeto encontrado.</strong><span>Configure o armazenamento ou crie seu primeiro projeto.</span></div>';
   };
+  const storageChoice = document.getElementById("auroraStorageChoice");
   const openProjectPicker = async () => {
     if (!projectPicker) return;
     await loadRealProjects();
     renderProjectPicker();
     projectPicker.showModal();
   };
-  document.getElementById("developButton")?.addEventListener("click", openProjectPicker);
+  document.getElementById("developButton")?.addEventListener("click", () => {
+    const message = document.getElementById("auroraStorageChoiceMessage");
+    if (message) message.textContent = "";
+    storageChoice?.showModal();
+  });
+  document.getElementById("auroraStorageChoiceCancel")?.addEventListener("click", () => storageChoice?.close());
+  document.getElementById("auroraDeviceStorage")?.addEventListener("click", async () => {
+    storageChoice?.close();
+    try {
+      if (!window.isSecureContext || !window.showDirectoryPicker) {
+        const message = document.getElementById("auroraStorageChoiceMessage");
+        if (message) message.textContent = "Este navegador não oferece acesso a pastas locais. Use Chrome ou Edge atualizado em HTTPS.";
+        storageChoice?.showModal();
+        return;
+      }
+      if (!auroraStorageHandle) auroraStorageHandle = await readAuroraHandle();
+      if (!auroraStorageHandle) {
+        window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
+        return;
+      }
+      const granted = await window.AuroraStorageAccess.requestReadWrite(auroraStorageHandle);
+      if (!granted) {
+        window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
+        return;
+      }
+      await loadRealProjects();
+      await openProjectPicker();
+    } catch (error) {
+      console.warn("[Aurora] Não foi possível acessar o armazenamento local:", error);
+      window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
+    }
+  });
   document.getElementById("auroraPickerCancel")?.addEventListener("click", () => projectPicker?.close());
   document.getElementById("auroraPickerReconnect")?.addEventListener("click", async event => {
     const button = event.currentTarget;
@@ -624,7 +656,7 @@
       await writeProjectIndex(config,index);
       const project={id,name,description:"",kind:"PROJETO",createdAt:now,modifiedAt:now,entryCount:0,handle:folder,entries:[]};
       projects.push(project);selectedProjectId=id;
-      renderProjectSidebar();dialog.close();
+      renderProjectSidebar();document.getElementById("auroraNewProjectDialog")?.close();
       recordActivity("Projeto criado: "+name,"Pasta vazia criada em .aurora/projects.","PROJETO");
       if (createProjectForEditor) {
         createProjectForEditor = false;
