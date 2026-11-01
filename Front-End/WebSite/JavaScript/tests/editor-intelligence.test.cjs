@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const vm = require("node:vm");
 
 const root = path.resolve(__dirname, "..");
 const html = fs.readFileSync(path.resolve(root, "..", "HTML", "editor.html"), "utf8");
@@ -82,4 +83,13 @@ test("provides find and replace with navigation, case sensitivity and replace-al
   assert.match(controls, /for\(let i=matches\.length-1;i>=0;i--\)/);
   assert.match(controls, /k==="f"/);
   assert.match(controls, /k==="h"/);
+});
+
+
+test("parses the editor page inline JavaScript", () => {
+  const scripts = [...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)]
+    .map(match => match[1])
+    .filter(source => source.includes("const codeInput"));
+  assert.equal(scripts.length, 1, "expected one inline editor bootstrap script");
+  assert.doesNotThrow(() => new vm.Script(scripts[0], { filename: "editor.html:inline-script" }));
 });
