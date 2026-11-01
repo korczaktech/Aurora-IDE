@@ -6,6 +6,11 @@ on:
       - main
     paths:
       - "Front-End/WebSite/HTML/editor.html"
+      - "Front-End/WebSite/HTML/index.html"
+      - "Front-End/WebSite/CSS/home.css"
+      - "Front-End/WebSite/JavaScript/home.js"
+      - "Front-End/WebSite/JavaScript/aurora-storage-onboarding.js"
+      - "Front-End/WebSite/JavaScript/aurora-storage-access.js"
       - "Front-End/WebSite/CSS/editor.css"
       - "Front-End/WebSite/JavaScript/syntax-highlighting.js"
       - "Front-End/WebSite/JavaScript/editor-intelligence.js"
@@ -19,6 +24,7 @@ on:
       - "Front-End/WebSite/JavaScript/terminal-linux-runtime.js"
       - "Front-End/WebSite/JavaScript/terminal-linux-project-bridge.js"
       - "Front-End/WebSite/JavaScript/tests/**"
+      - "Front-End/WebSite/JavaScript/tests/aurora-storage-access.test.cjs"
       - "Front-End/WebSite/JavaScript/editor-controls.js"
       - ".github/workflows/editor-validation.yml"
   workflow_dispatch:
@@ -41,6 +47,9 @@ jobs:
 
       - name: Check JavaScript syntax
         run: |
+          node --check Front-End/WebSite/JavaScript/home.js
+          node --check Front-End/WebSite/JavaScript/aurora-storage-onboarding.js
+          node --check Front-End/WebSite/JavaScript/aurora-storage-access.js
           node --check Front-End/WebSite/JavaScript/syntax-highlighting.js
           node --check Front-End/WebSite/JavaScript/editor-intelligence.js
           node --check Front-End/WebSite/JavaScript/editor-typing.js
