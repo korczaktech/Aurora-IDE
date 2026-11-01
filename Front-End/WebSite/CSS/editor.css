@@ -739,12 +739,10 @@ body {
 .editor-terminal-integrated .aurora-terminal-stage{padding-top:5px}
 
 
-/* xterm.js: emulação real do PTY, com dimensionamento pelo painel inferior. */
+/* Emulador visual local, sem conexão com PTY remoto. */
 .aurora-terminal-stage{overflow:hidden}
-.aurora-xterm-host{flex:1;width:100%;height:100%;min-width:0;min-height:0;padding:5px 7px;background:#050a0b}
-.aurora-xterm-host .xterm{height:100%;width:100%}
-.aurora-xterm-host .xterm-viewport{overflow-y:auto!important}
-.aurora-xterm-host .xterm-screen{width:100%}
+.aurora-terminal-workbench .aurora-xterm-host{flex:1;min-width:0;min-height:0;padding:5px 7px;background:#050a0b}
+.aurora-terminal-workbench .xterm{height:100%;width:100%}
 
 
 /* Aurora Syntax Highlighting — cores semânticas do tema nativo */
