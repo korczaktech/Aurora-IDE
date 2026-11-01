@@ -187,14 +187,6 @@ class AuroraLinuxRuntime {
       fastboot: true
     });
     this.emulator = emulator;
-    if (this.projectSession) {
-      if (!emulator.fs9p) throw new Error("O emulador não disponibilizou o filesystem 9p.");
-      this.callbacks.onStatus?.("Preparando os arquivos do projeto no Linux…");
-      const seeded = await window.AuroraLinuxProjectBridge.seedFilesystem(emulator.fs9p, this.projectSession.snapshot);
-      this.projectSession.seeded = true;
-      this.callbacks.onProjectPrepared?.(seeded);
-    }
-
     emulator.add_listener("download-progress", progress => {
       const loaded = Number(progress?.loaded) || 0;
       const total = Number(progress?.total) || 0;
@@ -221,6 +213,14 @@ class AuroraLinuxRuntime {
       });
       emulator.add_listener("download-error", error => finish(new Error("Falha ao baixar " + (error?.file_name || "um recurso do Linux") + ". Verifique a conexão e a disponibilidade do CDN.")));
     });
+
+    if (this.projectSession) {
+      if (!emulator.fs9p) throw new Error("O emulador não disponibilizou o filesystem 9p após a inicialização.");
+      this.callbacks.onStatus?.("Preparando os arquivos do projeto no Linux…");
+      const seeded = await window.AuroraLinuxProjectBridge.seedFilesystem(emulator.fs9p, this.projectSession.snapshot);
+      this.projectSession.seeded = true;
+      this.callbacks.onProjectPrepared?.(seeded);
+    }
 
     const promptReady = this.projectSession ? this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs) : null;
     if (typeof emulator.run === "function") await emulator.run();
