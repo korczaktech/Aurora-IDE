@@ -1,0 +1,45 @@
+name: Aurora Backend Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Back-End/**"
+      - ".github/workflows/backend-validation.yml"
+  pull_request:
+    paths:
+      - "Back-End/**"
+      - ".github/workflows/backend-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurora-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-backend:
+    name: Validate shared backend and terminal
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: Back-End
+
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path Back-End/Cargo.toml --all -- --check
+
+      - name: Test shared backend workspace
+        run: cargo test --manifest-path Back-End/Cargo.toml --workspace
