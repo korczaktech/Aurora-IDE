@@ -99,7 +99,10 @@ class AuroraLinuxRuntime {
       } else {
         const emulator = this.emulator;
         this.emulator = null;
-        try { await Promise.resolve(emulator?.stop?.()); } catch (_) {}
+        try {
+          if (typeof emulator?.destroy === "function") await emulator.destroy();
+          else await Promise.resolve(emulator?.stop?.());
+        } catch (_) {}
         this.state = "error";
         this.callbacks.onError?.(error);
       }
