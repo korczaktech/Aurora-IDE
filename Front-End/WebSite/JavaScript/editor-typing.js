@@ -175,15 +175,15 @@
     if (caret !== textarea.selectionEnd || caret < 3) return;
 
     const before = textarea.value.slice(0, caret);
-    const openingTag = before.match(/<([a-z][\\w:-]*)(?:\\s[^<>]*)?>$/i);
+    const openingTag = before.match(/<([a-z][\w:-]*)(?:\s[^<>]*)?>$/i);
     if (!openingTag) return;
 
     const tagName = openingTag[1];
     if (htmlVoidElements.has(tagName.toLowerCase())) return;
-    if (/\\/\\s*>$/.test(openingTag[0])) return;
+    if (/\/\s*>$/.test(openingTag[0])) return;
 
     const after = textarea.value.slice(caret);
-    const closingPattern = new RegExp("^\\\\s*</" + tagName + "\\\\s*>", "i");
+    const closingPattern = new RegExp("^\\s*</" + tagName + "\\s*>", "i");
     if (closingPattern.test(after)) return;
 
     const closingTag = "</" + tagName + ">";
