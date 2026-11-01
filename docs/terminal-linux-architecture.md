@@ -17,8 +17,8 @@ O runtime é carregado sob demanda, somente quando o usuário seleciona **Inicia
 ## Recursos fixados
 
 - v86: versão npm `0.5.473`.
-- Biblioteca e WebAssembly: jsDelivr, pacote npm versionado.
-- BIOS e kernel inicial: distribuição pública do projeto v86 em `copy.sh/v86` e `i.copy.sh`.
+- Biblioteca e WebAssembly: pacote npm versionado, baixado durante o deploy e publicado como arquivo estático no domínio do Aurora.
+- BIOS e kernel inicial: recursos públicos do projeto v86, baixados durante o deploy e publicados como arquivos estáticos no domínio do Aurora.
 - Memória padrão: 128 MiB para a máquina virtual e 8 MiB para vídeo.
 - Limites configuráveis: 64–512 MiB de RAM, 1–16 MiB de vídeo e timeout de inicialização entre 10 e 180 segundos.
 
@@ -30,7 +30,7 @@ O bootstrap atual usa o kernel Buildroot publicado para o exemplo serial oficial
 - Desempenho depende da CPU, memória e navegador do usuário.
 - O kernel Buildroot selecionado é o mesmo usado no exemplo serial oficial do v86 e disponibiliza um shell BusyBox pelo console serial. A inicialização do emulador não garante, sozinha, que o shell convidado já esteja pronto.
 - Rede do sistema convidado e compartilhamento do projeto ainda não são ativados nesta fase.
-- A disponibilidade de recursos externos depende de conectividade, CORS e dos respectivos CDNs.
+- Os recursos do emulador são publicados no mesmo domínio do Aurora; a conexão externa é necessária durante o deploy, não a cada inicialização do terminal.
 - O ambiente não deve ser anunciado como compatível com todos os programas Linux.
 
 ## Segurança e privacidade
@@ -38,7 +38,7 @@ O bootstrap atual usa o kernel Buildroot publicado para o exemplo serial oficial
 - O runtime não recebe nem enumera o diretório local do usuário.
 - Nenhum handle da File System Access API é passado ao emulador.
 - Não há ponte de arquivos, montagem 9p ou acesso ao restante do dispositivo nesta fase.
-- Os recursos externos são carregados exclusivamente por HTTPS e a versão do pacote v86 é fixada.
+- Os recursos são carregados do mesmo domínio por HTTPS; o deploy fixa a versão npm do v86 em `0.5.473` e registra checksums SHA-256 em `runtime/linux/SHA256SUMS.txt`.
 - O emulador roda na aba; encerrar o terminal chama o encerramento do emulador.
 - A autorização do projeto continua controlada pelo gerenciador de projetos existente.
 
