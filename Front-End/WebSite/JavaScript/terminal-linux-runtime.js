@@ -81,6 +81,7 @@ class AuroraLinuxRuntime {
     this.cancelRequested = false;
     this.finishBoot = null;
     this.abortController = null;
+    this.projectSession = null;
   }
 
   async start(callbacks = {}) {
@@ -127,6 +128,13 @@ class AuroraLinuxRuntime {
 
   async _boot() {
     await loadV86(this.config.scriptUrl);
+    if (this.callbacks.projectHandle) {
+      const bridge = window.AuroraLinuxProjectBridge;
+      if (!bridge) throw new Error("A ponte segura de arquivos do projeto não foi carregada.");
+      this.callbacks.onStatus?.("Lendo os arquivos autorizados do projeto…");
+      await this.callbacks.flushProject?.();
+      this.projectSession = await bridge.createSession(this.callbacks.projectHandle);
+    }
     if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
     if (typeof fetch !== "function" || typeof AbortController !== "function") {
       throw new Error("Este navegador não oferece Fetch e AbortController para carregar o kernel com segurança.");
@@ -175,10 +183,17 @@ class AuroraLinuxRuntime {
         container: this.callbacks.consoleContainer,
         xterm_lib: this.callbacks.xtermLib
       },
-      autostart: true,
+      autostart: false,
       fastboot: true
     });
     this.emulator = emulator;
+    if (this.projectSession) {
+      if (!emulator.fs9p) throw new Error("O emulador não disponibilizou o filesystem 9p.");
+      this.callbacks.onStatus?.("Preparando os arquivos do projeto no Linux…");
+      const seeded = await window.AuroraLinuxProjectBridge.seedFilesystem(emulator.fs9p, this.projectSession.snapshot);
+      this.projectSession.seeded = true;
+      this.callbacks.onProjectPrepared?.(seeded);
+    }
 
     emulator.add_listener("download-progress", progress => {
       const loaded = Number(progress?.loaded) || 0;
@@ -201,19 +216,98 @@ class AuroraLinuxRuntime {
       const timeout = setTimeout(() => finish(new Error("O emulador Linux não ficou pronto dentro do tempo esperado.")), this.config.startupTimeoutMs);
       emulator.add_listener("emulator-ready", () => {
         if (settled) return;
-        this.state = "running";
-        this.callbacks.onStatus?.("Emulador iniciado · aguardando o console serial");
+        this.callbacks.onStatus?.("Emulador pronto · iniciando o sistema Linux");
         finish();
       });
       emulator.add_listener("download-error", error => finish(new Error("Falha ao baixar " + (error?.file_name || "um recurso do Linux") + ". Verifique a conexão e a disponibilidade do CDN.")));
     });
+
+    const promptReady = this.projectSession ? this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs) : null;
+    if (typeof emulator.run === "function") await emulator.run();
+    else throw new Error("O emulador não oferece o método de inicialização.");
+    if (promptReady) {
+      await promptReady;
+      await this._mountProject();
+    }
+    this.state = "running";
+    this.callbacks.onStatus?.(this.projectSession ? "Linux iniciado · projeto montado em /workspace" : "Linux iniciado");
   }
 
-  restart() {
+  _waitForSerialText(pattern, timeoutMs) {
+    const emulator = this.emulator;
+    if (!emulator || typeof emulator.add_listener !== "function") {
+      return Promise.reject(new Error("O console serial não oferece eventos para detectar o shell."));
+    }
+    return new Promise((resolve, reject) => {
+      let output = "";
+      let settled = false;
+      const cleanup = () => {
+        clearTimeout(timer);
+        emulator.remove_listener?.("serial0-output-byte", listener);
+      };
+      const finish = (error) => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error) reject(error);
+        else resolve(output);
+      };
+      const listener = data => {
+        if (typeof data === "number") output += String.fromCharCode(data & 255);
+        else if (typeof data === "string") output += data;
+        else if (data && typeof data.length === "number") {
+          for (let index = 0; index < data.length; index++) output += String.fromCharCode(data[index] & 255);
+        }
+        if (output.length > 8192) output = output.slice(-4096);
+        if (pattern.test(output)) finish();
+      };
+      const timer = setTimeout(() => finish(new Error("O shell Linux não respondeu dentro do tempo esperado.")), timeoutMs);
+      emulator.add_listener("serial0-output-byte", listener);
+    });
+  }
+
+  async _mountProject() {
+    if (!this.projectSession) return;
+    const emulator = this.emulator;
+    if (typeof emulator?.serial0_send !== "function") {
+      throw new Error("O console serial não permite preparar o workspace Linux.");
+    }
+    this.callbacks.onStatus?.("Montando o projeto em /workspace…");
+    const marker = "__AURORA_WORKSPACE_READY__";
+    const failed = "__AURORA_WORKSPACE_FAILED__";
+    const result = this._waitForSerialText(new RegExp(marker + "|" + failed), 20000);
+    emulator.serial0_send("mkdir -p /workspace && mount -t 9p -o trans=virtio,version=9p2000.L host9p /workspace && cd /workspace && echo " + marker + " || echo " + failed + "\n");
+    const output = await result;
+    if (output.includes(failed)) {
+      throw new Error("O kernel não conseguiu montar o projeto via 9p. O workspace não foi disponibilizado ao Linux.");
+    }
+  }
+
+  async syncProject() {
+    if (this.state !== "running" || !this.emulator) {
+      throw new Error("Inicie o ambiente Linux antes de sincronizar os arquivos.");
+    }
+    if (!this.projectSession) throw new Error("Esta sessão Linux não está vinculada a um projeto.");
+    this.callbacks.onStatus?.("Sincronizando alterações do Linux para o projeto…");
+    const result = await window.AuroraLinuxProjectBridge.syncToProject(this.emulator.fs9p, this.projectSession);
+    await this.callbacks.refreshProject?.();
+    this.callbacks.onStatus?.("Sincronização concluída · " + result.written + " arquivo(s) atualizado(s)");
+    return result;
+  }
+
+  async restart() {
     if (!this.emulator || this.state !== "running") throw new Error("O terminal Linux não está em execução.");
     if (typeof this.emulator.restart !== "function") throw new Error("Esta versão do emulador não oferece reinicialização.");
-    this.emulator.restart();
+    this.state = "starting";
     this.callbacks.onStatus?.("Reiniciando o ambiente Linux…");
+    this.emulator.restart();
+    if (this.projectSession) {
+      await this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs);
+      await this._mountProject();
+    }
+    this.state = "running";
+    this.callbacks.onStatus?.("Linux reiniciado · projeto montado em /workspace");
+    return this;
   }
 
   async stop() {
