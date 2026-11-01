@@ -40,3 +40,29 @@ test("não considera uma permissão negada como conexão", async () => {
 test("informa quando o handle salvo não está disponível", async () => {
   await assert.rejects(access.requestReadWrite(null), /não está disponível/);
 });
+
+test("usa diretamente a pasta .aurora selecionada, sem criar .aurora/.aurora", async () => {
+  const existing = {
+    name: ".aurora",
+    async getDirectoryHandle() { throw new Error("não deve criar uma pasta aninhada"); }
+  };
+  assert.equal(await access.resolveStorageDirectory(existing), existing);
+});
+
+test("cria ou reutiliza .aurora quando a pasta-pai é selecionada", async () => {
+  const storage = { name: ".aurora" };
+  const calls = [];
+  const parent = {
+    name: "Disco",
+    async getDirectoryHandle(name, options) {
+      calls.push([name, options.create]);
+      return storage;
+    }
+  };
+  assert.equal(await access.resolveStorageDirectory(parent), storage);
+  assert.deepEqual(calls, [[".aurora", true]]);
+});
+
+test("rejeita uma seleção de diretório inválida", async () => {
+  await assert.rejects(access.resolveStorageDirectory(null), /pasta válida/);
+});
