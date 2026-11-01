@@ -35,7 +35,7 @@ const { chromium } = require("playwright");
     if (startupError) throw new Error("Falha no boot Linux: " + startupError);
 
     await page.locator("#terminal .xterm").click();
-    await page.keyboard.type("echo AURORA_LINUX_READY");
+    await page.keyboard.type("cat README.md && echo AURORA_LINUX_READY");
     await page.keyboard.press("Enter");
     await page.waitForFunction(() => {
       const output = document.querySelector("#terminal .xterm-rows")?.innerText || "";
