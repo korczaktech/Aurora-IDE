@@ -126,7 +126,10 @@ test("runtime cancela a inicialização e libera a máquina sem esperar o timeou
     consoleContainer: { append() {} },
     xtermLib: function Terminal() {}
   });
-  await new Promise(resolve => setTimeout(resolve, 0));
+  for (let attempt = 0; attempt < 100 && !runtime.emulator; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 5));
+  }
+  assert.ok(runtime.emulator, "o emulador deve ter sido criado antes do cancelamento");
   await runtime.stop();
   await assert.rejects(starting, /cancelada/);
   assert.equal(destroyed, true);
