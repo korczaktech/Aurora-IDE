@@ -7,7 +7,7 @@ const DEFAULT_CONFIG = Object.freeze({
   wasmUrl: "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm",
   biosUrl: "https://copy.sh/v86/bios/seabios.bin",
   vgaBiosUrl: "https://copy.sh/v86/bios/vgabios.bin",
-  imageUrl: "https://copy.sh/v86/images/linux.iso",
+  imageUrl: "https://i.copy.sh/linux.iso",
   memorySize: 128 * 1024 * 1024,
   vgaMemorySize: 8 * 1024 * 1024,
   startupTimeoutMs: 90000
