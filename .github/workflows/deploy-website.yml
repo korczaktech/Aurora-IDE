@@ -145,6 +145,24 @@ jobs:
             cp -a "Front-End/WebSite/React/." "_site/React/"
           fi
 
+      - name: Prepare browser Linux runtime assets
+        if: steps.detect.outputs.mode == 'static'
+        shell: bash
+        run: |
+          ROOT="_site/runtime/linux"
+          mkdir -p "$ROOT/v86" "$ROOT/bios" "$ROOT/kernel"
+          curl -fsSL --retry 3 "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/libv86.js" -o "$ROOT/v86/libv86.js"
+          curl -fsSL --retry 3 "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm" -o "$ROOT/v86/v86.wasm"
+          curl -fsSL --retry 3 "https://copy.sh/v86/bios/seabios.bin" -o "$ROOT/bios/seabios.bin"
+          curl -fsSL --retry 3 "https://copy.sh/v86/bios/vgabios.bin" -o "$ROOT/bios/vgabios.bin"
+          curl -fsSL --retry 3 "https://i.copy.sh/buildroot-bzimage68.bin" -o "$ROOT/kernel/buildroot-bzimage68.bin"
+          test -s "$ROOT/v86/libv86.js"
+          test -s "$ROOT/v86/v86.wasm"
+          test -s "$ROOT/bios/seabios.bin"
+          test -s "$ROOT/bios/vgabios.bin"
+          test -s "$ROOT/kernel/buildroot-bzimage68.bin"
+          (cd "$ROOT" && sha256sum v86/libv86.js v86/v86.wasm bios/seabios.bin bios/vgabios.bin kernel/buildroot-bzimage68.bin > SHA256SUMS.txt)
+
       - name: Prepare root website
         if: steps.detect.outputs.mode == 'root'
         run: |
