@@ -42,7 +42,7 @@ O guest atual é um Linux mínimo com os applets BusyBox incluídos na imagem. E
 
 A emulação v86 utilizada não oferece extensões x86-64 nem múltiplos núcleos. Portanto, não é correto anunciar compatibilidade com toolchains ou programas que exijam essas capacidades.
 
-A rede do guest não está habilitada. A rede disponível ao navegador não equivale a conectividade TCP/IP dentro do Linux; comandos `wget`, `curl`, `git clone` e gerenciadores de pacotes dentro do guest não são suportados nesta configuração. Downloads de pacotes dentro do guest ainda não fazem parte do runtime.
+A rede do guest não está habilitada. A rede disponível ao navegador não equivale a conectividade TCP/IP dentro do Linux; comandos `wget`, `curl`, `git clone` e gerenciadores de pacotes dentro do guest não são suportados nesta configuração. No terminal local do navegador, o comando `download URL [arquivo]` usa `fetch` com as regras CORS do navegador, exige HTTPS (exceto localhost), limita o arquivo a 16 MiB e grava somente dentro do projeto autorizado. Esse recurso não cria conectividade de rede dentro do Linux.
 
 Os arquivos do projeto permanecem no dispositivo por meio da File System Access API após a sincronização. O estado integral da máquina virtual, a memória RAM do guest e pacotes instalados não são persistidos entre inicializações.
 
