@@ -83,12 +83,15 @@
 
     try {
       const saved = await readStorageHandle();
-      if (saved && await hasAccess(saved)) {
-        setMessage("Armazenamento conectado: .aurora. O Aurora já tem permissão para trabalhar dentro dessa pasta.");
-        chooseButton.textContent = "Alterar local de armazenamento";
-      } else {
-        setMessage("Recomendado: escolha a raiz de um disco ou uma pasta principal de armazenamento. O navegador pedirá sua autorização antes de liberar o acesso.");
+      if (saved) {
+        // A configuração já existe: nunca interromper a entrada do usuário.
+        dialog.dataset.configured = "true";
+        setMessage(await hasAccess(saved)
+          ? "Armazenamento conectado: .aurora. Para mudar o local, use Configurações > Armazenamento."
+          : "O local de armazenamento já está configurado. Se o navegador solicitar novamente a permissão, autorize-a em Configurações > Armazenamento.");
+        return;
       }
+      setMessage("Recomendado: escolha a raiz de um disco ou uma pasta principal de armazenamento. O navegador pedirá sua autorização antes de liberar o acesso.");
     } catch (error) {
       console.warn("[Aurora Storage Setup]", error);
       setMessage("Vamos configurar o armazenamento local. Escolha uma pasta principal para criar .aurora.");
@@ -97,7 +100,7 @@
     if (!dialog.open) dialog.showModal();
   }
 
-  chooseButton.addEventListener("click", async () => {
+  async function chooseStorageLocation() {
     if (!window.showDirectoryPicker) return;
     chooseButton.disabled = true;
     laterButton.disabled = true;
@@ -126,6 +129,19 @@
       chooseButton.textContent = "Tentar novamente";
       laterButton.disabled = false;
     }
+  }
+
+  chooseButton.addEventListener("click", chooseStorageLocation);
+  window.addEventListener("aurora:change-storage-location", () => {
+    dialog.dataset.configured = "true";
+    dialog.querySelector(".aurora-access-label").textContent = "CONFIGURAÇÕES · ARMAZENAMENTO";
+    document.getElementById("auroraAccessTitle").textContent = "Alterar local de armazenamento";
+    document.querySelector(".aurora-access-description").innerHTML = "Escolha um novo local. O Aurora criará ou reutilizará a pasta <strong>.aurora</strong> nesse destino. Seus arquivos no local anterior não serão movidos nem apagados.";
+    chooseButton.disabled = false;
+    laterButton.disabled = false;
+    chooseButton.textContent = "Escolher novo local";
+    setMessage("O local atual será substituído como destino padrão. Os arquivos existentes permanecerão no local antigo.");
+    if (!dialog.open) dialog.showModal();
   });
 
   laterButton.addEventListener("click", () => dialog.close());
