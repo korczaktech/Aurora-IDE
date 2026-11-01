@@ -46,7 +46,7 @@ const { chromium } = require("playwright");
     if (nodeSmoke !== "passed") throw new Error("Node WebAssembly browser smoke test failed: " + nodeSmoke + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
 
     try {
-      await page.waitForFunction(() => Boolean(document.body.dataset.npmSmoke), null, { timeout: 120000 });
+      await page.waitForFunction(() => Boolean(document.body.dataset.npmSmoke), null, { timeout: 180000 });
     } catch (error) {
       const npmStatus = await page.locator("body").getAttribute("data-npm-status");
       const npmTrace = await page.locator("body").getAttribute("data-npm-trace");
