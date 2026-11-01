@@ -18,7 +18,7 @@ const { chromium } = require("playwright");
     try {
       await page.waitForFunction(() => {
         const output = document.querySelector("#terminal .xterm-rows")?.innerText || "";
-        return Boolean(document.body.dataset.runtimeError) || output.includes("~% ");
+        return Boolean(document.body.dataset.runtimeError) || (window.smokeRuntime?.state === "running" && output.includes("__AURORA_WORKSPACE_READY__"));
       }, null, { timeout: 45000 });
     } catch (error) {
       const diagnostic = await page.evaluate(() => ({
@@ -44,7 +44,7 @@ const { chromium } = require("playwright");
 
     if (pageErrors.length) throw new Error("Erros JavaScript no navegador: " + pageErrors.join(" | ") + " Browser diagnostics: " + browserDiagnostics.join(" | "));
     await page.evaluate(async () => window.smokeRuntime?.stop());
-    process.stdout.write("Linux browser smoke test passed: boot serial, shell prompt, command input/output, and shutdown.\n");
+    process.stdout.write("Linux browser smoke test passed: boot, 9p project mount, shell commands, project write-back, and shutdown.\n");
   } finally {
     await browser.close();
   }
