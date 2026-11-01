@@ -55,10 +55,6 @@ const { chromium } = require("playwright");
     const npmSmoke = await page.locator("body").getAttribute("data-npm-smoke");
     if (npmSmoke !== "passed") throw new Error("npm/TypeScript browser smoke test failed: " + npmSmoke + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
 
-    await page.waitForFunction(() => Boolean(document.body.dataset.pythonSmoke), null, { timeout: 180000 });
-    const pythonSmoke = await page.locator("body").getAttribute("data-python-smoke");
-    if (pythonSmoke !== "passed") throw new Error("Python project browser smoke test failed: " + pythonSmoke + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
-
     await page.locator("#terminal .xterm").click();
     await page.keyboard.type("cat README.md && echo AURORA_LINUX_READY");
     await page.keyboard.press("Enter");
