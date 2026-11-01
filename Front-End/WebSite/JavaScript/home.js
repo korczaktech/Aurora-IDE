@@ -102,6 +102,7 @@
       await openProjectPicker();
     } catch (error) {
       console.warn("[Aurora] Não foi possível acessar o armazenamento local:", error);
+      pendingDeviceProjectStart = true;
       window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
     }
   });
