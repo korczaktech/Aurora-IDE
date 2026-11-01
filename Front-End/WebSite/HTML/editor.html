@@ -417,14 +417,26 @@ startProject();`
         });
       }
       function closeCodeFile(name) {
-        if (!openCodeFiles.has(name) || openCodeFiles.size <= 1) return;
+        if (!openCodeFiles.has(name)) return;
         const ordered = [...openCodeFiles];
         const index = ordered.indexOf(name);
         openCodeFiles.delete(name);
         if (name === activeCodeFile) {
           const next = ordered[index + 1] || ordered[index - 1];
-          renderCodeTabs();
-          openCodeFile(next);
+          if (next) {
+            renderCodeTabs();
+            openCodeFile(next);
+          } else {
+            activeCodeFile = "";
+            codeInput.value = "";
+            codeInput.setSelectionRange(0, 0);
+            document.getElementById("activeCodeFile").textContent = "Nenhum arquivo aberto";
+            document.getElementById("activeLanguage").textContent = "—";
+            document.getElementById("codeLanguageStatus").textContent = "—";
+            document.querySelectorAll("[data-tree-file]").forEach(file => file.classList.remove("is-selected"));
+            renderCodeTabs();
+            updateCodeSurface();
+          }
         } else {
           renderCodeTabs();
         }
@@ -479,7 +491,7 @@ startProject();`
         }
       });
       codeInput.addEventListener("input", () => {
-        codeFiles[activeCodeFile] = codeInput.value;
+        if (activeCodeFile) codeFiles[activeCodeFile] = codeInput.value;
         updateCodeSurface();
       });
       codeInput.addEventListener("scroll", syncCodeScroll, { passive: true });
