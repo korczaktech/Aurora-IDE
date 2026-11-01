@@ -10,7 +10,7 @@ const { chromium } = require("playwright");
     const status = await page.locator("body").getAttribute("data-python-smoke");
     const details = await page.locator("#result").innerText();
     if (status !== "passed") throw new Error("Python runtime browser smoke failed: " + details);
-    process.stdout.write("Python browser smoke passed: execution, stdout, and project file synchronization.\n");
+    process.stdout.write("Python browser smoke passed: execution, terminal-backed input(), stdout, escaped newlines, and project file synchronization.\n");
   } finally {
     await browser.close();
   }
