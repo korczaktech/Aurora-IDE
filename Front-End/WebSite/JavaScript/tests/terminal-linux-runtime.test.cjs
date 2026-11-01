@@ -68,7 +68,7 @@ function createRuntimeHarness(Starter) {
     querySelector() { return null; }
   };
   vm.runInNewContext(source, {
-    window, document, URL, location: { hostname: "localhost" },
+    window, document, URL, TextEncoder, location: { hostname: "localhost" },
     setTimeout, clearTimeout, AbortController, WebAssembly,
     fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => testKernel.buffer.slice(0) })
   });
