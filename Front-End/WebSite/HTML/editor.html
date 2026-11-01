@@ -122,6 +122,8 @@
     </section>
   </main>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script src="../JavaScript/syntax-highlighting.js"></script>
   <script>
     (() => {
       const menuMark = document.querySelector(".menu-mark");
@@ -273,26 +275,10 @@ function startProject() {
 startProject();`
       };
       let activeCodeFile = "index.html";
-      const escapeCode = value => value.replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
+      const escapeCode = value => String(value).replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
       function highlightCode(source, file) {
-        const escaped = escapeCode(source);
-        const tokenPattern = /(<!--[\\s\\S]*?-->|\/\*[\\s\\S]*?\*\/|\/\/[^\n]*|&lt;\/?[\w-]+|&gt;|&lt;|\b(?:const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)\b|#[0-9a-fA-F]{3,8}\b|\b\d+(?:px|rem|em|vh|vw|%)?\b|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g;
-        let result = "";
-        let last = 0;
-        for (const match of escaped.matchAll(tokenPattern)) {
-          result += escaped.slice(last, match.index);
-          const token = match[0];
-          let kind = "code-token";
-          if (token.startsWith("&lt;") || token === "&gt;") kind += " token-tag";
-          else if (token.startsWith("<!--") || token.startsWith("/*") || token.startsWith("//")) kind += " token-comment";
-          else if (token.startsWith('"') || token.startsWith("'")) kind += " token-string";
-          else if (/^(const|let|var|function|return|if|else|new|class|export|import|from|default|async|await|true|false|null)$/.test(token)) kind += " token-keyword";
-          else if (token.startsWith("#") || /^\\d/.test(token)) kind += " token-number";
-          result += `<span class="${kind}">${token}</span>`;
-          last = match.index + token.length;
-        }
-        result += escaped.slice(last);
-        return result + (source.endsWith("\n") ? " " : "");
+        if (window.AuroraSyntaxHighlight) return window.AuroraSyntaxHighlight.highlight(source, file);
+        return escapeCode(source) + (source.endsWith("\n") ? " " : "");
       }
       function updateCodeSurface() {
         const source = codeInput.value;
@@ -322,7 +308,7 @@ startProject();`
         if (!(name in codeFiles)) return;
         activeCodeFile = name;
         codeInput.value = codeFiles[name];
-        const language = name.endsWith(".html") ? "HTML" : name.endsWith(".css") ? "CSS" : "JAVASCRIPT";
+        const language = window.AuroraSyntaxHighlight ? window.AuroraSyntaxHighlight.labelFor(name) : (name.endsWith(".html") ? "HTML" : name.endsWith(".css") ? "CSS" : "JAVASCRIPT");
         document.getElementById("activeCodeFile").textContent = name;
         document.getElementById("activeLanguage").textContent = language;
         document.getElementById("codeLanguageStatus").textContent = language;
