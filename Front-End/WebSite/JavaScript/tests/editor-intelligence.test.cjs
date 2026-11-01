@@ -179,6 +179,9 @@ test("integrates a real local project manager with folder and file operations", 
   assert.match(html, /addFile\(name, content/);
   assert.match(html, /renameFile\(oldName, newName\)/);
   assert.match(html, /deleteFile\(name\)/);
+  assert.match(html, /const codeFiles = Object\.create\(null\)/);
+  assert.match(html, /if \(activeCodeFile === name\)/);
+  assert.match(html, /codeInput\.disabled = true/);
   assert.match(html, /aurora:editor-change/);
 });
 
