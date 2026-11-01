@@ -267,6 +267,8 @@ async function run(session, command, args, options = {}) {
       logs.push("DEBUG npm specs=" + JSON.stringify(specs) + " cwd=" + cwd);
       options.onOutput?.("DEBUG npm specs=" + JSON.stringify(specs) + " cwd=" + cwd + "\n");
     }
+    const originalExtractTar = state.runtime.extractTar;
+    state.runtime.extractTar = undefined;
     try {
       await state.runtime.install(specs, cwd, {
         saveDev,
@@ -287,6 +289,8 @@ async function run(session, command, args, options = {}) {
     } catch (error) {
       await syncToProject(state).catch(() => null);
       throw new Error("npm install: " + (error?.message || String(error)) + (logs.length ? "\n" + logs.join("\n") : ""));
+    } finally {
+      state.runtime.extractTar = originalExtractTar;
     }
   }
   let process;
