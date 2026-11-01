@@ -1,0 +1,65 @@
+"use strict";
+
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const test = require("node:test");
+
+const root = path.resolve(__dirname, "..");
+const html = fs.readFileSync(path.resolve(root, "..", "HTML", "editor.html"), "utf8");
+const css = fs.readFileSync(path.resolve(root, "..", "CSS", "editor.css"), "utf8");
+const intelligence = fs.readFileSync(path.join(root, "editor-intelligence.js"), "utf8");
+const controls = fs.readFileSync(path.join(root, "editor-controls.js"), "utf8");
+
+test("loads cursor, selection and autocomplete after the editor API exists", () => {
+  const editorInit = html.indexOf("window.AuroraEditor =");
+  const intelligenceScript = html.indexOf("../JavaScript/editor-intelligence.js");
+  const controlsScript = html.indexOf("../JavaScript/editor-controls.js");
+  assert.ok(editorInit >= 0);
+  assert.ok(intelligenceScript > editorInit);
+  assert.ok(controlsScript > intelligenceScript);
+});
+
+test("keeps caret, selection direction and scroll position per open file", () => {
+  assert.match(html, /const codeSelections = new Map\(\)/);
+  assert.match(html, /selectionStart: codeInput\.selectionStart/);
+  assert.match(html, /selectionEnd: codeInput\.selectionEnd/);
+  assert.match(html, /selectionDirection: codeInput\.selectionDirection/);
+  assert.match(html, /codeInput\.scrollTop = savedSelection\.scrollTop/);
+  assert.match(html, /codeInput\.scrollLeft = savedSelection\.scrollLeft/);
+});
+
+test("provides cursor and selection operations without replacing the native textarea", () => {
+  for (const operation of ["selectLine", "selectWord", "nextOccurrence", "moveLine", "duplicateLine", "smartHome"]) {
+    assert.match(intelligence, new RegExp("function " + operation + "\\\\("));
+  }
+  assert.match(intelligence, /setSelectionRange/);
+  assert.match(intelligence, /setRangeText/);
+  assert.match(html, /<textarea class="code-input" id="codeInput"/);
+});
+
+test("provides contextual autocomplete for JavaScript, HTML and CSS", () => {
+  for (const language of ["javascript", "html", "css"]) {
+    assert.match(intelligence, new RegExp(language + ": \\\\["));
+  }
+  for (const key of ["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"]) {
+    assert.ok(intelligence.includes('event.key === "' + key + '"'), "missing " + key);
+  }
+  assert.match(intelligence, /aria-activedescendant/);
+  assert.match(intelligence, /role", "listbox"/);
+  assert.match(intelligence, /function accept/);
+});
+
+test("exposes selection commands in the Selection tool", () => {
+  for (const command of ["Selecionar palavra", "Selecionar linha", "Próxima ocorrência", "Duplicar linha", "Mover linha para cima", "Mover linha para baixo"]) {
+    assert.ok(controls.includes(command), "missing command: " + command);
+  }
+  assert.match(controls, /AuroraEditorIntelligence/);
+});
+
+test("styles autocomplete as a bounded, keyboard-navigable suggestion list", () => {
+  assert.match(css, /\.aurora-intellisense\s*\{/);
+  assert.match(css, /max-height:\s*230px/);
+  assert.match(css, /\.aurora-intellisense-option\.is-active/);
+  assert.match(css, /\[aria-selected="true"\]/);
+});
