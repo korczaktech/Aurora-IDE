@@ -1,12 +1,11 @@
 mod config;
 mod routes;
 mod state;
-mod terminal;
 
 use axum::http::{header, HeaderValue, Method};
 use config::AppConfig;
 use state::AppState;
-use std::{net::SocketAddr, sync::Arc};
+use std::net::SocketAddr;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 use tracing_subscriber::EnvFilter;
 
@@ -58,17 +57,8 @@ async fn main() {
         }
     };
 
-    let terminal = Arc::new(
-        terminal::TerminalRuntime::new(config.cors_allowed_origins.clone()).unwrap_or_else(
-            |error| {
-                tracing::error!(%error, "Não foi possível iniciar o motor de terminal");
-                std::process::exit(1);
-            },
-        ),
-    );
-    let state = AppState { database, terminal };
-    let app = routes::router(state.clone())
-        .merge(terminal::router(state))
+    let state = AppState { database };
+    let app = routes::router(state)
         .layer(cors_layer(&config.cors_allowed_origins))
         .layer(TraceLayer::new_for_http());
 
