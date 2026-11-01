@@ -230,7 +230,8 @@ class AuroraLinuxRuntime {
       await this._mountProject();
     }
     this.state = "running";
-    this.callbacks.onStatus?.(this.projectSession ? "Linux iniciado · projeto montado em /workspace" : "Linux iniciado");
+    const skippedCount = this.projectSession?.snapshot?.skipped?.length || 0;
+    this.callbacks.onStatus?.(this.projectSession ? "Linux iniciado · projeto em /workspace" + (skippedCount ? " · " + skippedCount + " item(ns) ignorados por limite" : "") : "Linux iniciado");
   }
 
   _waitForSerialText(pattern, timeoutMs) {
