@@ -14,6 +14,7 @@
   const writeTimers = new Map();
   const latestContents = new Map();
   let rootHandle = null;
+  let projectParentHandle = null;
   let selectedPath = "";
   let selectedKind = "directory";
   let currentProjectName = "";
@@ -110,6 +111,18 @@
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error || new Error("Falha ao salvar o projeto recente."));
       tx.onabort = () => reject(tx.error || new Error("Salvamento do projeto recente cancelado."));
+    });
+    db.close();
+  }
+
+  async function clearPersistedRootHandle() {
+    const db = await openDatabase();
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction("workspace", "readwrite");
+      tx.objectStore("workspace").delete("lastProject");
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error || new Error("Falha ao limpar o projeto recente."));
+      tx.onabort = () => reject(tx.error || new Error("Limpeza do projeto recente cancelada."));
     });
     db.close();
   }
@@ -293,6 +306,7 @@
   }
 
   async function openProject(handle) {
+    projectParentHandle = null;
     if (!(await permissionGranted(handle, true))) {
       throw new Error("Permissão de leitura e gravação não concedida para esta pasta.");
     }
@@ -337,6 +351,38 @@
     }
     const handle = await parent.getDirectoryHandle(cleanName, { create: true });
     await openProject(handle);
+    projectParentHandle = parent;
+    updateActionAvailability();
+  }
+
+  async function deleteProject() {
+    if (!rootHandle) throw new Error("Nenhum projeto está aberto.");
+    if (!projectParentHandle) {
+      window.alert("Este projeto foi aberto de uma pasta existente. Por segurança, o navegador não fornece acesso à pasta-pai para excluir a pasta inteira. Você pode excluir arquivos e pastas individualmente.");
+      return;
+    }
+    if (!window.confirm("Excluir permanentemente o projeto “" + currentProjectName + "” e todo o seu conteúdo? Esta ação não pode ser desfeita.")) return;
+    await flushWrites();
+    await projectParentHandle.removeEntry(currentProjectName, { recursive: true });
+    rootHandle = null;
+    projectParentHandle = null;
+    currentProjectName = "";
+    selectedPath = "";
+    selectedKind = "directory";
+    fileHandles.clear();
+    directoryHandles.clear();
+    expanded.clear();
+    expanded.add("");
+    latestContents.clear();
+    writeTimers.forEach(timer => clearTimeout(timer));
+    writeTimers.clear();
+    editor.replaceProject({}, "", "");
+    tree.replaceChildren();
+    nameLabel.textContent = "Nenhum projeto aberto";
+    selectedLabel.textContent = "Raiz do projeto";
+    await clearPersistedRootHandle();
+    updateActionAvailability();
+    setStatus("Projeto excluído permanentemente.", "success");
   }
 
   async function openProjectFolder() {
@@ -510,6 +556,8 @@
     document.getElementById("newProjectFolder").disabled = !hasProject;
     document.getElementById("renameProjectItem").disabled = !hasProject || !selectedPath;
     document.getElementById("deleteProjectItem").disabled = !hasProject || !selectedPath;
+    const deleteProjectButton = document.getElementById("deleteProject");
+    if (deleteProjectButton) deleteProjectButton.disabled = !hasProject;
   }
 
   function updateSelectionLabel() {
@@ -546,6 +594,7 @@
     document.getElementById("newProjectFolder").addEventListener("click", () => createFolder().catch(error => handleActionError(error, "Criar pasta")));
     document.getElementById("renameProjectItem").addEventListener("click", () => renameSelected().catch(error => handleActionError(error, "Renomear")));
     document.getElementById("deleteProjectItem").addEventListener("click", () => deleteSelected().catch(error => handleActionError(error, "Excluir")));
+    document.getElementById("deleteProject").addEventListener("click", () => deleteProject().catch(error => handleActionError(error, "Excluir projeto")));
     tree.addEventListener("click", event => {
       const row = event.target.closest("[data-project-root], [data-project-path]");
       if (!row) return;
@@ -613,6 +662,7 @@
     validSegment,
     get projectName() { return currentProjectName; },
     get rootHandle() { return rootHandle; },
+    get canDeleteProject() { return Boolean(rootHandle && projectParentHandle); },
     refresh: refreshProject,
     flush: flushWrites
   });
