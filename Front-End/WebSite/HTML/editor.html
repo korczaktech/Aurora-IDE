@@ -111,7 +111,7 @@
           <div class="code-gutter" id="codeGutter" aria-hidden="true">1</div>
           <div class="code-input-wrap">
             <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
-            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
+            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" aria-autocomplete="list" aria-haspopup="listbox" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
           </div>
         </div>
         <footer class="code-statusbar">
@@ -275,6 +275,7 @@ function startProject() {
 startProject();`
       };
       let activeCodeFile = "index.html";
+      const codeSelections = new Map();
       const escapeCode = value => String(value).replace(/[&<>]/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[char]));
       function highlightCode(source, file) {
         if (window.AuroraSyntaxHighlight) return window.AuroraSyntaxHighlight.highlight(source, file);
@@ -379,8 +380,25 @@ startProject();`
       }
       function openCodeFile(name) {
         if (!(name in codeFiles)) return;
+        if (activeCodeFile && activeCodeFile !== name) {
+          codeSelections.set(activeCodeFile, {
+            start: codeInput.selectionStart, end: codeInput.selectionEnd,
+            direction: codeInput.selectionDirection, scrollTop: codeInput.scrollTop, scrollLeft: codeInput.scrollLeft
+          });
+        }
         activeCodeFile = name;
         codeInput.value = codeFiles[name];
+        const savedSelection = codeSelections.get(name);
+        if (savedSelection) {
+          const length = codeInput.value.length;
+          codeInput.setSelectionRange(Math.min(savedSelection.start, length), Math.min(savedSelection.end, length), savedSelection.direction);
+          codeInput.scrollTop = savedSelection.scrollTop;
+          codeInput.scrollLeft = savedSelection.scrollLeft;
+        } else {
+          codeInput.setSelectionRange(0, 0);
+          codeInput.scrollTop = 0;
+          codeInput.scrollLeft = 0;
+        }
         const language = window.AuroraSyntaxHighlight ? window.AuroraSyntaxHighlight.labelFor(name) : (name.endsWith(".html") ? "HTML" : name.endsWith(".css") ? "CSS" : "JAVASCRIPT");
         document.getElementById("activeCodeFile").textContent = name;
         document.getElementById("activeLanguage").textContent = language;
@@ -476,6 +494,7 @@ startProject();`
       setState("button");
     })();
   </script>
+  <script src="../JavaScript/editor-intelligence.js"></script>
   <script src="../JavaScript/editor-controls.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
