@@ -228,7 +228,7 @@
         container.append(row);
         if (entry.kind === "directory") {
           const childContainer = document.createElement("div");
-          childContainer.className = "tree-children tree-nested";
+          childContainer.className = "tree-children";
           childContainer.hidden = !expanded.has(entry.path);
           container.append(childContainer);
           appendChildren(entry.path, depth + 1, childContainer);
