@@ -880,3 +880,27 @@ body {
 
 .find-replace-actions .editor-command:focus-visible,.find-replace-actions .editor-primary-button:focus-visible{outline:1px solid #79d8ad;outline-offset:2px}
 .find-replace-actions .editor-primary-button{border-color:#315343;background:#14271f;color:#a5e5c2}
+
+
+/* Identidade visual dos arquivos: SVG individual por linguagem e tecnologia. */
+.tree-file-icon,
+.code-tab-icon {
+  display: inline-flex;
+  flex: 0 0 19px;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  font-size: 0;
+  line-height: 0;
+}
+.tree-file-icon .aurora-file-svg,
+.code-tab-icon .aurora-file-svg {
+  display: block;
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+  overflow: visible;
+}
+.code-tab-icon { flex-basis: 18px; width: 18px; height: 18px; }
+.code-tab-icon .aurora-file-svg { width: 16px; height: 16px; flex-basis: 16px; }
