@@ -78,7 +78,7 @@ O processo Bash é executado no host do serviço e herda as permissões do proce
 
 ### Histórico, sinais e reconexão
 
-O Bash utiliza um histórico por workspace em `.aurora_history`, com permissões Unix `0600`, limite de 10.000 entradas em memória e 20.000 no arquivo. O arquivo de inicialização do terminal ativa `histappend` e grava novas entradas a cada prompt. Comandos iniciados por espaço são ignorados pelo padrão `ignoreboth`. O histórico é carregado por novas sessões que usam o mesmo workspace.
+O Bash utiliza um histórico por workspace em `.aurora_history`, com permissões Unix `0600`, limite de 10.000 entradas em memória e 20.000 no arquivo.  A variável `PROMPT_COMMAND`, definida pelo backend em cada processo Bash, ativa `histappend` e grava novas entradas a cada prompt. Comandos iniciados por espaço são ignorados pelo padrão `ignoreboth`. O histórico é carregado por novas sessões que usam o mesmo workspace.
 
 `Ctrl+C` é enviado ao PTY como o caractere de interrupção do terminal e `Ctrl+D` como EOF. A sessão continua no processo do servidor após a desconexão do WebSocket; o cliente solicita um novo ticket de uso único para reconectar. A fila de saída limitada aplica backpressure enquanto o cliente está desconectado.
 
