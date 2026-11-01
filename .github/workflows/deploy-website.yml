@@ -150,18 +150,22 @@ jobs:
         shell: bash
         run: |
           ROOT="_site/runtime/linux"
-          mkdir -p "$ROOT/v86" "$ROOT/bios" "$ROOT/kernel"
+          mkdir -p "$ROOT/v86" "$ROOT/bios"
           curl -fsSL --retry 3 "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/libv86.js" -o "$ROOT/v86/libv86.js"
           curl -fsSL --retry 3 "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm" -o "$ROOT/v86/v86.wasm"
           curl -fsSL --retry 3 "https://copy.sh/v86/bios/seabios.bin" -o "$ROOT/bios/seabios.bin"
           curl -fsSL --retry 3 "https://copy.sh/v86/bios/vgabios.bin" -o "$ROOT/bios/vgabios.bin"
-          curl -fsSL --retry 3 "https://i.copy.sh/buildroot-bzimage68.bin" -o "$ROOT/kernel/buildroot-bzimage68.bin"
+          curl -fsSL --retry 3 "https://raw.githubusercontent.com/copy/v86/master/LICENSE" -o "$ROOT/v86/LICENSE"
+          curl -fsSL --retry 3 "https://raw.githubusercontent.com/copy/v86/master/LICENSE.MIT" -o "$ROOT/v86/LICENSE.MIT"
+          curl -fsSL --retry 3 "https://raw.githubusercontent.com/copy/v86/master/bios/COPYING.LESSER" -o "$ROOT/bios/COPYING.LESSER"
           test -s "$ROOT/v86/libv86.js"
           test -s "$ROOT/v86/v86.wasm"
           test -s "$ROOT/bios/seabios.bin"
           test -s "$ROOT/bios/vgabios.bin"
-          test -s "$ROOT/kernel/buildroot-bzimage68.bin"
-          (cd "$ROOT" && sha256sum v86/libv86.js v86/v86.wasm bios/seabios.bin bios/vgabios.bin kernel/buildroot-bzimage68.bin > SHA256SUMS.txt)
+          test -s "$ROOT/v86/LICENSE"
+          test -s "$ROOT/v86/LICENSE.MIT"
+          test -s "$ROOT/bios/COPYING.LESSER"
+          (cd "$ROOT" && sha256sum v86/libv86.js v86/v86.wasm bios/seabios.bin bios/vgabios.bin v86/LICENSE v86/LICENSE.MIT bios/COPYING.LESSER > SHA256SUMS.txt)
 
       - name: Validate browser Linux runtime assets
         if: steps.detect.outputs.mode == 'static'
