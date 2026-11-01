@@ -171,7 +171,7 @@ test("file icon module parses as JavaScript", () => {
 
 
 test("integrates a real local project manager with folder and file operations", () => {
-  for (const control of ["createProject", "openProject", "newProjectFile", "newProjectFolder", "renameProjectItem", "deleteProjectItem", "projectTree", "projectStatus"]) {
+  for (const control of ["createProject", "openProject", "newProjectFile", "newProjectFolder", "renameProjectItem", "deleteProjectItem", "deleteProject", "projectTree", "projectStatus"]) {
     assert.ok(html.includes('id="' + control + '"'), "missing project manager control: " + control);
   }
   assert.match(html, /project-manager\.js/);
@@ -190,7 +190,7 @@ test("supports actual directory access, nested traversal, persistence and filesy
     "showDirectoryPicker", "getDirectoryHandle", "getFileHandle", "entries()",
     "createWritable", "removeEntry", "moveEntry", "copyDirectory",
     "indexedDB.open", "requestPermission", "validRelativePath",
-    "function createProject", "function openProjectFolder", "function createFile",
+    "function createProject", "function deleteProject", "function openProjectFolder", "function createFile",
     "function createFolder", "function renameSelected", "function deleteSelected",
     "function flushWrites", "function renderEntries"
   ]) {
@@ -199,6 +199,9 @@ test("supports actual directory access, nested traversal, persistence and filesy
   assert.match(projectManager, /setTimeout\(\(\) => \{/);
   assert.match(projectManager, /280\)/);
   assert.match(projectManager, /ignoredDirectories/);
+  assert.match(projectManager, /getDirectoryHandle\(cleanName, \{ create: true \}\)/);
+  assert.match(projectManager, /projectParentHandle\.removeEntry\(currentProjectName, \{ recursive: true \}\)/);
+  assert.match(projectManager, /Excluir permanentemente o projeto/);
 });
 
 test("project manager and editor APIs parse as JavaScript", () => {
