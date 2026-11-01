@@ -730,10 +730,17 @@
   async function restoreLastProject() {
     try {
       const savedStorage = await restoreAuroraStorage();
-      if (savedStorage && savedStorage.name === ".aurora" && await permissionGranted(savedStorage, false)) {
+      const requestedProject = new URLSearchParams(window.location.search).get("project");
+      if (savedStorage && savedStorage.name === ".aurora" && await permissionGranted(savedStorage, Boolean(requestedProject))) {
         auroraRootHandle = savedStorage;
         auroraProjectsHandle = await savedStorage.getDirectoryHandle("projects");
         setStatus("Armazenamento .aurora conectado • pronto para abrir ou criar projetos.", "success");
+        if (requestedProject) {
+          const projectHandle = await auroraProjectsHandle.getDirectoryHandle(requestedProject);
+          await openProject(projectHandle, auroraProjectsHandle, savedStorage);
+          window.history.replaceState({}, "", window.location.pathname);
+          return;
+        }
       }
       const saved = await restoreRootHandle();
       if (!saved) return;
