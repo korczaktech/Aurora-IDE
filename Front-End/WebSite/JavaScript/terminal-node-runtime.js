@@ -239,11 +239,30 @@ async function run(session, command, args, options = {}) {
   if (command === "npm" && !rest.length) rest.push("--help");
   const cwd = state.projectPath + (options.cwd ? "/" + safePath(options.cwd) : "");
   const env = Object.fromEntries(Object.entries(options.environment || {}).map(([key, value]) => [key, String(value)]));
-  const process = command === "tsc"
-    ? await state.runtime.tsc(cwd, rest)
-    : command === "npx" && rest[0] === "tsc"
-      ? await state.runtime.tsc(cwd, rest.slice(1))
-      : await state.runtime.spawn(command, rest, { cwd, env });
+  if (command === "npm" && ["install", "i", "add", "ci"].includes(rest[0])) {
+    const specs = rest.slice(1).filter(value => !value.startsWith("-"));
+    const saveDev = rest.some(value => value === "-D" || value === "--save-dev");
+    const logs = [];
+    try {
+      await state.runtime.install(specs, cwd, {
+        saveDev,
+        onLog: line => {
+          logs.push(line);
+          options.onOutput?.(line + "\\n");
+        }
+      });
+      const sync = await syncToProject(state);
+      return { code: 0, output: logs.join("\\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
+    } catch (error) {
+      await syncToProject(state).catch(() => null);
+      throw new Error("npm install: " + (error?.message || String(error)) + (logs.length ? "\\n" + logs.join("\\n") : ""));
+    }
+  }
+  let process;
+  if (command === "tsc") process = await state.runtime.tsc(cwd, rest);
+  else if (command === "npx" && rest[0] === "tsc") process = await state.runtime.tsc(cwd, rest.slice(1));
+  else if (command === "npm" && rest[0] === "run" && rest[1]) process = await state.runtime.runScript(rest[1], cwd);
+  else process = await state.runtime.spawn(command, rest, { cwd, env });
   session.nodeProcess = process;
   session.cancelExecution = () => {
     try { process.kill(); } catch (_) {}
