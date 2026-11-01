@@ -41,9 +41,7 @@
   const homeMarkup = main.innerHTML;
   const defaultProject = { id: "aurora-playground", name: "Aurora Playground", description: "Ambiente experimental para explorar recursos e possibilidades da estação.", createdAt: "30 de outubro de 2026", kind: "EXPERIMENTO" };
   let projects = [];
-  try { projects = JSON.parse(storageGet("aurora-projects", "[]")); } catch (_) { projects = []; }
-  if (!Array.isArray(projects)) projects = [];
-  projects = projects.filter(project => project && typeof project === "object");
+  projects = [];
   let selectedProjectId = projects[0]?.id || "";
   const persistProjects = () => storageSet("aurora-projects", JSON.stringify(projects));
   const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || null;
@@ -254,7 +252,9 @@
     if (projectsSidebar) projectsSidebar.hidden = key !== "inicio";
     document.title = "Aurora EDS — " + page.title;
     if (getSetting("local")) storageSet("aurora-last-page", key);
-    if (key === "propriedades" && selectedProject()) {
+    if (key === "propriedades" && selectedProject()) renderRealProperties(selectedProject());
+    /* Project properties are populated from the selected on-disk directory. */
+    if (false && key === "propriedades" && selectedProject()) {
       const project = selectedProject();
       const title = main.querySelector(".page-title");
       const identityTitle = main.querySelector(".property-identity-copy h2");
@@ -340,7 +340,8 @@
       const project = projects.find(item => item.id === deleteProjectButton.dataset.deleteProject);
       if (!project) return;
       if (!window.confirm("Excluir permanentemente o projeto “" + project.name + "” desta lista? Esta ação não pode ser desfeita.")) return;
-      projects = projects.filter(item => item.id !== project.id);
+      notify("A exclusão de pastas físicas pode esperar; este controle não removerá arquivos do disco.");
+      return;\n      projects = projects.filter(item => item.id !== project.id);
       if (selectedProjectId === project.id) selectedProjectId = projects[0]?.id || "";
       persistProjects();
       renderProjectList();
@@ -378,15 +379,7 @@
     const action = event.target.closest("[data-action]")?.dataset.action;
     if (!action) return;
     if (action === "new-project") {
-      const name = window.prompt("Nome do novo projeto:"); if (!name?.trim()) return;
-      const project = { id: "aurora-" + Date.now().toString(36), name: name.trim(), description: "Novo projeto criado no Aurora.", createdAt: new Date().toISOString(), kind: "NOVO" };
-      projects.push(project);
-      selectedProjectId = project.id;
-      persistProjects();
-      renderProjectList();
-      renderProjectSidebar();
-      recordActivity("Projeto criado: " + project.name, "Um novo projeto foi adicionado à estação.", "PROJETO");
-      notify("Projeto criado e salvo neste navegador.");
+      openNewProjectDialog();
     }
     if (action === "clear-activity") {
       if (getSetting("confirm") && !window.confirm("Deseja limpar todo o histórico de atividade deste navegador?")) return;
@@ -468,7 +461,50 @@
     recordActivity("Repositório registrado: " + name, "Um endereço de repositório foi adicionado à sessão.", "REPOSITÓRIO");
     event.target.reset(); notify("Endereço registrado nesta sessão.");
   });
+
+  const openNewProjectDialog = () => {
+    const dialog=document.getElementById("auroraNewProjectDialog");
+    const input=document.getElementById("auroraNewProjectName");
+    const message=document.getElementById("auroraNewProjectMessage");
+    if(!dialog||!input){notify("Menu de criação indisponível.");return;}
+    input.value=""; if(message)message.textContent="";
+    dialog.showModal(); input.focus();
+  };
+  document.getElementById("auroraNewProjectCancel")?.addEventListener("click",()=>document.getElementById("auroraNewProjectDialog")?.close());
+  document.getElementById("auroraNewProjectForm")?.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const input=document.getElementById("auroraNewProjectName");
+    const message=document.getElementById("auroraNewProjectMessage");
+    const button=document.getElementById("auroraNewProjectSubmit");
+    const name=input.value.trim();
+    if(!name||name==="."||name===".."||/[\\/<>:"|?*]/.test(name)||/[. ]$/.test(name)){message.textContent="Nome inválido. Evite barras e caracteres reservados.";return;}
+    button.disabled=true; message.textContent="Criando pasta do projeto…";
+    try{
+      if(!auroraStorageHandle)auroraStorageHandle=await readAuroraHandle();
+      if(!auroraStorageHandle)throw new Error("Configure primeiro o armazenamento .aurora na tela inicial.");
+      let permission=await auroraStorageHandle.queryPermission({mode:"readwrite"});
+      if(permission!=="granted")permission=await auroraStorageHandle.requestPermission({mode:"readwrite"});
+      if(permission!=="granted")throw new Error("Permissão de gravação em .aurora não concedida.");
+      auroraProjectsHandle=await auroraStorageHandle.getDirectoryHandle("projects");
+      try{await auroraProjectsHandle.getDirectoryHandle(name);throw new Error("Já existe um projeto com esse nome.");}
+      catch(error){if(error.name!=="NotFoundError")throw error;}
+      const folder=await auroraProjectsHandle.getDirectoryHandle(name,{create:true});
+      const now=new Date().toISOString();
+      const config=await auroraStorageHandle.getDirectoryHandle("config",{create:true});
+      const index=await readProjectIndex(config);
+      const id="AUR-"+crypto.randomUUID().replace(/-/g,"").slice(0,12).toUpperCase();
+      index[name]={id,createdAt:now,modifiedAt:now};
+      await writeProjectIndex(config,index);
+      const project={id,name,description:"",kind:"PROJETO",createdAt:now,modifiedAt:now,entryCount:0,handle:folder,entries:[]};
+      projects.push(project);selectedProjectId=id;
+      renderProjectSidebar();dialog.close();
+      recordActivity("Projeto criado: "+name,"Pasta vazia criada em .aurora/projects.","PROJETO");
+      showPage("propriedades");notify("Projeto criado em .aurora/projects.");
+    }catch(error){message.textContent=error.message||String(error);}
+    finally{button.disabled=false;}
+  });
   renderProjectSidebar();
+  loadRealProjects();
   recordActivity("Ambiente Aurora aberto", "A estação foi iniciada neste navegador.", "SISTEMA");
   const rememberedPage = storageGet("aurora-last-page", "inicio");
   const initialPage = getSetting("start-home") ? "inicio" : (Object.prototype.hasOwnProperty.call(pages, rememberedPage) ? rememberedPage : "inicio");
