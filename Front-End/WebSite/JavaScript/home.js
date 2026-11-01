@@ -71,10 +71,15 @@
     renderProjectPicker();
     projectPicker.showModal();
   };
-  document.getElementById("developButton")?.addEventListener("click", () => {
+  // O conteúdo de .home-main é recriado ao navegar. Delegar o clique ao
+  // contêiner permanente evita perder o evento quando o botão é reconstruído.
+  main.addEventListener("click", event => {
+    const trigger = event.target.closest("#developButton");
+    if (!trigger || !main.contains(trigger)) return;
+    event.preventDefault();
     const message = document.getElementById("auroraStorageChoiceMessage");
     if (message) message.textContent = "";
-    storageChoice?.showModal();
+    if (storageChoice && !storageChoice.open) storageChoice.showModal();
   });
   document.getElementById("auroraStorageChoiceCancel")?.addEventListener("click", () => storageChoice?.close());
   document.getElementById("auroraDeviceStorage")?.addEventListener("click", async () => {
