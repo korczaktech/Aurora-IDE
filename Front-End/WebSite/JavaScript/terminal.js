@@ -74,8 +74,7 @@ async function toggleLinux(session=current()){
  try{
   await runtime.start({
    onOutput:text=>appendSerial(session,text),
-   onStatus:status,
-   onError:error=>append(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m\n")
+   onStatus:status
   });
  }catch(error){
   session.linuxRuntime=null;
