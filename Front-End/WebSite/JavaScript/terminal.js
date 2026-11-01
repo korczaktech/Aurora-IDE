@@ -200,13 +200,14 @@ function handlePythonInput(session,data){
  for(let i=0;i<data.length;i++){
   const ch=data[i];
   if(ch==="\r"||ch==="\n"){
-   session.pythonInput=null;append(session,"\r\n");state.resolve(state.buffer);
+   if(ch==="\r"&&data[i+1]==="\n")i++;
+   session.pythonInput=null;append(session,"\n");state.resolve(state.buffer);
    const rest=data.slice(i+1);
    if(rest){const pieces=rest.split(/\r\n|\r|\n/);session.pythonInputQueue=session.pythonInputQueue||[];for(let n=0;n<pieces.length-1;n++)session.pythonInputQueue.push(pieces[n]);if(pieces.length>1&&pieces[pieces.length-1])session.pythonInputQueue.push(pieces[pieces.length-1]);}
    break;
   }
-  if(ch==="\u0003"){session.pythonInput=null;append(session,"^C\r\n");state.reject(new Error("KeyboardInterrupt"));break;}
-  if(ch==="\u0004"){session.pythonInput=null;append(session,"^D\r\n");state.resolve(null);break;}
+  if(ch==="\u0003"){session.pythonInput=null;append(session,"^C\n");state.reject(new Error("KeyboardInterrupt"));break;}
+  if(ch==="\u0004"){session.pythonInput=null;append(session,"^D\n");state.resolve(null);break;}
   if(ch==="\u007f"||ch==="\b"){if(state.buffer.length){state.buffer=state.buffer.slice(0,-1);session.terminal?.write("\b \b");}continue;}
   if(ch>=" "){state.buffer+=ch;session.terminal?.write(ch);}
  }
