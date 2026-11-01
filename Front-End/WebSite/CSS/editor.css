@@ -962,3 +962,11 @@ body {
 #projectStatus[data-state="error"] { color: #e28b83; white-space: normal; overflow-wrap: anywhere; }
 .file-sidebar.is-collapsed .project-toolbar,
 .file-sidebar.is-collapsed .file-sidebar-footer { display: none; }
+
+
+.code-input:disabled { cursor: not-allowed; }
+.code-input:disabled::placeholder {
+  color: #718581;
+  opacity: .8;
+  -webkit-text-fill-color: #718581;
+}
