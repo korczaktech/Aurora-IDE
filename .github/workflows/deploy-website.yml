@@ -418,10 +418,12 @@ jobs:
                     document.body.dataset.nodeSmoke = nodeResult.code === 0 && nodeResult.output.includes("AURORA_NODE_READY:function") ? "passed" : "failed: " + nodeResult.output + " (exit " + nodeResult.code + ")";
                     if (nodeResult.code === 0) {
                       let installTrace = "";
+                      document.body.dataset.npmStatus = "installing";
                       const installResult = await window.AuroraNodeRuntime.run(nodeSession, "npm", ["install", "ms@2.1.3"], {
                         rootHandle: window.smokeProjectHandle, cwd: "", environment: {}, debug: true,
-                        onOutput: chunk => { installTrace += chunk; }
+                        onOutput: chunk => { installTrace += chunk; document.body.dataset.npmTrace = installTrace.slice(-2000); }
                       });
+                      document.body.dataset.npmStatus = "installed:" + installResult.code;
                       if (installResult.code === 0) {
                         window.smokeProjectHandle.addFile("npm-smoke.js", "console.log('AURORA_NPM_READY:' + require('ms')('2 days'));");
                         const npmRunResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["npm-smoke.js"], {
