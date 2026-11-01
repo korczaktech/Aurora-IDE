@@ -473,7 +473,7 @@
     const active = previousActive && files[previousActive] !== undefined ? previousActive :
       (Object.keys(files).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))[0] || "");
     const open = previousOpen.filter(path => files[path] !== undefined);
-    editor.replaceProject(files, currentProjectName, active, open);
+    editor.replaceProject(files, currentProjectName, active, open, true);
     renderEntries(entries);
     updateSelectionLabel();
   }
