@@ -25,7 +25,7 @@ function safePath(value) {
 }
 
 function excluded(name) {
-  return name === ".git" || name === ".aurora" || name === "node_modules";
+  return name === ".git" || name === ".aurora" || name === ".aurora-node-index.json" || name === "node_modules";
 }
 
 async function loadApi() {
