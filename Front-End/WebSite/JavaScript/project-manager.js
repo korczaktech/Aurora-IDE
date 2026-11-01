@@ -428,7 +428,14 @@
     if (fileHandles.has(newPath) || directoryHandles.has(newPath)) throw new Error("Já existe um item com esse nome.");
     await flushWrites();
     await moveEntry(parent, oldName, cleanName, selectedKind);
-    if (selectedKind === "file" && editor.files[selectedPath] !== undefined) editor.renameFile(selectedPath, newPath);
+    if (selectedKind === "file" && editor.files[selectedPath] !== undefined) {
+      editor.renameFile(selectedPath, newPath);
+    } else if (selectedKind === "directory") {
+      const prefix = selectedPath + "/";
+      for (const filePath of Object.keys(editor.files)) {
+        if (filePath.startsWith(prefix)) editor.renameFile(filePath, newPath + filePath.slice(selectedPath.length));
+      }
+    }
     selectedPath = newPath;
     await refreshProject();
     setStatus("Renomeado para " + cleanName, "success");
@@ -454,11 +461,19 @@
 
   async function refreshProject() {
     if (!rootHandle) return;
+    await flushWrites();
+    const previousFiles = editor.files;
+    const previousOpen = editor.openFiles;
+    const previousActive = editor.activeFile;
     const entries = await readDirectory(rootHandle);
     const files = await collectTextFiles(entries);
-    const active = editor.activeFile && files[editor.activeFile] !== undefined ? editor.activeFile :
+    Object.keys(files).forEach(path => {
+      if (Object.prototype.hasOwnProperty.call(previousFiles, path)) files[path] = previousFiles[path];
+    });
+    const active = previousActive && files[previousActive] !== undefined ? previousActive :
       (Object.keys(files).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))[0] || "");
-    editor.replaceProject(files, currentProjectName, active);
+    const open = previousOpen.filter(path => files[path] !== undefined);
+    editor.replaceProject(files, currentProjectName, active, open);
     renderEntries(entries);
     updateSelectionLabel();
   }
