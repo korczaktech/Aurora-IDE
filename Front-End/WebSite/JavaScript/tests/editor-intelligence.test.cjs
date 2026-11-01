@@ -76,7 +76,7 @@ test("opens and closes independent editor tabs while retaining per-file state", 
 
 test("provides find and replace with navigation, case sensitivity and replace-all", () => {
   assert.match(controls, /function openFindReplace\(/);
-  assert.match(controls, /function selectMatch/);
+  assert.match(controls, /const selectMatch/);
   assert.match(controls, /caseSensitive/);
   assert.match(controls, /replaceAll\.onclick/);
   assert.match(controls, /for\(let i=matches\.length-1;i>=0;i--\)/);
