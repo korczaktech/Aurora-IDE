@@ -199,15 +199,15 @@ function handlePythonInput(session,data){
  const state=session.pythonInput;if(!state)return false;
  for(let i=0;i<data.length;i++){
   const ch=data[i];
-  if(ch==="\\r"||ch==="\\n"){
-   session.pythonInput=null;append(session,"\\r\\n");state.resolve(state.buffer);
+  if(ch==="\r"||ch==="\n"){
+   session.pythonInput=null;append(session,"\r\n");state.resolve(state.buffer);
    const rest=data.slice(i+1);
-   if(rest){const pieces=rest.split(/\\r\\n|\\r|\\n/);session.pythonInputQueue=session.pythonInputQueue||[];for(let n=0;n<pieces.length-1;n++)session.pythonInputQueue.push(pieces[n]);if(pieces.length>1&&pieces[pieces.length-1])session.pythonInputQueue.push(pieces[pieces.length-1]);}
+   if(rest){const pieces=rest.split(/\r\n|\r|\n/);session.pythonInputQueue=session.pythonInputQueue||[];for(let n=0;n<pieces.length-1;n++)session.pythonInputQueue.push(pieces[n]);if(pieces.length>1&&pieces[pieces.length-1])session.pythonInputQueue.push(pieces[pieces.length-1]);}
    break;
   }
-  if(ch==="\\u0003"){session.pythonInput=null;append(session,"^C\\r\\n");state.reject(new Error("KeyboardInterrupt"));break;}
-  if(ch==="\\u0004"){session.pythonInput=null;append(session,"^D\\r\\n");state.resolve(null);break;}
-  if(ch==="\\u007f"||ch==="\\b"){if(state.buffer.length){state.buffer=state.buffer.slice(0,-1);session.terminal?.write("\\b \\b");}continue;}
+  if(ch==="\u0003"){session.pythonInput=null;append(session,"^C\r\n");state.reject(new Error("KeyboardInterrupt"));break;}
+  if(ch==="\u0004"){session.pythonInput=null;append(session,"^D\r\n");state.resolve(null);break;}
+  if(ch==="\u007f"||ch==="\b"){if(state.buffer.length){state.buffer=state.buffer.slice(0,-1);session.terminal?.write("\b \b");}continue;}
   if(ch>=" "){state.buffer+=ch;session.terminal?.write(ch);}
  }
  return true;
@@ -220,14 +220,14 @@ function attach(session,stage){
  const fit=new window.FitAddon.FitAddon();term.loadAddon(fit);term.open(host);session.terminal=term;session.fitAddon=fit;session.host=host;let input="";
  term.onData(data=>{
   if(session.pythonInput){handlePythonInput(session,data);return;}
-  if(data==="\\r"){const line=input;input="";executeLine(session,line);}
-  else if(data==="\\u007f"){if(input.length){input=input.slice(0,-1);term.write("\\b \\b");}}
-  else if(data==="\\u0003"){if(session.worker||session.nodeProcess){session.cancelExecution?.();session.worker?.terminate();session.worker=null;session.nodeProcess=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
-  else if(data==="\\u000c")term.clear();
-  else if(data==="\\u001b[A"||data==="\\u001b[B"){const up=data==="\\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\\r\\x1b[2K");prompt(session);term.write(input);}
-  else if(data==="\\t"){term.write("  ");input+="  ";}
-  else if(data>=" "&&data!=="\\u007f"){input+=data;term.write(data);}
- });;
+  if(data==="\r"){const line=input;input="";executeLine(session,line);}
+  else if(data==="\u007f"){if(input.length){input=input.slice(0,-1);term.write("\b \b");}}
+  else if(data==="\u0003"){if(session.worker||session.nodeProcess){session.cancelExecution?.();session.worker?.terminate();session.worker=null;session.nodeProcess=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
+  else if(data==="\u000c")term.clear();
+  else if(data==="\u001b[A"||data==="\u001b[B"){const up=data==="\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\r\x1b[2K");prompt(session);term.write(input);}
+  else if(data==="\t"){term.write("  ");input+="  ";}
+  else if(data>=" "&&data!=="\u007f"){input+=data;term.write(data);}
+ });;;
  const observer=new ResizeObserver(()=>{try{fit.fit();}catch(_){}});observer.observe(host);session.dispose=()=>{observer.disconnect();term.dispose();};requestAnimationFrame(()=>{try{fit.fit();}catch(_){}term.focus();prompt(session);});
 }
 function renderOutput(){const s=current(),stage=rootElement?.querySelector("[data-terminal-stage]");if(!s||!stage)return;const pre=el("pre","aurora-terminal-output",s.output||"Nenhuma saída nesta sessão.");pre.dataset.terminalOutput="";stage.replaceChildren(pre);pre.scrollTop=pre.scrollHeight;}
