@@ -1,0 +1,35 @@
+name: Aurora Editor Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Front-End/WebSite/HTML/editor.html"
+      - "Front-End/WebSite/CSS/editor.css"
+      - "Front-End/WebSite/JavaScript/syntax-highlighting.js"
+      - "Front-End/WebSite/JavaScript/tests/**"
+      - ".github/workflows/editor-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-editor:
+    name: Validate syntax highlighting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check JavaScript syntax
+        run: node --check Front-End/WebSite/JavaScript/syntax-highlighting.js
+
+      - name: Run syntax highlighting tests
+        run: node --test Front-End/WebSite/JavaScript/tests/syntax-highlighting.test.cjs
