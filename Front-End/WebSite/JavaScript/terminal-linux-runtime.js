@@ -289,6 +289,7 @@ class AuroraLinuxRuntime {
     }
     if (!this.projectSession) throw new Error("Esta sessão Linux não está vinculada a um projeto.");
     this.callbacks.onStatus?.("Sincronizando alterações do Linux para o projeto…");
+    await this.callbacks.flushProject?.();
     const result = await window.AuroraLinuxProjectBridge.syncToProject(this.emulator.fs9p, this.projectSession);
     await this.callbacks.refreshProject?.();
     this.callbacks.onStatus?.("Sincronização concluída · " + result.written + " arquivo(s) atualizado(s)");
