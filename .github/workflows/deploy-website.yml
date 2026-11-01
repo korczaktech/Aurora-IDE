@@ -430,12 +430,16 @@ jobs:
                         const npmRunResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["npm-smoke.js"], {
                           rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
                         });
-                        const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "esbuild", ["node-smoke.ts", "--outfile=dist/node-smoke.js", "--format=esm"], {
-                          rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
-                        });
-                        let compiled = "";
-                        try { compiled = await (await (await window.smokeProjectHandle.getDirectoryHandle("dist")).getFileHandle("node-smoke.js")).getFile().then(file => file.text()); } catch (_) {}
-                        document.body.dataset.npmSmoke = npmRunResult.code === 0 && npmRunResult.output.includes("AURORA_NPM_READY:172800000") && compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: trace=" + installTrace + " install=" + installResult.code + " npmRun=" + npmRunResult.code + " npmOutput=" + npmRunResult.output + " compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
+                        if (npmRunResult.code !== 0 || !npmRunResult.output.includes("AURORA_NPM_READY:172800000")) {
+                          document.body.dataset.npmSmoke = "failed: trace=" + installTrace + " install=" + installResult.code + " npmRun=" + npmRunResult.code + " npmOutput=" + npmRunResult.output;
+                        } else {
+                          const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "esbuild", ["node-smoke.ts", "--outfile=dist/node-smoke.js", "--format=esm"], {
+                            rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
+                          });
+                          let compiled = "";
+                          try { compiled = await (await (await window.smokeProjectHandle.getDirectoryHandle("dist")).getFileHandle("node-smoke.js")).getFile().then(file => file.text()); } catch (_) {}
+                          document.body.dataset.npmSmoke = compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
+                        }
                       } else {
                         document.body.dataset.npmSmoke = "failed: npm install exit " + installResult.code + " " + installResult.output;
                       }
