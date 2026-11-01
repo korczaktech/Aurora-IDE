@@ -634,7 +634,7 @@
     setStatus("Item excluído.", "success");
   }
 
-  async function refreshProject() {
+  async function refreshProject(options = {}) {
     if (!rootHandle) return;
     await flushWrites();
     const previousFiles = editor.files;
@@ -642,9 +642,11 @@
     const previousActive = editor.activeFile;
     const entries = await readDirectory(rootHandle);
     const files = await collectTextFiles(entries);
-    Object.keys(files).forEach(path => {
-      if (Object.prototype.hasOwnProperty.call(previousFiles, path)) files[path] = previousFiles[path];
-    });
+    if (options.force !== true) {
+      Object.keys(files).forEach(path => {
+        if (Object.prototype.hasOwnProperty.call(previousFiles, path)) files[path] = previousFiles[path];
+      });
+    }
     const active = previousActive && files[previousActive] !== undefined ? previousActive : "";
     const open = previousOpen.filter(path => files[path] !== undefined);
     editor.replaceProject(files, currentProjectName, active, open, true);
