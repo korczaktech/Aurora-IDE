@@ -347,6 +347,7 @@ jobs:
             <script src="/JavaScript/terminal-linux-runtime.js"></script>
             <script src="/JavaScript/terminal-git.js"></script>
             <script src="/JavaScript/terminal-node-runtime.js"></script>
+            <script src="/JavaScript/terminal-python-runtime.js"></script>
           </head>
           <body>
             <div id="terminal"></div>
@@ -451,6 +452,16 @@ jobs:
                       document.body.dataset.npmSmoke = "skipped: Node smoke failed";
                     }
                     window.AuroraNodeRuntime.dispose(nodeSession);
+                    const pythonSession = { worker: null, cancelExecution: null };
+                    let pythonOutput = "";
+                    const pythonCode = "with open('README.md') as f:\\n    print('AURORA_PYTHON_READ:' + f.read().strip())\\nwith open('python-smoke.txt', 'w') as f:\\n    f.write('AURORA_PYTHON_READY')";
+                    const pythonResult = await window.AuroraPythonRuntime.run(pythonSession, pythonCode, {
+                      rootHandle: window.smokeProjectHandle, cwd: "",
+                      onOutput: chunk => { pythonOutput += chunk; }
+                    });
+                    let pythonFile = "";
+                    try { pythonFile = await (await window.smokeProjectHandle.getFileHandle("python-smoke.txt")).getFile().then(file => file.text()); } catch (_) {}
+                    document.body.dataset.pythonSmoke = pythonResult.code === 0 && pythonOutput.includes("AURORA_PYTHON_READ:Aurora Linux workspace bridge smoke test") && pythonFile === "AURORA_PYTHON_READY" && pythonResult.sync.written === 1 ? "passed" : "failed: code=" + pythonResult.code + " output=" + pythonOutput + " file=" + pythonFile + " sync=" + JSON.stringify(pythonResult.sync);
                   } catch (nodeError) {
                     document.body.dataset.nodeSmoke = "failed: " + (nodeError?.stack || nodeError?.message || String(nodeError));
                   }
