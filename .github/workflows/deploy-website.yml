@@ -159,14 +159,14 @@ jobs:
           test -s "$ROOT/package/dist/index.js"
           test -s "$ROOT/package/wasm/browsernode_kernel.js"
           test -s "$ROOT/package/wasm/browsernode_kernel.wasm"
-          test -s "$ROOT/esbuild-wasm/package/lib/browser.js"
+          test -s "$ROOT/esbuild-wasm/package/esm/browser.min.js"
           test -s "$ROOT/esbuild-wasm/package/esbuild.wasm"
           mkdir -p _site/node_modules/esbuild-wasm
           cp "$ROOT/esbuild-wasm/package/esbuild.wasm" _site/node_modules/esbuild-wasm/esbuild.wasm
           curl -fsSL --retry 3 "https://raw.githubusercontent.com/foisalislambd/NodeBrowser/main/LICENSE" -o "$ROOT/package/LICENSE"
           curl -fsSL --retry 3 "https://raw.githubusercontent.com/foisalislambd/NodeBrowser/main/NOTICE" -o "$ROOT/package/NOTICE"
           curl -fsSL --retry 3 "https://raw.githubusercontent.com/bellard/quickjs/master/LICENSE" -o "$ROOT/package/QUICKJS-LICENSE"
-          (cd "$ROOT" && sha256sum package/dist/index.js package/wasm/browsernode_kernel.js package/wasm/browsernode_kernel.wasm esbuild-wasm/package/lib/browser.js esbuild-wasm/package/esbuild.wasm > SHA256SUMS.txt)
+          (cd "$ROOT" && sha256sum package/dist/index.js package/wasm/browsernode_kernel.js package/wasm/browsernode_kernel.wasm esbuild-wasm/package/esm/browser.min.js esbuild-wasm/package/esbuild.wasm > SHA256SUMS.txt)
 
       - name: Prepare browser Linux runtime assets
         if: steps.detect.outputs.mode == 'static'
@@ -340,7 +340,7 @@ jobs:
             <title>Aurora Linux Runtime Smoke Test</title>
             <style>html,body,#terminal{width:100%;height:100%;margin:0;background:#050a0b}#terminal{padding:8px;box-sizing:border-box}</style>
             <script type="importmap">
-              {"imports":{"esbuild-wasm":"/runtime/nodebrowser/esbuild-wasm/package/lib/browser.js"}}
+              {"imports":{"esbuild-wasm":"/runtime/nodebrowser/esbuild-wasm/package/esm/browser.min.js"}}
             </script>
             <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
             <script src="/JavaScript/terminal-linux-project-bridge.js"></script>
