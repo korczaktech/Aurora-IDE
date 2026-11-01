@@ -393,7 +393,7 @@ jobs:
               window.smokeProjectHandle = smokeDirectory("aurora-smoke");
               window.smokeProjectHandle.addFile("README.md", "Aurora Linux workspace bridge smoke test");
               window.addEventListener("load", async () => {
-                window.smokeRuntime = new window.AuroraLinuxRuntime();
+                window.smokeRuntime = new window.AuroraLinuxRuntime({ memorySize: 64 * 1024 * 1024 });
                 try {
                   await window.smokeRuntime.start({
                     consoleContainer: document.getElementById("terminal"),
