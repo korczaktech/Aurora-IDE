@@ -29,6 +29,18 @@ function excluded(name) {
   return name === ".git" || name === ".aurora" || name === ".aurora-node-index.json" || name === "node_modules";
 }
 
+function normalizeNpmSpec(spec) {
+  const value = String(spec);
+  const at = value.lastIndexOf("@");
+  if (at <= 0) return value;
+  const version = value.slice(at + 1);
+  const core = version.split("-")[0].split("+")[0].split(".");
+  if (core.length === 3 && core.every(part => part !== "" && Number.isInteger(Number(part)))) {
+    return value.slice(0, at + 1) + "=" + version;
+  }
+  return value;
+}
+
 async function loadApi() {
   if (!apiPromise) {
     apiPromise = import(PACKAGE_URL).then(module => {
@@ -260,7 +272,7 @@ async function run(session, command, args, options = {}) {
     return { code: 0, output: "Build concluído: " + outfile + "\n" + result.code.length + " caracteres gerados.", sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
   }
   if (command === "npm" && ["install", "i", "add", "ci"].includes(rest[0])) {
-    const specs = rest.slice(1).filter(value => !value.startsWith("-"));
+    const specs = rest.slice(1).filter(value => !value.startsWith("-")).map(normalizeNpmSpec);
     const saveDev = rest.some(value => value === "-D" || value === "--save-dev");
     const logs = [];
     if (options.debug) {
