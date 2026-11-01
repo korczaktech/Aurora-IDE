@@ -11,6 +11,7 @@ on:
       - "Front-End/WebSite/JavaScript/editor-intelligence.js"
       - "Front-End/WebSite/JavaScript/tests/**"
       - "Front-End/WebSite/JavaScript/editor-controls.js"
+      - "Front-End/WebSite/JavaScript/tests/**"
       - ".github/workflows/editor-validation.yml"
   workflow_dispatch:
 
