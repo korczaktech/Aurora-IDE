@@ -77,7 +77,7 @@ async function runCommand(session,raw){
  const command=(tokens.shift()||"").toLowerCase(),args=tokens,out=[],emit=x=>out.push(String(x)),path=x=>resolvePath(x,session.cwd);
  const need=(n,usage)=>{if(args.length<n)throw new Error("Uso: "+usage);};
  switch(command){
- case "help":case "ajuda":emit(["Comandos: pwd, ls [-a] [-l], cd, tree, mkdir [-p], touch, cat, echo, printf,","cp, mv, rm [-r], head, tail, wc, grep, find, clear, date, whoami, uname, env, export, unset, memory,","node arquivo.js | node -e \"código\", python arquivo.py | python -c \"código\"","Tudo opera somente dentro da raiz do projeto aberto.","JavaScript roda em Web Worker; Python usa Pyodide/WebAssembly sob demanda.","Não há Bash, npm, Cargo ou processos nativos neste modo."].join("\n"));break;
+ case "help":case "ajuda":emit(["Comandos: pwd, ls [-a] [-l], cd, tree, mkdir [-p], touch, cat, echo, printf,","cp, mv, rm [-r], head, tail, wc, grep, find, clear, date, whoami, uname, env, export, unset, memory,","js arquivo.js | js -e \"código\", python arquivo.py | python -c \"código\"","Tudo opera somente dentro da raiz do projeto aberto.","JavaScript roda em Web Worker sem APIs do Node.js; Python usa Pyodide/WebAssembly.","Python não monta automaticamente a pasta do projeto; npm, Cargo, Bash e processos nativos não estão disponíveis."].join("\n"));break;
  case "pwd":emit("/"+session.cwd);break;
  case "whoami":emit("aurora-user");break;
  case "uname":emit("Aurora Browser Runtime");break;
@@ -101,7 +101,9 @@ async function runCommand(session,raw){
  case "env":Object.entries(session.environment).forEach(([k,v])=>emit(k+"="+v));break;
  case "export":{need(1,"export NOME=valor");const s=args.join(" "),i=s.indexOf("="),k=s.slice(0,i);if(i<1||!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k))throw new Error("Use export NOME=valor.");session.environment[k]=s.slice(i+1);break;}
  case "unset":args.forEach(k=>delete session.environment[k]);break;
- case "node":case "js":{let code;if(args[0]==="-e"||args[0]==="--eval")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: node arquivo.js ou node -e \"código\"");await runWorker(session,code,false);break;}
+ case "js":case "javascript":{let code;if(args[0]==="-e"||args[0]==="--eval")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: node arquivo.js ou node -e \"código\"");await runWorker(session,code,false);break;}
+ case "node":throw new Error("Node.js completo não está disponível no navegador. Use js arquivo.js para executar JavaScript sem APIs do Node.js.");
+ case "npm":case "cargo":case "bash":throw new Error("Este comando exige um ambiente de sistema operacional e não pode ser executado diretamente no navegador.");
  case "python":case "python3":case "py":{let code;if(args[0]==="-c")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: python arquivo.py ou python -c \"código\"");await runWorker(session,code,true);break;}
  default:throw new Error("Comando não encontrado: "+command+". Digite help.");
  }
