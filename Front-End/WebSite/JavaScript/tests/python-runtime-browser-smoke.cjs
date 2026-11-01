@@ -6,11 +6,12 @@ const { chromium } = require("playwright");
     const page = await browser.newPage();
     page.on("pageerror", error => console.error("Browser page error:", error.message));
     await page.goto("http://127.0.0.1:4173/JavaScript/tests/python-runtime-smoke.html", { waitUntil: "load" });
-    await page.waitForFunction(() => Boolean(document.body.dataset.pythonSmoke), null, { timeout: 180000 });
+    await page.waitForFunction(() => document.body.dataset.pythonSmoke === "passed" && document.body.dataset.terminalInputSmoke === "passed", null, { timeout: 240000 });
     const status = await page.locator("body").getAttribute("data-python-smoke");
+    const terminalStatus = await page.locator("body").getAttribute("data-terminal-input-smoke");
     const details = await page.locator("#result").innerText();
-    if (status !== "passed") throw new Error("Python runtime browser smoke failed: " + details);
-    process.stdout.write("Python browser smoke passed: execution, terminal-backed input(), stdout, escaped newlines, and project file synchronization.\n");
+    if (status !== "passed" || terminalStatus !== "passed") throw new Error("Python terminal browser smoke failed: " + details);
+    process.stdout.write("Python browser smoke passed: execution, xterm input(), stdout, escaped newlines, and project file synchronization.\\n");
   } finally {
     await browser.close();
   }
