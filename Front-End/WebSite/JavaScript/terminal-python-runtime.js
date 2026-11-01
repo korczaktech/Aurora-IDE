@@ -208,18 +208,33 @@ async function run(session, code, options = {}) {
   // Async stdin bridge: xterm remains responsive while Python awaits user input.
   let py = null;
   let output = "";
+  const stdoutDecoder = new TextDecoder();
+  const stderrDecoder = new TextDecoder();
   const emit = (type, value) => {
     const chunk = String(value || "");
+    if (!chunk) return;
     output += chunk;
     options.onOutput?.(type === "err" ? "\x1b[31m" + chunk + "\x1b[0m" : chunk);
+  };
+  const flushOutput = () => {
+    emit("out", stdoutDecoder.decode());
+    emit("err", stderrDecoder.decode());
   };
   let returnedFiles = null;
   let executionError = null;
   try {
     const module = await import(PYODIDE_MODULE);
     py = await module.loadPyodide({ fullStdLib: true });
-    py.setStdout({ batched: text => emit("out", text) });
-    py.setStderr({ batched: text => emit("err", text) });
+    // Preserve every byte written by Python, including embedded and trailing newlines.
+    // A batched handler may split output into lines and lose the original write boundaries.
+    py.setStdout({ write: buffer => {
+      emit("out", stdoutDecoder.decode(buffer, { stream: true }));
+      return buffer.byteLength;
+    }});
+    py.setStderr({ write: buffer => {
+      emit("err", stderrDecoder.decode(buffer, { stream: true }));
+      return buffer.byteLength;
+    }});
     if (typeof options.onInput !== "function") throw new Error("A entrada interativa do terminal Python não está disponível.");
     py.globals.set("__aurora_input_js", prompt => options.onInput(String(prompt || "")));
     await py.runPythonAsync(PYTHON_ASYNC_INPUT_BOOTSTRAP);
@@ -239,6 +254,7 @@ async function run(session, code, options = {}) {
   } catch (error) {
     executionError = error;
   } finally {
+    flushOutput();
     if (py) {
       try {
         const files = [];
