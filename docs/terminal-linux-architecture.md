@@ -70,6 +70,14 @@ Os arquivos do projeto permanecem no dispositivo por meio da File System Access 
 
 A suíte automatizada valida a versão fixada, URLs, hash do kernel, limites de memória, timeout, rejeição de esquemas inseguros, ciclo de vida, validação de caminhos e cópia/sincronização com detecção de conflitos. O deploy executa um smoke test real em Chromium headless: baixa e verifica o kernel, inicializa o Linux, monta o projeto por 9p em `/workspace`, executa comandos no guest, cria um arquivo e confirma que a sincronização o grava de volta no diretório autorizado antes de encerrar a máquina virtual.
 
+## Decisão de arquitetura: Node.js, npm e toolchains adicionais
+
+Node.js, npm, Bash e ferramentas de compilação não são anunciados como disponíveis no guest atual. A emulação v86 usa uma CPU x86 de 32 bits sem multicore, e o kernel Buildroot/BusyBox atual não inclui esses toolchains nem conectividade TCP/IP. O terminal local oferece JavaScript em Worker, Python via Pyodide e Git via isomorphic-git, mas esses recursos não equivalem a Node.js, npm ou Git nativo dentro do Linux.
+
+Uma alternativa avaliada foi BrowserPod, que executa Node.js, npm, Git e Bash localmente via WebAssembly. Ela exige uma chave de API, utiliza infraestrutura externa para intermediar requisições de saída e sua licença gratuita é restrita a uso pessoal/não comercial; o uso comercial exige o plano Pro pago. Como o Aurora é um produto da Korczak Technologies e a arquitetura definida não deve introduzir uma dependência paga nem um proxy externo obrigatório, BrowserPod não foi incorporado. Essa decisão evita uma dependência incompatível com o orçamento e com a política de execução independente.
+
+Para disponibilizar Node.js/npm e compiladores sem essa dependência, será necessário integrar e manter runtimes WebAssembly próprios, com licenças comerciais compatíveis, isolamento de processos, filesystem persistente, rede controlada e testes reais em dispositivos móveis e desktop. Até isso ser validado, esses recursos permanecem explicitamente indisponíveis, em vez de serem simulados ou anunciados incorretamente.
+
 ## Licenças de terceiros
 
 O projeto v86 é distribuído sob Simplified BSD License: https://github.com/copy/v86/blob/master/LICENSE. O espelho do kernel identifica `alizafarbati/WebLinux` como repositório de origem e `copy.sh`/`i.copy.sh` como hospedagem upstream das imagens. Preserve as licenças e atribuições aplicáveis ao kernel Linux, Buildroot, BusyBox, v86 e BIOS.
