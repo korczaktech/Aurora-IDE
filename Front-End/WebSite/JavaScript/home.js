@@ -76,6 +76,7 @@
     const status = document.getElementById("auroraProjectPickerStatus");
     button.disabled = true;
     if (status) status.textContent = "Solicitando autorização para a pasta .aurora…";
+    let failureMessage = "";
     try {
       if (!auroraStorageHandle) auroraStorageHandle = await readAuroraHandle();
       if (!auroraStorageHandle || auroraStorageHandle.name !== ".aurora") {
@@ -85,16 +86,13 @@
       if (!granted) throw new Error("A autorização não foi concedida. Seus arquivos permanecem intactos.");
       const loaded = await loadRealProjects();
       if (!loaded) throw new Error("A pasta foi autorizada, mas não foi possível carregar .aurora/projects.");
-      renderProjectPicker();
-      if (status) status.textContent = projects.length
-        ? projects.length + " projeto(s) recuperado(s) de .aurora/projects."
-        : "Armazenamento reconectado. Ainda não há projetos cadastrados.";
     } catch (error) {
-      if (status) status.textContent = error.message || "Não foi possível reconectar o armazenamento.";
+      failureMessage = error.message || "Não foi possível reconectar o armazenamento.";
       console.warn("[Aurora] Falha ao reconectar .aurora:", error);
     } finally {
       button.disabled = false;
       renderProjectPicker();
+      if (failureMessage && status) status.textContent = failureMessage;
     }
   });
   document.getElementById("auroraPickerCreate")?.addEventListener("click", () => {
