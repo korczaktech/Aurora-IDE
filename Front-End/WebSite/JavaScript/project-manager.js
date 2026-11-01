@@ -51,7 +51,10 @@
 
   function validRelativePath(value) {
     return typeof value === "string" && value.length > 0 && !value.startsWith("/") &&
-      !value.includes("\\") && value.split("/").every(validSegment);
+      !value.includes("\\") && value.split("/").every(part =>
+        part && part !== "." && part !== ".." && !part.includes("\0") &&
+        !/[<>:"|?*]/.test(part) && !/[. ]$/.test(part) &&
+        !Array.from(part).some(char => char.charCodeAt(0) < 32));
   }
 
   function parentPath(path) {
