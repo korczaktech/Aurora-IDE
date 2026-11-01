@@ -89,6 +89,9 @@ class AuroraLinuxRuntime {
     if (!window.isSecureContext && !["localhost", "127.0.0.1"].includes(location.hostname)) {
       throw new Error("O terminal Linux exige uma origem HTTPS segura.");
     }
+    if (typeof WebAssembly === "undefined" || typeof WebAssembly.instantiate !== "function") {
+      throw new Error("Este navegador não oferece WebAssembly, necessário para executar o Linux.");
+    }
 
     this.callbacks = callbacks;
     if (!callbacks.consoleContainer || typeof callbacks.consoleContainer.append !== "function") {
