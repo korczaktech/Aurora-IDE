@@ -17,7 +17,7 @@ const { DEFAULT_CONFIG, normalizeConfig } = windowMock.AuroraLinuxRuntimeInterna
 
 test("runtime usa versão v86 fixa e recursos HTTPS", () => {
   assert.equal(DEFAULT_CONFIG.version, "0.5.473");
-  assert.match(DEFAULT_CONFIG.scriptUrl, /aurora\\.korczaktech\\.com\\.br\\/runtime\\/linux\\/v86\\/libv86\\.js$/);
+  assert.match(DEFAULT_CONFIG.scriptUrl, /aurora\.korczaktech\.com\.br\/runtime\/linux\/v86\/libv86\.js$/);
   for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "kernelUrl"]) {
     assert.equal(new URL(DEFAULT_CONFIG[key]).protocol, "https:");
   }
