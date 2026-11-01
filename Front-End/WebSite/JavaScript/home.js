@@ -208,11 +208,13 @@
     if (storageMetric) storageMetric.textContent = "Local";
     list.innerHTML = activityEvents.length ? activityEvents.map(item => `<div class="activity-event"><span class="event-node"></span><time>${escapeHTML(formatActivityTime(item.at))}</time><div><strong>${escapeHTML(item.title)}</strong><p>${escapeHTML(item.description || "")}</p></div><span class="event-kind">${escapeHTML(item.kind || "SISTEMA")}</span></div>`).join("") : '<div class="empty-state"><strong>Nenhuma atividade registrada</strong><p>Suas ações nesta estação aparecerão aqui.</p></div>';
   };
-  const refreshStorageStatus = () => {
+  const refreshStorageStatus = async () => {
+    if (!auroraStorageHandle) { try { auroraStorageHandle = await readAuroraHandle(); } catch (_) {} }
+    const auroraPermission = auroraStorageHandle ? await auroraStorageHandle.queryPermission({mode:"readwrite"}).catch(()=>"prompt") : "denied";
     const auroraStatus = main.querySelector("#settings-aurora-storage-status");
     const auroraDescription = main.querySelector("#settings-aurora-storage-description");
-    if (auroraStatus) { auroraStatus.textContent = auroraStorageHandle ? "CONFIGURADO" : "LOCAL NÃO CONFIGURADO"; }
-    if (auroraDescription) auroraDescription.textContent = auroraStorageHandle ? "Projetos e arquivos ficam na pasta .aurora autorizada neste dispositivo." : "Escolha um local para criar a pasta .aurora e armazenar seus projetos.";
+    if (auroraStatus) { auroraStatus.textContent = auroraPermission === "granted" ? "CONECTADO" : auroraStorageHandle ? "PERMISSÃO NECESSÁRIA" : "NÃO CONFIGURADO"; }
+    if (auroraDescription) auroraDescription.textContent = auroraPermission === "granted" ? "A pasta .aurora está conectada. Você pode alterar o destino sem mover ou apagar os arquivos atuais." : auroraStorageHandle ? "O local já está cadastrado, mas o navegador precisa renovar a autorização. Use Alterar local para escolher e autorizar novamente." : "Escolha um local para criar a pasta .aurora e armazenar seus projetos.";
     const notesStatus = main.querySelector("#settings-notes-status");
     const projectsStatus = main.querySelector("#settings-projects-status");
     const reposStatus = main.querySelector("#settings-repos-status");
