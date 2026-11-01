@@ -83,7 +83,7 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
     }
     add_listener(name, callback) { this.listeners[name] = callback; }
     async run() { ran = true; }
-    restart() { restarted = true; }
+    restart() { restarted = true; this.listeners["serial0-output-byte"]?.("~% "); }
     async destroy() { destroyed = true; }
   }
   const window = createRuntimeHarness(FakeV86);
@@ -100,7 +100,7 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
   assert.equal(options.disable_keyboard, true);
   assert.equal(options.autostart, false);
   assert.equal(ran, true);
-  runtime.restart();
+  await runtime.restart();
   assert.equal(restarted, true);
   await runtime.stop();
   assert.equal(destroyed, true);
