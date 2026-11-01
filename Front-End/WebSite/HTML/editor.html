@@ -587,7 +587,7 @@ startProject();`
           if (openCodeFiles.has(name)) closeCodeFile(name);
           return true;
         },
-        replaceProject(files, projectName, activeName) {
+        replaceProject(files, projectName, activeName, openNames = []) {
           Object.keys(codeFiles).forEach(name => delete codeFiles[name]);
           Object.entries(files || {}).forEach(([name, content]) => {
             if (typeof content === "string" && validEditorPath(name)) codeFiles[name] = content;
@@ -595,8 +595,13 @@ startProject();`
           openCodeFiles.clear();
           codeSelections.clear();
           activeCodeFile = "";
-          if (activeName && Object.prototype.hasOwnProperty.call(codeFiles, activeName)) openCodeFile(activeName);
-          else {
+          if (activeName && Object.prototype.hasOwnProperty.call(codeFiles, activeName)) {
+            openCodeFile(activeName);
+            (Array.isArray(openNames) ? openNames : []).forEach(name => {
+              if (name !== activeName && Object.prototype.hasOwnProperty.call(codeFiles, name)) openCodeFiles.add(name);
+            });
+            renderCodeTabs();
+          } else {
             codeInput.value = "";
             codeInput.setSelectionRange(0, 0);
             renderCodeTabs();
