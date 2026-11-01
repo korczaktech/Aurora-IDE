@@ -409,11 +409,30 @@ jobs:
                   document.body.dataset.gitSmoke = gitStatus.includes("Árvore de trabalho limpa.") ? "passed" : gitStatus;
                   try {
                     window.smokeProjectHandle.addFile("node-smoke.js", "console.log('AURORA_NODE_READY:' + typeof require('fs').readFileSync);");
+                    window.smokeProjectHandle.addFile("package.json", JSON.stringify({ name: "aurora-smoke", version: "1.0.0" }));
+                    window.smokeProjectHandle.addFile("node-smoke.ts", "const answer: number = 42;\\nconsole.log(answer);\\n");
                     const nodeSession = { cwd: "", environment: {}, nodeRuntime: null, nodeProcess: null };
                     const nodeResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["node-smoke.js"], {
                       rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
                     });
                     document.body.dataset.nodeSmoke = nodeResult.code === 0 && nodeResult.output.includes("AURORA_NODE_READY:function") ? "passed" : "failed: " + nodeResult.output + " (exit " + nodeResult.code + ")";
+                    if (nodeResult.code === 0) {
+                      const installResult = await window.AuroraNodeRuntime.run(nodeSession, "npm", ["install", "typescript"], {
+                        rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
+                      });
+                      if (installResult.code === 0) {
+                        const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "npx", ["tsc", "--target", "es2020", "--outDir", "dist", "node-smoke.ts"], {
+                          rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
+                        });
+                        let compiled = "";
+                        try { compiled = await (await (await window.smokeProjectHandle.getDirectoryHandle("dist")).getFileHandle("node-smoke.js")).getFile().then(file => file.text()); } catch (_) {}
+                        document.body.dataset.npmSmoke = compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: install=" + installResult.code + " compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
+                      } else {
+                        document.body.dataset.npmSmoke = "failed: npm install exit " + installResult.code + " " + installResult.output;
+                      }
+                    } else {
+                      document.body.dataset.npmSmoke = "skipped: Node smoke failed";
+                    }
                     window.AuroraNodeRuntime.dispose(nodeSession);
                   } catch (nodeError) {
                     document.body.dataset.nodeSmoke = "failed: " + (nodeError?.stack || nodeError?.message || String(nodeError));
