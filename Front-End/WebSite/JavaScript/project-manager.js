@@ -398,19 +398,33 @@
       ? await parent.getDirectoryHandle(name)
       : await parent.getFileHandle(name);
     if (typeof source.move === "function") {
-      await source.move(newName);
-      return;
+      try {
+        await source.move(newName);
+        return;
+      } catch (error) {
+        if (!["NotSupportedError", "TypeError"].includes(error.name)) throw error;
+      }
     }
     if (kind === "directory") {
       const destination = await parent.getDirectoryHandle(newName, { create: true });
-      await copyDirectory(source, destination);
+      try {
+        await copyDirectory(source, destination);
+      } catch (error) {
+        await parent.removeEntry(newName, { recursive: true }).catch(() => {});
+        throw error;
+      }
       await parent.removeEntry(name, { recursive: true });
     } else {
       const sourceFile = await source.getFile();
       const destination = await parent.getFileHandle(newName, { create: true });
-      const writer = await destination.createWritable();
-      await writer.write(sourceFile);
-      await writer.close();
+      try {
+        const writer = await destination.createWritable();
+        await writer.write(sourceFile);
+        await writer.close();
+      } catch (error) {
+        await parent.removeEntry(newName).catch(() => {});
+        throw error;
+      }
       await parent.removeEntry(name);
     }
   }
