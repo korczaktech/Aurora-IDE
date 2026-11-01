@@ -54,12 +54,18 @@
     window.addEventListener("load", async () => {
       const root = makeDirectory("python-smoke");
       const output = [];
+      const inputValues = ["Raphael", "42"];
+      const originalPrompt = window.prompt;
+      window.prompt = () => inputValues.shift() ?? null;
       try {
         const result = await window.AuroraPythonRuntime.run({}, [
           "from dataclasses import dataclass",
           "from pathlib import Path",
           "import asyncio, json, sqlite3, ssl, lzma",
           "import numpy as np",
+          "name = input('Nome: ')",
+          "answer = int(input('Número: '))",
+          "assert name == 'Raphael' and answer == 42",
           "def decorate(fn):",
           "    def wrapped(*args, **kwargs): return fn(*args, **kwargs)",
           "    return wrapped",
@@ -87,6 +93,7 @@
           "print('AURORA_PYTHON_READY')",
           "print('AURORA_LANGUAGE_FEATURES_OK')",
           "print('AURORA_NUMPY_OK')",
+          "print('AURORA_INPUT_OK')",
           "with open('python-smoke.txt', 'w') as file:",
           "    file.write('AURORA_FILE_SYNC_OK')"
         ].join("\n"), {
@@ -96,7 +103,7 @@
         const file = await (await root.getFileHandle("python-smoke.txt")).getFile();
         const contents = await file.text();
         const printed = output.join("");
-        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
+        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
         document.body.dataset.pythonSmoke = passed ? "passed" : "failed";
         document.getElementById("result").textContent = passed
           ? "Python execution and project file synchronization passed."
@@ -104,6 +111,8 @@
       } catch (error) {
         document.body.dataset.pythonSmoke = "failed";
         document.getElementById("result").textContent = error?.stack || String(error);
+      } finally {
+        window.prompt = originalPrompt;
       }
     });
   </script>
