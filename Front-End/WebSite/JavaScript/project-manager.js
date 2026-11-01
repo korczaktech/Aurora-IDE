@@ -42,7 +42,8 @@
 
   function validSegment(value) {
     return typeof value === "string" && value.length > 0 && value !== "." && value !== ".." &&
-      !/[\\/\\0]/.test(value) && !/[<>:"|?*]/.test(value) && !/[. ]$/.test(value);
+      !value.includes("/") && !value.includes("\\") && !value.includes("\0") &&
+      !/[<>:"|?*]/.test(value) && !/[. ]$/.test(value);
   }
 
   function validRelativePath(value) {
