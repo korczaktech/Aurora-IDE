@@ -16,7 +16,7 @@
   doc.body.append(popup);
 
   const dictionaries = {
-    javascript: ["addEventListener", "Array", "async", "await", "Boolean", "break", "case", "catch", "class", "const", "console", "Date", "document", "else", "Error", "export", "false", "fetch", "for", "forEach", "function", "if", "import", "in", "JSON", "let", "Math", "new", "null", "Number", "Object", "Promise", " querySelector", "return", "setTimeout", "String", "this", "throw", "true", "try", "undefined", "window", "while"],
+    javascript: ["addEventListener", "Array", "async", "await", "Boolean", "break", "case", "catch", "class", "const", "console", "Date", "document", "else", "Error", "export", "false", "fetch", "for", "forEach", "function", "if", "import", "in", "JSON", "let", "Math", "new", "null", "Number", "Object", "Promise", "querySelector", "return", "setTimeout", "String", "this", "throw", "true", "try", "undefined", "window", "while"],
     html: ["article", "aside", "button", "div", "footer", "form", "h1", "h2", "head", "header", "img", "input", "label", "li", "link", "main", "meta", "nav", "ol", "option", "p", "script", "section", "select", "span", "style", "table", "tbody", "td", "textarea", "th", "thead", "title", "tr", "ul"],
     css: ["align-items", "animation", "background", "background-color", "border", "border-radius", "box-sizing", "color", "display", "flex", "font-family", "font-size", "font-weight", "gap", "grid", "height", "justify-content", "margin", "max-width", "min-height", "opacity", "overflow", "padding", "position", "transform", "transition", "width", "z-index"]
   };
@@ -73,23 +73,38 @@
   function moveLine(direction) {
     const value = textarea.value;
     const bounds = lineBounds(value, textarea.selectionStart);
+    const selectionStart = textarea.selectionStart;
+    const selectionEnd = textarea.selectionEnd;
+    const offsetStart = Math.max(0, selectionStart - bounds.start);
+    const offsetEnd = Math.max(0, selectionEnd - bounds.start);
     const line = value.slice(bounds.start, bounds.end);
-    if (direction < 0 && bounds.start === 0) return;
-    if (direction > 0 && bounds.end === value.length) return;
+
+    let replaceStart, replaceEnd, replacement, newLineStart;
     if (direction < 0) {
+      if (bounds.start === 0) return;
       const previousStart = value.lastIndexOf("\n", bounds.start - 2) + 1;
-      const previous = value.slice(previousStart, bounds.start - 1);
-      const replacement = line + "\n" + previous;
-      textarea.setRangeText(replacement, previousStart, bounds.end, "select");
-      const delta = line.length - previous.length;
-      textarea.setSelectionRange(textarea.selectionStart + delta, textarea.selectionEnd + delta);
+      const previousEnd = bounds.start - 1;
+      const previous = value.slice(previousStart, previousEnd);
+      replaceStart = previousStart;
+      replaceEnd = bounds.end;
+      replacement = line + "\n" + previous;
+      newLineStart = previousStart;
     } else {
-      const nextEnd = value.indexOf("\n", bounds.end + 1);
-      const end = nextEnd < 0 ? value.length : nextEnd;
-      const next = value.slice(bounds.end + 1, end);
-      textarea.setRangeText(next + "\n" + line, bounds.start, end, "select");
-      textarea.setSelectionRange(bounds.start + next.length + 1, bounds.start + next.length + 1 + line.length);
+      if (bounds.end === value.length) return;
+      const nextStart = bounds.end + 1;
+      const nextBreak = value.indexOf("\n", nextStart);
+      const nextEnd = nextBreak < 0 ? value.length : nextBreak;
+      const next = value.slice(nextStart, nextEnd);
+      replaceStart = bounds.start;
+      replaceEnd = nextEnd;
+      replacement = next + "\n" + line;
+      newLineStart = bounds.start + next.length + 1;
     }
+
+    textarea.setRangeText(replacement, replaceStart, replaceEnd, "preserve");
+    const start = Math.min(textarea.value.length, newLineStart + offsetStart);
+    const end = Math.min(textarea.value.length, newLineStart + offsetEnd);
+    textarea.setSelectionRange(start, end);
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
     textarea.focus();
   }
