@@ -501,7 +501,9 @@ body {
 }
 /* O textarea é a camada visível e editável; o texto não depende do overlay. */
 .code-highlight {
-  display: none;
+  display: block;
+  overflow: hidden;
+  pointer-events: none;
 }
 .code-input {
   z-index: 1;
@@ -509,15 +511,15 @@ body {
   outline: none;
   overflow: auto;
   background: transparent;
-  color: #c4d2cd;
+  color: transparent;
   caret-color: #a4e9c5;
-  -webkit-text-fill-color: #c4d2cd;
+  -webkit-text-fill-color: transparent;
   selection-background-color: rgba(114, 214, 173, .28);
 }
 .code-input::selection {
   background: rgba(114, 214, 173, .28);
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 .token-tag { color: #79b9d4; }
 .token-string { color: #b7d78e; }
@@ -743,3 +745,66 @@ body {
 .aurora-xterm-host .xterm{height:100%;width:100%}
 .aurora-xterm-host .xterm-viewport{overflow-y:auto!important}
 .aurora-xterm-host .xterm-screen{width:100%}
+
+
+/* Aurora Syntax Highlighting — cores semânticas do tema nativo */
+.code-highlight,
+.code-input {
+  font-size: var(--code-font-size, 13px);
+  line-height: 22px;
+  tab-size: 2;
+}
+.code-highlight {
+  color: #c4d2cd;
+  scrollbar-width: none;
+}
+.code-highlight .hljs-comment,
+.code-highlight .hljs-quote,
+.code-highlight .hljs-doctag {
+  color: #82938e;
+  font-style: italic;
+}
+.code-highlight .hljs-keyword,
+.code-highlight .hljs-selector-tag,
+.code-highlight .hljs-literal,
+.code-highlight .hljs-section,
+.code-highlight .hljs-built_in,
+.code-highlight .hljs-type {
+  color: #c49adf;
+}
+.code-highlight .hljs-string,
+.code-highlight .hljs-regexp,
+.code-highlight .hljs-template-tag,
+.code-highlight .hljs-template-variable {
+  color: #b7d78e;
+}
+.code-highlight .hljs-number,
+.code-highlight .hljs-symbol,
+.code-highlight .hljs-bullet {
+  color: #d7b477;
+}
+.code-highlight .hljs-title,
+.code-highlight .hljs-title.class_,
+.code-highlight .hljs-title.function_,
+.code-highlight .hljs-function .hljs-title {
+  color: #82c8e3;
+}
+.code-highlight .hljs-attr,
+.code-highlight .hljs-attribute,
+.code-highlight .hljs-property,
+.code-highlight .hljs-variable,
+.code-highlight .hljs-params {
+  color: #d5c18b;
+}
+.code-highlight .hljs-tag,
+.code-highlight .hljs-name,
+.code-highlight .hljs-selector-class,
+.code-highlight .hljs-selector-id {
+  color: #79b9d4;
+}
+.code-highlight .hljs-meta,
+.code-highlight .hljs-meta .hljs-keyword {
+  color: #8fb9a5;
+}
+.code-highlight .hljs-addition { color: #9bd8a7; }
+.code-highlight .hljs-deletion { color: #e39a91; }
