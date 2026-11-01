@@ -328,7 +328,8 @@ startProject();`
           wordBreak: style.wordBreak
         });
 
-        return lines.map(line => {
+        const fragment = document.createDocumentFragment();
+        lines.forEach(line => {
           const measureLine = document.createElement("div");
           Object.assign(measureLine.style, {
             display: "block", minHeight: lineHeight + "px",
@@ -339,11 +340,14 @@ startProject();`
             wordBreak: style.wordBreak, tabSize: style.tabSize
           });
           measureLine.textContent = line || " ";
-          gutterMeasureNode.appendChild(measureLine);
-          const height = Math.max(lineHeight, measureLine.getBoundingClientRect().height);
-          gutterMeasureNode.removeChild(measureLine);
-          return height;
+          fragment.appendChild(measureLine);
         });
+        gutterMeasureNode.replaceChildren(fragment);
+        const heights = Array.from(gutterMeasureNode.children, node =>
+          Math.max(lineHeight, node.getBoundingClientRect().height)
+        );
+        gutterMeasureNode.replaceChildren();
+        return heights;
       }
 
       function updateCodeSurface() {
