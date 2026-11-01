@@ -41,9 +41,12 @@
   }
 
   function validSegment(value) {
-    return typeof value === "string" && value.length > 0 && value !== "." && value !== ".." &&
-      !value.includes("/") && !value.includes("\\") && !value.includes("\0") &&
-      !/[<>:"|?*]/.test(value) && !/[. ]$/.test(value);
+    if (typeof value !== "string" || !value.length || value === "." || value === "..") return false;
+    const deviceName = value.split(".")[0].toUpperCase();
+    return !value.includes("/") && !value.includes("\\") && !value.includes("\0") &&
+      !/[<>:"|?*]/.test(value) && !/[. ]$/.test(value) &&
+      !/^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/.test(deviceName) &&
+      !Array.from(value).some(char => char.charCodeAt(0) < 32);
   }
 
   function validRelativePath(value) {
