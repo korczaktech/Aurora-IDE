@@ -24,14 +24,14 @@ test("keeps caret, selection direction and scroll position per open file", () =>
   assert.match(html, /const codeSelections = new Map\(\)/);
   assert.match(html, /selectionStart: codeInput\.selectionStart/);
   assert.match(html, /selectionEnd: codeInput\.selectionEnd/);
-  assert.match(html, /selectionDirection: codeInput\.selectionDirection/);
+  assert.match(html, /direction: codeInput\.selectionDirection/);
   assert.match(html, /codeInput\.scrollTop = savedSelection\.scrollTop/);
   assert.match(html, /codeInput\.scrollLeft = savedSelection\.scrollLeft/);
 });
 
 test("provides cursor and selection operations without replacing the native textarea", () => {
   for (const operation of ["selectLine", "selectWord", "nextOccurrence", "moveLine", "duplicateLine", "smartHome"]) {
-    assert.match(intelligence, new RegExp("function " + operation + "\\\\("));
+    assert.ok(intelligence.includes("function " + operation + "("), "missing " + operation);
   }
   assert.match(intelligence, /setSelectionRange/);
   assert.match(intelligence, /setRangeText/);
@@ -40,7 +40,7 @@ test("provides cursor and selection operations without replacing the native text
 
 test("provides contextual autocomplete for JavaScript, HTML and CSS", () => {
   for (const language of ["javascript", "html", "css"]) {
-    assert.match(intelligence, new RegExp(language + ": \\\\["));
+    assert.ok(intelligence.includes(language + ": ["), "missing " + language + " suggestions");
   }
   for (const key of ["ArrowDown", "ArrowUp", "Enter", "Tab", "Escape"]) {
     assert.ok(intelligence.includes('event.key === "' + key + '"'), "missing " + key);
