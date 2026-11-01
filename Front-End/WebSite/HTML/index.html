@@ -160,6 +160,20 @@
       <span class="aurora-access-footnote">O acesso depende da autorização do navegador e pode ser revogado nas configurações do site.</span>
     </div>
   </dialog>
+  <dialog class="aurora-new-project-dialog" id="auroraNewProjectDialog" aria-labelledby="auroraNewProjectTitle">
+    <form id="auroraNewProjectForm" class="aurora-new-project-panel">
+      <span class="micro-label">AURORA EDS · NOVO PROJETO</span>
+      <h2 id="auroraNewProjectTitle">Dê um nome à sua ideia.</h2>
+      <p>O Aurora criará uma pasta vazia com esse nome em <strong>.aurora/projects</strong>. Nenhum arquivo inicial será adicionado.</p>
+      <label for="auroraNewProjectName">Nome do projeto</label>
+      <input id="auroraNewProjectName" name="projectName" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: Meu primeiro projeto" required>
+      <p id="auroraNewProjectMessage" class="aurora-new-project-message" role="status" aria-live="polite"></p>
+      <div class="aurora-new-project-actions">
+        <button type="button" id="auroraNewProjectCancel" class="aurora-new-project-cancel">Cancelar</button>
+        <button type="submit" id="auroraNewProjectSubmit" class="aurora-new-project-submit">Criar projeto <span>↗</span></button>
+      </div>
+    </form>
+  </dialog>
   <script src="JavaScript/aurora-storage-onboarding.js"></script>
   <script src="JavaScript/home.js"></script>
   <script src="JavaScript/auth.js"></script>
