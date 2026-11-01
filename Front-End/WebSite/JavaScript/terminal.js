@@ -227,7 +227,7 @@ function attach(session,stage){
   else if(data==="\u001b[A"||data==="\u001b[B"){const up=data==="\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\r\x1b[2K");prompt(session);term.write(input);}
   else if(data==="\t"){term.write("  ");input+="  ";}
   else if(data>=" "&&data!=="\u007f"){input+=data;term.write(data);}
- });;;
+ });
  const observer=new ResizeObserver(()=>{try{fit.fit();}catch(_){}});observer.observe(host);session.dispose=()=>{observer.disconnect();term.dispose();};requestAnimationFrame(()=>{try{fit.fit();}catch(_){}term.focus();prompt(session);});
 }
 function renderOutput(){const s=current(),stage=rootElement?.querySelector("[data-terminal-stage]");if(!s||!stage)return;const pre=el("pre","aurora-terminal-output",s.output||"Nenhuma saída nesta sessão.");pre.dataset.terminalOutput="";stage.replaceChildren(pre);pre.scrollTop=pre.scrollHeight;}
