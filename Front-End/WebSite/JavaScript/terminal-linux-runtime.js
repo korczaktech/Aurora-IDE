@@ -88,8 +88,15 @@ class AuroraLinuxRuntime {
       await this.startPromise;
       return this;
     } catch (error) {
-      this.state = "error";
-      this.callbacks.onError?.(error);
+      if (error?.name === "AbortError") {
+        this.state = "idle";
+      } else {
+        const emulator = this.emulator;
+        this.emulator = null;
+        try { await Promise.resolve(emulator?.stop?.()); } catch (_) {}
+        this.state = "error";
+        this.callbacks.onError?.(error);
+      }
       throw error;
     } finally {
       this.startPromise = null;
@@ -130,9 +137,11 @@ class AuroraLinuxRuntime {
         if (settled) return;
         settled = true;
         clearTimeout(timeout);
+        this.finishBoot = null;
         if (error) reject(error);
         else resolve();
       };
+      this.finishBoot = finish;
       const timeout = setTimeout(() => finish(new Error("O emulador Linux não ficou pronto dentro do tempo esperado.")), this.config.startupTimeoutMs);
       emulator.add_listener("emulator-ready", () => {
         this.state = "running";
@@ -153,13 +162,14 @@ class AuroraLinuxRuntime {
   }
 
   async stop() {
-    if (!this.emulator) {
+    this.state = "stopping";
+    this.finishBoot?.(Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" }));
+    const emulator = this.emulator;
+    this.emulator = null;
+    if (!emulator) {
       this.state = "idle";
       return;
     }
-    this.state = "stopping";
-    const emulator = this.emulator;
-    this.emulator = null;
     try {
       await Promise.resolve(emulator.stop?.());
       this.decoder = new TextDecoder("utf-8");
