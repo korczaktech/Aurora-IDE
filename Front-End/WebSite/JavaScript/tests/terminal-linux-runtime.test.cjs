@@ -34,7 +34,8 @@ test("runtime rejeita memória fora dos limites", () => {
 });
 
 test("runtime rejeita URLs inseguras ou inválidas", () => {
-  assert.throws(() => normalizeConfig({ imageUrl: "javascript:alert(1)" }), /HTTP ou HTTPS/);
+  assert.throws(() => normalizeConfig({ imageUrl: "javascript:alert(1)" }), /HTTPS/);
+  assert.throws(() => normalizeConfig({ imageUrl: "http://example.com/linux.iso" }), /HTTPS/);
   assert.throws(() => normalizeConfig({ wasmUrl: "não-é-url" }), /URL inválida/);
 });
 
