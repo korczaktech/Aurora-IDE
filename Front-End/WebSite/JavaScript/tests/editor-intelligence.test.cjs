@@ -227,8 +227,8 @@ test("rejects unsafe project paths while allowing nested source paths", () => {
   assert.equal(api.validSegment("component.tsx"), true);
   assert.equal(api.validSegment("../escape"), false);
   assert.equal(api.validSegment("folder/file.js"), false);
-  assert.equal(api.validSegment("bad\name.js"), false);
-  assert.equal(api.validRelativePath("src\App.js"), false);
+  assert.equal(api.validSegment("bad\\name.js"), false);
+  assert.equal(api.validRelativePath("src\\App.js"), false);
   assert.equal(api.validRelativePath("assets/icons/logo.svg"), true);
   assert.equal(api.validRelativePath("../outside.txt"), false);
   assert.equal(api.validRelativePath("/absolute/path.js"), false);
