@@ -240,6 +240,25 @@ async function run(session, command, args, options = {}) {
   if (command === "npm" && !rest.length) rest.push("--help");
   const cwd = state.projectPath + (options.cwd ? "/" + safePath(options.cwd) : "");
   const env = Object.fromEntries(Object.entries(options.environment || {}).map(([key, value]) => [key, String(value)]));
+  if (command === "esbuild") {
+    if (!rest[0]) throw new Error("Uso: esbuild entrada.ts --outfile=dist/saida.js [--format=esm|cjs|iife].");
+    const entry = safePath(rest[0]);
+    const outIndex = rest.findIndex(value => value.startsWith("--outfile="));
+    const separateOutIndex = rest.indexOf("--outfile");
+    const outfile = safePath(outIndex >= 0 ? rest[outIndex].slice("--outfile=".length) : separateOutIndex >= 0 ? rest[separateOutIndex + 1] || "" : "dist/" + entry.split("/").pop().replace(/\\.[^.]+$/, ".js"));
+    const formatArg = rest.find(value => value.startsWith("--format="));
+    const format = formatArg ? formatArg.slice("--format=".length) : "esm";
+    if (!["esm", "cjs", "iife"].includes(format)) throw new Error("Formato esbuild inválido.");
+    if (excluded(entry.split("/")[0]) || excluded(outfile.split("/")[0])) throw new Error("Build fora da pasta de trabalho recusado.");
+    const result = await state.runtime.bundle({
+      entry: state.projectPath + "/" + entry,
+      outfile: state.projectPath + "/" + outfile,
+      format,
+      projectRoot: state.projectPath
+    });
+    const sync = await syncToProject(state);
+    return { code: 0, output: "Build concluído: " + outfile + "\\n" + result.code.length + " caracteres gerados.", sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
+  }
   if (command === "npm" && ["install", "i", "add", "ci"].includes(rest[0])) {
     const specs = rest.slice(1).filter(value => !value.startsWith("-"));
     const saveDev = rest.some(value => value === "-D" || value === "--save-dev");
