@@ -190,7 +190,7 @@ test("supports actual directory access, nested traversal, persistence and filesy
     "showDirectoryPicker", "getDirectoryHandle", "getFileHandle", "entries()",
     "createWritable", "removeEntry", "moveEntry", "copyDirectory",
     "indexedDB.open", "requestPermission", "validRelativePath",
-    "function createProject", "function deleteProject", "function openProjectFolder", "function createFile",
+    "function createProject", "function createProjectOnDevice", "function deleteProject", "function openProjectFolder", "function createFile",
     "function createFolder", "function renameSelected", "function deleteSelected",
     "function flushWrites", "function renderEntries"
   ]) {
@@ -198,7 +198,6 @@ test("supports actual directory access, nested traversal, persistence and filesy
   }
   assert.match(projectManager, /setTimeout\(\(\) => \{/);
   assert.match(projectManager, /280\)/);
-  assert.match(projectManager, /ignoredDirectories/);
   assert.match(projectManager, /getDirectoryHandle\(cleanName, \{ create: true \}\)/);
   assert.match(projectManager, /projectParentHandle\.removeEntry\(currentProjectName, \{ recursive: true \}\)/);
   assert.match(projectManager, /Excluir permanentemente o projeto/);
@@ -250,4 +249,22 @@ test("project refresh keeps tabs and selection state available", () => {
   assert.match(html, /codeSelections\.set\(activeCodeFile/);
   assert.match(projectManager, /editor\.replaceProject\(files, currentProjectName, active, open, true\)/);
   assert.match(projectManager, /previousOpen\.filter/);
+});
+
+
+test("offers device storage while keeping Korczak Vault unavailable", () => {
+  assert.match(html, /id="projectStorageDialog"/);
+  assert.match(html, /id="projectStorageDevice"/);
+  assert.match(html, /id="projectStorageVault"[^>]*disabled/);
+  assert.match(html, /Korczak Vault/);
+  assert.match(html, /Dispositivo/);
+  assert.match(projectManager, /function createProject\(\)/);
+  assert.match(projectManager, /createProjectOnDevice\(\)/);
+  assert.match(css, /\.project-storage-dialog/);
+});
+
+test("file tree includes all folders from the selected directory", () => {
+  assert.doesNotMatch(projectManager, /ignoredDirectories/);
+  assert.match(projectManager, /for await \(const \[name, child\] of handle\.entries\(\)\)/);
+  assert.match(projectManager, /appendChildren\(entry\.path, depth \+ 1, childContainer\)/);
 });
