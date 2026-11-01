@@ -63,6 +63,7 @@
 
   function kindForFile(filename) {
     const name = String(filename || "").split(/[\\/]/).pop().toLowerCase();
+    if (/\\.(native|android|ios)\\.(tsx|jsx|js|ts)$/i.test(name)) return "reactNative";
     if (name === "dockerfile" || name.startsWith("dockerfile.")) return "docker";
     if (name === "makefile" || name === "justfile") return "shell";
     if (name === "readme" || name.startsWith("readme.")) return "markdown";
