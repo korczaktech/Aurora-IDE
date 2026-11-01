@@ -141,7 +141,7 @@ async function runCommand(session,raw){
  const command=(tokens.shift()||"").toLowerCase(),args=tokens,out=[],emit=x=>out.push(String(x)),path=x=>resolvePath(x,session.cwd);
  const need=(n,usage)=>{if(args.length<n)throw new Error("Uso: "+usage);};
  switch(command){
- case "help":case "ajuda":emit(["Comandos: pwd, ls [-a] [-l], cd, tree, mkdir [-p], touch, cat, echo, printf,","cp, mv, rm [-r], head, tail, wc, grep, find, clear, date, whoami, uname, env, export, unset, memory,","js arquivo.js | js -e \"código\", python arquivo.py | python -c \"código\"","Tudo opera somente dentro da raiz do projeto aberto.","JavaScript roda em Web Worker sem APIs do Node.js; Python usa Pyodide/WebAssembly.","Python não monta automaticamente a pasta do projeto; npm, Cargo, Bash e processos nativos não estão disponíveis."].join("\n"));break;
+ case "help":case "ajuda":emit(["Comandos: pwd, ls [-a] [-l], cd, tree, mkdir [-p], touch, cat, echo, printf,","cp, mv, rm [-r], head, tail, wc, grep, find, download, clear, date, whoami, uname, env, export, unset, memory,","js arquivo.js | js -e \"código\", python arquivo.py | python -c \"código\"","download usa a rede/CORS do navegador e grava no projeto autorizado.","Tudo opera somente dentro da raiz do projeto aberto.","JavaScript roda em Web Worker sem APIs do Node.js; Python usa Pyodide/WebAssembly.","Python não monta automaticamente a pasta do projeto; npm, Cargo, Bash e processos nativos não estão disponíveis."].join("\n"));break;
  case "pwd":emit("/"+session.cwd);break;
  case "whoami":emit("aurora-user");break;
  case "uname":emit("Aurora Browser Runtime");break;
