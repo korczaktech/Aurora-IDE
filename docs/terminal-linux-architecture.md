@@ -12,16 +12,16 @@ Executar um ambiente Linux emulado dentro da aba do navegador. O usuário acessa
 4. **v86** emula uma máquina x86 no navegador, usando JavaScript e WebAssembly.
 5. **Imagem Linux** é carregada como recurso estático; não há servidor de execução de comandos.
 
-O runtime é carregado sob demanda, somente quando o usuário seleciona **Iniciar Linux**. A barra permite reiniciar, sincronizar ou encerrar a máquina virtual. O terminal local já existente permanece disponível e não é substituído. Apenas uma máquina Linux pode ficar ativa por vez para limitar o consumo de RAM; as sessões do terminal local continuam independentes.
+The runtime is loaded on demand when the user selects **Iniciar Linux**. The toolbar can restart, synchronize, or stop the virtual machine. The existing local terminal remains available and is not replaced. Only one Linux VM can be active at a time to limit RAM usage; local terminal sessions remain independent.
 
 ## Recursos fixados
 
 - v86: versão npm `0.5.473`.
-- Biblioteca, WebAssembly e BIOS: recursos públicos do projeto v86, baixados durante o deploy e publicados como arquivos estáticos no domínio do Aurora. O kernel Buildroot é carregado por HTTPS do espelho público `alizafarbati/WebLinux` no GitHub Raw, que mantém uma cópia do exemplo de boot do v86. A origem upstream é `copy.sh`/`i.copy.sh`; o navegador não depende do host que respondeu HTTP 403 no teste de CI.
+- Biblioteca, WebAssembly e BIOS: recursos públicos do projeto v86, baixados durante o deploy e publicados como arquivos estáticos no domínio do Aurora. The Buildroot kernel is loaded over HTTPS from the public `alizafarbati/WebLinux` mirror on GitHub Raw, pinned to commit `9be9b5f435281dc7d78467131dbc1b77e10a8198` and Git blob SHA-1 `39cc8e6542faefa33717eafaffad96200aa39de1`. The upstream source is `copy.sh`/`i.copy.sh`; the browser does not depend on the host that returned HTTP 403 in CI. Before boot, the runtime verifies the Git blob hash over the downloaded bytes.
 - Memória padrão: 128 MiB para a máquina virtual e 8 MiB para vídeo.
 - Limites configuráveis: 64–512 MiB de RAM, 1–16 MiB de vídeo e timeout de inicialização entre 10 e 180 segundos.
 
-O bootstrap usa o kernel Buildroot publicado para o exemplo serial oficial do v86 e o shell BusyBox. O filesystem 9p é preenchido com uma cópia do projeto autorizado antes do boot; depois do prompt, o guest monta esse filesystem em `/workspace`. O shell Linux opera sobre essa árvore real, não sobre comandos simulados do terminal JavaScript.
+The bootstrap uses the Buildroot kernel published for the official v86 serial example and its BusyBox shell. The 9p filesystem is populated with a copy of the authorized project before boot; after the shell prompt appears, the guest mounts it at `/workspace`. Linux shell commands operate on this real filesystem tree, not on simulated JavaScript terminal commands.
 
 ## Integração com projetos
 
@@ -35,11 +35,11 @@ O bootstrap usa o kernel Buildroot publicado para o exemplo serial oficial do v8
 
 ## Ferramentas e rede
 
-O sistema convidado atual é um Linux mínimo com os applets BusyBox que acompanham a imagem. Não contém um gerenciador de pacotes, Node.js, npm, Git, Rust/Cargo ou GCC. A emulação v86 atual não oferece extensões x86-64 nem múltiplos núcleos; não se deve instalar ou anunciar toolchains incompatíveis com esse alvo. O terminal local do Aurora mantém os executores JavaScript em Worker e Python via Pyodide, mas eles são runtimes WebAssembly separados, não binários instalados dentro do Linux.
+The current guest is a minimal Linux system with the BusyBox applets included in the image. It does not include a package manager, Node.js, npm, Git, Rust/Cargo, or GCC. Current v86 emulation does not provide x86-64 extensions or multiple CPU cores; toolchains incompatible with that target must not be installed or advertised. Aurora local terminal retains JavaScript execution in a Worker and Python via Pyodide, but these are separate WebAssembly runtimes, not binaries installed inside Linux.
 
-A rede do guest não está habilitada. O navegador do usuário continua tendo sua própria rede, mas isso não equivale a conectividade TCP/IP dentro do Linux; comandos `wget`, `curl`, `git clone` e gerenciadores de pacotes no guest não são suportados nesta configuração. Downloads de pacotes dentro do guest ainda não fazem parte do runtime.
+Guest networking is not enabled. The browser still has its own network access, but that does not provide TCP/IP connectivity inside Linux; `wget`, `curl`, `git clone`, and guest package managers are not supported in this configuration. Package downloads inside the guest are not part of the runtime.
 
-Os arquivos do projeto permanecem no dispositivo por meio da File System Access API após a sincronização. O estado integral da máquina virtual, memória RAM do guest e pacotes instalados não são persistidos entre inicializações.
+Project files remain on the device through the File System Access API after synchronization. Full virtual machine state, guest RAM, and installed packages are not persisted between starts.
 
 ## Limites conhecidos
 
