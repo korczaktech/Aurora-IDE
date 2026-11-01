@@ -418,8 +418,10 @@ jobs:
                     });
                     document.body.dataset.nodeSmoke = nodeResult.code === 0 && nodeResult.output.includes("AURORA_NODE_READY:function") ? "passed" : "failed: " + nodeResult.output + " (exit " + nodeResult.code + ")";
                     if (nodeResult.code === 0) {
+                      let installTrace = "";
                       const installResult = await window.AuroraNodeRuntime.run(nodeSession, "npm", ["install", "typescript@5.8.3"], {
-                        rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
+                        rootHandle: window.smokeProjectHandle, cwd: "", environment: {}, debug: true,
+                        onOutput: chunk => { installTrace += chunk; }
                       });
                       if (installResult.code === 0) {
                         const inspectResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["node-inspect.js"], {
@@ -430,7 +432,7 @@ jobs:
                         });
                         let compiled = "";
                         try { compiled = await (await (await window.smokeProjectHandle.getDirectoryHandle("dist")).getFileHandle("node-smoke.js")).getFile().then(file => file.text()); } catch (_) {}
-                        document.body.dataset.npmSmoke = compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: install=" + installResult.code + " installOutput=" + installResult.output + " inspect=" + inspectResult.output + " compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
+                        document.body.dataset.npmSmoke = compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: trace=" + installTrace + " install=" + installResult.code + " installOutput=" + installResult.output + " inspect=" + inspectResult.output + " compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
                       } else {
                         document.body.dataset.npmSmoke = "failed: npm install exit " + installResult.code + " " + installResult.output;
                       }
