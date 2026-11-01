@@ -5,7 +5,7 @@ const vm = require("node:vm");
 const path = require("node:path");
 const { createHash, webcrypto } = require("node:crypto");
 const testKernel = new Uint8Array(8);
-const testKernelHash = createHash("sha1").update(Buffer.concat([Buffer.from("blob 8\\0"), Buffer.from(testKernel)])).digest("hex");
+const testKernelHash = createHash("sha1").update(Buffer.concat([Buffer.from("blob 8\0"), Buffer.from(testKernel)])).digest("hex");
 
 const source = fs.readFileSync(path.join(__dirname, "..", "terminal-linux-runtime.js"), "utf8");
 const windowMock = {};
@@ -20,7 +20,7 @@ const { DEFAULT_CONFIG, normalizeConfig } = windowMock.AuroraLinuxRuntimeInterna
 
 test("runtime usa versão v86 fixa e recursos HTTPS", () => {
   assert.equal(DEFAULT_CONFIG.version, "0.5.473");
-  assert.match(DEFAULT_CONFIG.kernelUrl, /9be9b5f435281dc7d78467131dbc1b77e10a8198\\/images\\/buildroot-bzimage68\\.bin$/);
+  assert.match(DEFAULT_CONFIG.kernelUrl, /9be9b5f435281dc7d78467131dbc1b77e10a8198\/images\/buildroot-bzimage68\.bin$/);
   assert.equal(DEFAULT_CONFIG.kernelGitBlobSha, "39cc8e6542faefa33717eafaffad96200aa39de1");
   assert.match(DEFAULT_CONFIG.scriptUrl, /aurora\.korczaktech\.com\.br\/runtime\/linux\/v86\/libv86\.js$/);
   for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "kernelUrl"]) {
