@@ -289,14 +289,14 @@
       throw new Error("Permissão de leitura e gravação não concedida para esta pasta.");
     }
     await flushWrites();
+    setStatus("Lendo estrutura do projeto…");
+    const entries = await readDirectory(handle);
     rootHandle = handle;
     currentProjectName = handle.name;
     expanded.clear();
     expanded.add("");
     selectedPath = "";
     selectedKind = "directory";
-    setStatus("Lendo estrutura do projeto…");
-    const entries = await readDirectory(handle);
     const files = await collectTextFiles(entries);
     const firstFile = Object.keys(files).sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }))[0] || "";
     editor.replaceProject(files, currentProjectName, firstFile);
@@ -525,6 +525,7 @@
       updateSelectionLabel();
     });
     window.addEventListener("aurora:editor-change", saveEditorChange);
+    window.addEventListener("pagehide", () => { flushWrites().catch(error => showError(error, "Salvar ao sair")); });
   }
 
   async function restoreLastProject() {
