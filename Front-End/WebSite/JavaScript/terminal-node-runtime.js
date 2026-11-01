@@ -269,14 +269,20 @@ async function run(session, command, args, options = {}) {
     }
     const originalExtractTar = state.runtime.extractTar;
     state.runtime.extractTar = undefined;
+    let installTimer;
+    const installPromise = state.runtime.install(specs, cwd, {
+      saveDev,
+      onLog: line => {
+        logs.push(line);
+        options.onOutput?.(line + "\n");
+      }
+    });
+    installPromise.catch(() => {});
     try {
-      await state.runtime.install(specs, cwd, {
-        saveDev,
-        onLog: line => {
-          logs.push(line);
-          options.onOutput?.(line + "\n");
-        }
-      });
+      await Promise.race([
+        installPromise,
+        new Promise((_, reject) => { installTimer = setTimeout(() => reject(new Error("npm install excedeu 60 segundos; verifique a conexão com registry.npmjs.org.")), 60000); })
+      ]);
       const sync = await syncToProject(state);
       if (options.debug) {
         const names = await state.runtime.fs.readdir(cwd + "/node_modules").catch(() => []);
@@ -287,9 +293,15 @@ async function run(session, command, args, options = {}) {
       }
       return { code: 0, output: logs.join("\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
     } catch (error) {
+      if (String(error?.message || error).includes("excedeu 60 segundos")) {
+        try { state.runtime.teardown(); } catch (_) {}
+        activeStates.delete(state);
+        session.nodeRuntime = null;
+      }
       await syncToProject(state).catch(() => null);
       throw new Error("npm install: " + (error?.message || String(error)) + (logs.length ? "\n" + logs.join("\n") : ""));
     } finally {
+      clearTimeout(installTimer);
       state.runtime.extractTar = originalExtractTar;
     }
   }
