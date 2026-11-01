@@ -10,6 +10,7 @@ on:
       - "Front-End/WebSite/JavaScript/syntax-highlighting.js"
       - "Front-End/WebSite/JavaScript/editor-intelligence.js"
       - "Front-End/WebSite/JavaScript/editor-typing.js"
+      - "Front-End/WebSite/JavaScript/file-icons.js"
       - "Front-End/WebSite/JavaScript/tests/**"
       - "Front-End/WebSite/JavaScript/editor-controls.js"
       - "Front-End/WebSite/JavaScript/tests/**"
@@ -37,6 +38,7 @@ jobs:
           node --check Front-End/WebSite/JavaScript/syntax-highlighting.js
           node --check Front-End/WebSite/JavaScript/editor-intelligence.js
           node --check Front-End/WebSite/JavaScript/editor-typing.js
+          node --check Front-End/WebSite/JavaScript/file-icons.js
           node --check Front-End/WebSite/JavaScript/editor-controls.js
 
       - name: Run editor tests
