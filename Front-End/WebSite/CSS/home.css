@@ -941,3 +941,6 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .property-enter-eds:hover{border-color:#a3d3ad;background:rgba(55,94,62,.85)}
 .property-enter-eds span{color:#a6d7b0;font-size:13px}
 @media(max-width:650px){.property-toolbar-actions{width:100%;justify-content:space-between}}
+
+.aurora-project-picker-status{min-height:16px;margin:12px 0 8px;color:#a9c7b0;font:10px 'DM Mono',monospace;line-height:1.6}
+.aurora-picker-configure:disabled{opacity:.55;cursor:wait}
