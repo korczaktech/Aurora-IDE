@@ -175,7 +175,7 @@ test("integrates a real local project manager with folder and file operations", 
     assert.ok(html.includes('id="' + control + '"'), "missing project manager control: " + control);
   }
   assert.match(html, /project-manager\.js/);
-  assert.match(html, /replaceProject\(files, projectName, activeName\)/);
+  assert.match(html, /replaceProject\(files, projectName, activeName, openNames = \[\], preserveState = false\)/);
   assert.match(html, /addFile\(name, content/);
   assert.match(html, /renameFile\(oldName, newName\)/);
   assert.match(html, /deleteFile\(name\)/);
