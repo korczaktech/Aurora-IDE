@@ -70,6 +70,8 @@ class AuroraLinuxRuntime {
     this.decoder = new TextDecoder("utf-8");
     this.callbacks = {};
     this.startPromise = null;
+    this.cancelRequested = false;
+    this.finishBoot = null;
   }
 
   async start(callbacks = {}) {
@@ -81,6 +83,7 @@ class AuroraLinuxRuntime {
     }
 
     this.callbacks = callbacks;
+    this.cancelRequested = false;
     this.state = "starting";
     this.callbacks.onStatus?.("Carregando o emulador Linux…");
     this.startPromise = this._boot();
@@ -105,6 +108,7 @@ class AuroraLinuxRuntime {
 
   async _boot() {
     await loadV86(this.config.scriptUrl);
+    if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
     const Starter = window.V86Starter || window.V86;
     if (typeof Starter !== "function") throw new Error("A API do emulador v86 não está disponível.");
 
@@ -144,8 +148,9 @@ class AuroraLinuxRuntime {
       this.finishBoot = finish;
       const timeout = setTimeout(() => finish(new Error("O emulador Linux não ficou pronto dentro do tempo esperado.")), this.config.startupTimeoutMs);
       emulator.add_listener("emulator-ready", () => {
+        if (settled) return;
         this.state = "running";
-        this.callbacks.onStatus?.("Linux inicializado · aguardando o console serial");
+        this.callbacks.onStatus?.("Emulador iniciado · aguardando o console serial");
         finish();
       });
       emulator.add_listener("emulator-error", error => finish(new Error(String(error || "Falha interna do emulador v86."))));
@@ -162,6 +167,7 @@ class AuroraLinuxRuntime {
   }
 
   async stop() {
+    this.cancelRequested = true;
     this.state = "stopping";
     this.finishBoot?.(Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" }));
     const emulator = this.emulator;
