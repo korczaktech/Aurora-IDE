@@ -161,6 +161,41 @@
     replace(start, end, key + selected + pairs[key], start + 1 + selected.length);
   }
 
+  const htmlVoidElements = new Set([
+    "area", "base", "br", "col", "embed", "hr", "img", "input",
+    "link", "meta", "param", "source", "track", "wbr"
+  ]);
+  let insertingHtmlCloser = false;
+
+  function autoCloseHtmlTag(event) {
+    if (language() !== "html" || insertingHtmlCloser) return;
+    if (event.inputType !== "insertText" || event.data !== ">") return;
+
+    const caret = textarea.selectionStart;
+    if (caret !== textarea.selectionEnd || caret < 3) return;
+
+    const before = textarea.value.slice(0, caret);
+    const openingTag = before.match(/<([a-z][\\w:-]*)(?:\\s[^<>]*)?>$/i);
+    if (!openingTag) return;
+
+    const tagName = openingTag[1];
+    if (htmlVoidElements.has(tagName.toLowerCase())) return;
+    if (/\\/\\s*>$/.test(openingTag[0])) return;
+
+    const after = textarea.value.slice(caret);
+    const closingPattern = new RegExp("^\\\\s*</" + tagName + "\\\\s*>", "i");
+    if (closingPattern.test(after)) return;
+
+    const closingTag = "</" + tagName + ">";
+    insertingHtmlCloser = true;
+    textarea.setRangeText(closingTag, caret, caret, "end");
+    textarea.setSelectionRange(caret, caret);
+    emitInput();
+    insertingHtmlCloser = false;
+  }
+
+  textarea.addEventListener("input", autoCloseHtmlTag);
+
   textarea.addEventListener("keydown", event => {
     if (event.isComposing || event.defaultPrevented) return;
     if (event.key === "Tab") {
