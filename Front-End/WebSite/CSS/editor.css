@@ -970,3 +970,8 @@ body {
   opacity: .8;
   -webkit-text-fill-color: #718581;
 }
+
+.project-toolbar button:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
