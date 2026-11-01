@@ -45,7 +45,7 @@ test("provides a readable language label", () => {
   const api = loadHighlighter();
   assert.equal(api.labelFor("main.rs"), "RUST");
   assert.equal(api.labelFor("index.html"), "HTML / XML");
-  assert.equal(api.labelFor("unknown.bin"), "TEXTO");
+  assert.equal(api.labelFor("unknown.bin"), "TEXTO");\n  assert.equal(api.labelFor("Dockerfile"), "DOCKERFILE");\n  assert.equal(api.labelFor("Makefile"), "MAKEFILE");
 });
 
 test("escapes source safely when no grammar engine is available", () => {
