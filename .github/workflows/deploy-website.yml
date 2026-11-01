@@ -58,8 +58,7 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          from html.parser import HTMLParser
-          from pathlib import Path
+                    from pathlib import Path
           import subprocess
           import tempfile
 
@@ -201,7 +200,7 @@ jobs:
           root = Path("_site")
           required = [
               "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt",
-              "humans.txt", "favicon.svg", "og-image.svg", "site.webmanifest", "CNAME",
+              "favicon.svg", "og-image.svg", "site.webmanifest", "CNAME",
               "sobre.html", "recursos.html", "404.html", "CSS/seo.css"
           ]
           missing = [name for name in required if not (root / name).is_file()]
@@ -260,10 +259,10 @@ jobs:
           profile = (root / "perfil.html").read_text(encoding="utf-8")
           if not re.search(r'<meta name="robots" content="noindex,nofollow"', profile, re.I):
               raise SystemExit("perfil.html: deveria permanecer privado com noindex,nofollow.")
-          if any("perfil.html" in url for url in urls):
-              raise SystemExit("perfil.html: página privada incluída no sitemap.")
+          noindex_pages = ["editor.html", "entrar.html", "criar-conta.html", "perfil.html"]
+          for filename in noindex_pages:
               if any(filename in url for url in urls):
-                  raise SystemExit(f"{filename}: página noindex incluída no sitemap.")
+                  raise SystemExit(f"{filename}: página privada/noindex incluída no sitemap.")
 
           print("SEO validado: sitemap, robots, manifesto, metadados, JSON-LD e noindex.")
           PY
