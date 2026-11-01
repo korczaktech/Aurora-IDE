@@ -1,0 +1,15 @@
+const test=require("node:test");
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const vm=require("node:vm");
+const path=require("node:path");
+const source=fs.readFileSync(path.join(__dirname,"..","terminal.js"),"utf8");
+const windowMock={};
+vm.runInNewContext(source,{window:windowMock,document:{},console,URL,Blob,Worker:function(){}});
+const {tokenize,resolvePath}=windowMock.AuroraTerminalInternals;
+test("tokenizer mantém argumentos entre aspas",()=>assert.deepEqual(Array.from(tokenize('echo "olá mundo" \'arquivo com espaço.txt\'')),["echo","olá mundo","arquivo com espaço.txt"]));
+test("tokenizer reconhece redirecionamento",()=>assert.deepEqual(Array.from(tokenize("echo olá >> saida.txt")),["echo","olá",">>","saida.txt"]));
+test("tokenizer rejeita aspas não fechadas",()=>assert.throws(()=>tokenize('echo "sem fechar'),/Aspas não foram fechadas/));
+test("caminhos relativos e absolutos permanecem no projeto",()=>{assert.equal(resolvePath("src/main.js","src"),"src/src/main.js");assert.equal(resolvePath("../README.md","src/lib"),"src/README.md");assert.equal(resolvePath("/package.json","src"),"package.json");});
+test("caminhos não escapam da raiz",()=>{assert.throws(()=>resolvePath("../../segredo","src"),/fora da raiz/);assert.throws(()=>resolvePath("/../../segredo",""),/fora da raiz/);});
+test("caminhos inválidos são recusados",()=>{assert.throws(()=>resolvePath("src\\\\arquivo.js",""),/Caminho inválido/);assert.throws(()=>resolvePath("src/arquivo?.js",""),/Caminho inválido/);});
