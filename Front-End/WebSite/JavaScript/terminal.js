@@ -88,7 +88,7 @@ async function toggleLinux(session=current()){
    projectHandle:window.AuroraProjectManager?.rootHandle,
    flushProject:()=>window.AuroraProjectManager?.flush?.(),
    refreshProject:()=>window.AuroraProjectManager?.refresh?.({force:true}),
-   onProjectPrepared:result=>{print(session,"Projeto preparado no Linux: "+result.fileCount+" arquivo(s), "+Math.round(result.totalBytes/1024)+" KiB.");if(result.skipped.length)print(session,"\\x1b[33mAviso: "+result.skipped.length+" item(ns) ficaram fora do ambiente por limites de tamanho ou quantidade.\\x1b[0m");},
+   onProjectPrepared:result=>status("Projeto preparado no Linux · "+result.fileCount+" arquivo(s) · "+Math.round(result.totalBytes/1024)+" KiB"+(result.skipped.length?" · "+result.skipped.length+" item(ns) ignorados":"")),
    onStatus:status
   });
  }catch(error){
