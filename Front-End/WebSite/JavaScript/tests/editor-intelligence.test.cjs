@@ -147,7 +147,8 @@ test("provides individually drawn SVG identities for major languages and framewo
   };
   for (const [filename, expected] of Object.entries(examples)) {
     assert.equal(api.kindForFile(filename), expected, filename);
-    assert.match(api.svgForFile(filename), /<svg[\\s\\S]*<path|<svg[\\s\\S]*<circle/);
+    const svg = api.svgForFile(filename);
+    assert.ok(svg.includes("<svg") && (svg.includes("<path") || svg.includes("<circle")), filename + " must render SVG artwork");
   }
   const uniqueDrawings = new Set(Object.keys(examples).map(filename => api.svgForFile(filename)));
   assert.ok(uniqueDrawings.size >= 15, "language SVG drawings should be distinct");
