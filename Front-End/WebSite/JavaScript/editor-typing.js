@@ -167,6 +167,27 @@
   ]);
   let insertingHtmlCloser = false;
 
+  function hasExistingHtmlCloser(tagName, sourceAfterCaret) {
+    const tokenPattern = new RegExp("<\\\\s*(/?)\\\\s*" + tagName + "\\\\b([^>]*)>", "gi");
+    let nestedOpenTags = 0;
+    let token;
+
+    while ((token = tokenPattern.exec(sourceAfterCaret))) {
+      const isClosing = Boolean(token[1]);
+      const attributes = token[2] || "";
+      const isSelfClosing = /\/\s*$/.test(attributes);
+
+      if (isClosing) {
+        if (nestedOpenTags === 0) return true;
+        nestedOpenTags -= 1;
+      } else if (!isSelfClosing) {
+        nestedOpenTags += 1;
+      }
+    }
+
+    return false;
+  }
+
   function autoCloseHtmlTag(event) {
     if (language() !== "html" || insertingHtmlCloser) return;
     if (event.inputType !== "insertText" || event.data !== ">") return;
@@ -183,15 +204,17 @@
     if (/\/\s*>$/.test(openingTag[0])) return;
 
     const after = textarea.value.slice(caret);
-    const closingPattern = new RegExp("^\\s*</" + tagName + "\\s*>", "i");
-    if (closingPattern.test(after)) return;
+    if (hasExistingHtmlCloser(tagName, after)) return;
 
     const closingTag = "</" + tagName + ">";
     insertingHtmlCloser = true;
-    textarea.setRangeText(closingTag, caret, caret, "end");
-    textarea.setSelectionRange(caret, caret);
-    emitInput();
-    insertingHtmlCloser = false;
+    try {
+      textarea.setRangeText(closingTag, caret, caret, "end");
+      textarea.setSelectionRange(caret, caret);
+      emitInput();
+    } finally {
+      insertingHtmlCloser = false;
+    }
   }
 
   textarea.addEventListener("input", autoCloseHtmlTag);
