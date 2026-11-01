@@ -56,7 +56,37 @@
       const output = [];
       try {
         const result = await window.AuroraPythonRuntime.run({}, [
+          "from dataclasses import dataclass",
+          "from pathlib import Path",
+          "import asyncio, json, sqlite3, ssl, lzma",
+          "import numpy as np",
+          "def decorate(fn):",
+          "    def wrapped(*args, **kwargs): return fn(*args, **kwargs)",
+          "    return wrapped",
+          "@decorate",
+          "def square(value): return value * value",
+          "@dataclass",
+          "class Sample:",
+          "    value: int",
+          "def generated():",
+          "    yield from (1, 2, 3)",
+          "async def async_value(): return 42",
+          "assert square(6) == 36",
+          "assert list(generated()) == [1, 2, 3]",
+          "assert Sample(7).value == 7",
+          "assert await async_value() == 42",
+          "assert np.array([1, 2, 3]).sum() == 6",
+          "db = sqlite3.connect(':memory:')",
+          "db.execute('create table sample (value integer)')",
+          "db.execute('insert into sample values (42)')",
+          "assert db.execute('select value from sample').fetchone()[0] == 42",
+          "assert ssl.OPENSSL_VERSION",
+          "assert lzma.decompress(lzma.compress(b'aurora')) == b'aurora'",
+          "assert json.loads(json.dumps({'ok': True}))['ok'] is True",
+          "assert Path('/workspace').exists()",
           "print('AURORA_PYTHON_READY')",
+          "print('AURORA_LANGUAGE_FEATURES_OK')",
+          "print('AURORA_NUMPY_OK')",
           "with open('python-smoke.txt', 'w') as file:",
           "    file.write('AURORA_FILE_SYNC_OK')"
         ].join("\n"), {
@@ -66,7 +96,7 @@
         const file = await (await root.getFileHandle("python-smoke.txt")).getFile();
         const contents = await file.text();
         const printed = output.join("");
-        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
+        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
         document.body.dataset.pythonSmoke = passed ? "passed" : "failed";
         document.getElementById("result").textContent = passed
           ? "Python execution and project file synchronization passed."
