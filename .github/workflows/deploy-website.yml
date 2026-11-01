@@ -454,7 +454,7 @@ jobs:
                     window.AuroraNodeRuntime.dispose(nodeSession);
                     const pythonSession = { worker: null, cancelExecution: null };
                     let pythonOutput = "";
-                    const pythonCode = "with open('README.md') as f:\\n    print('AURORA_PYTHON_READ:' + f.read().strip())\\nwith open('python-smoke.txt', 'w') as f:\\n    f.write('AURORA_PYTHON_READY')";
+                    const pythonCode = "with open('README.md') as f:\n    print('AURORA_PYTHON_READ:' + f.read().strip())\nwith open('python-smoke.txt', 'w') as f:\n    f.write('AURORA_PYTHON_READY')";
                     const pythonResult = await window.AuroraPythonRuntime.run(pythonSession, pythonCode, {
                       rootHandle: window.smokeProjectHandle, cwd: "",
                       onOutput: chunk => { pythonOutput += chunk; }
