@@ -168,7 +168,7 @@
   let insertingHtmlCloser = false;
 
   function hasExistingHtmlCloser(tagName, sourceAfterCaret) {
-    const tokenPattern = new RegExp("<\\\\s*(/?)\\\\s*" + tagName + "\\\\b([^>]*)>", "gi");
+    const tokenPattern = new RegExp("<\\s*(/?)\\s*" + tagName + "\\b([^>]*)>", "gi");
     let nestedOpenTags = 0;
     let token;
 
