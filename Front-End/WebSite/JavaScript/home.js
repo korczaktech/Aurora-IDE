@@ -44,10 +44,9 @@
   try { projects = JSON.parse(storageGet("aurora-projects", "[]")); } catch (_) { projects = []; }
   if (!Array.isArray(projects)) projects = [];
   projects = projects.filter(project => project && typeof project === "object");
-  if (!projects.length) projects = [{ ...defaultProject }];
-  let selectedProjectId = projects[0]?.id || defaultProject.id;
+  let selectedProjectId = projects[0]?.id || "";
   const persistProjects = () => storageSet("aurora-projects", JSON.stringify(projects));
-  const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || defaultProject;
+  const selectedProject = () => projects.find(project => project.id === selectedProjectId) || projects[0] || null;
   const renderProjectSidebar = () => {
     if (!projectsSidebar) return;
     const list = projectsSidebar.querySelector("#projects-sidebar-list");
@@ -59,14 +58,14 @@
     const list = document.getElementById("project-list");
     const count = document.getElementById("project-count");
     if (count) count.textContent = `${String(projects.length).padStart(2, "0")} ${projects.length === 1 ? "PROJETO" : "PROJETOS"}`;
-    if (list) list.innerHTML = projects.map((project, index) => `<div class="project-line" data-open-project data-project-id="${escapeHTML(project.id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(project.name)}"><span class="project-line-index">${String(index + 1).padStart(2, "0")}</span><div class="project-line-main"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.description || "Projeto criado nesta estação")}</small></div><span class="project-line-state"><i></i>${project.id === "aurora-playground" ? "Ativo" : "Novo"}</span><span class="project-line-arrow">↗</span></div>`).join("");
+    if (list) list.innerHTML = projects.length ? projects.map((project, index) => `<div class="project-line" data-open-project data-project-id="${escapeHTML(project.id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(project.name)}"><span class="project-line-index">${String(index + 1).padStart(2, "0")}</span><div class="project-line-main"><strong>${escapeHTML(project.name)}</strong><small>${escapeHTML(project.description || "Projeto criado nesta estação")}</small></div><span class="project-line-state"><i></i>${project.id === "aurora-playground" ? "Ativo" : "Novo"}</span><span class="project-line-arrow">↗</span><button class="project-line-delete" type="button" data-delete-project="${escapeHTML(project.id)}" aria-label="Excluir projeto ${escapeHTML(project.name)}" title="Excluir projeto">Excluir</button></div>`).join("") : '<div class="projects-empty"><strong>Nenhum projeto por aqui</strong><p>Crie um projeto para começar a desenvolver.</p></div>';
   };
   persistProjects();
   const pages = {
     inicio:{title:"Início",eyebrow:"Sua estação de desenvolvimento",lead:"Um espaço para criar, explorar e transformar possibilidades em projetos.",render:()=>homeMarkup},
     projetos:{title:"Projetos",eyebrow:"ESPAÇO DE CRIAÇÃO",lead:"Cada ideia começa em algum lugar. Reúna seus experimentos e acompanhe o que está construindo.",render:()=>[
       '<div class="project-command"><div><span class="micro-label">ÁREA DE TRABALHO</span><strong>Seus projetos</strong></div><button class="action-primary" data-action="new-project">＋ Novo projeto</button></div>',
-      '<section class="project-feature" data-open-project data-project-id="aurora-playground" role="button" tabindex="0" aria-label="Abrir propriedades do Aurora Playground"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">PROJETO EM DESTAQUE</span><h2>Aurora Playground</h2><p>Ambiente experimental para explorar recursos e possibilidades da estação.</p><div class="project-progress"><span style="width:32%"></span></div><div class="project-progress-meta"><span>Progresso do projeto</span><strong>32%</strong></div></div><div class="project-feature-status"><i></i> EM DESENVOLVIMENTO</div></section>',
+      projects.length ? `<section class="project-feature" data-open-project data-project-id="${escapeHTML(projects[0].id)}" role="button" tabindex="0" aria-label="Abrir propriedades de ${escapeHTML(projects[0].name)}"><div class="project-symbol">⌘</div><div class="project-feature-copy"><span class="micro-label">PROJETO EM DESTAQUE</span><h2>${escapeHTML(projects[0].name)}</h2><p>${escapeHTML(projects[0].description || "Projeto criado nesta estação.")}</p><div class="project-progress"><span style="width:0%"></span></div><div class="project-progress-meta"><span>Projeto local</span><strong>—</strong></div></div><div class="project-feature-status"><i></i> ${escapeHTML(projects[0].kind || "PROJETO")}</div><button class="project-feature-delete" type="button" data-delete-project="${escapeHTML(projects[0].id)}">Excluir projeto</button></section>` : '<div class="projects-empty projects-empty-feature"><strong>Nenhum projeto criado</strong><p>Use “Novo projeto” para adicionar seu primeiro projeto.</p></div>',
       '<div class="section-heading"><span>SEUS PROJETOS</span><span id="project-count"></span></div><div class="project-table" id="project-list"></div><div class="quiet-hint">Projetos salvos neste navegador ficam disponíveis neste dispositivo. A sincronização entre dispositivos será integrada futuramente.</div>'
     ].join("")},
     propriedades:{title:"Aurora Playground",eyebrow:"PROPRIEDADES DO PROJETO",lead:"Informações, composição técnica, estrutura e preferências visuais do projeto.",render:()=>[
@@ -255,7 +254,7 @@
     if (projectsSidebar) projectsSidebar.hidden = key !== "inicio";
     document.title = "Aurora EDS — " + page.title;
     if (getSetting("local")) storageSet("aurora-last-page", key);
-    if (key === "propriedades") {
+    if (key === "propriedades" && selectedProject()) {
       const project = selectedProject();
       const title = main.querySelector(".page-title");
       const identityTitle = main.querySelector(".property-identity-copy h2");
@@ -334,8 +333,24 @@
       setVisibility(folderId, collapse);
       return;
     }
+    const deleteProjectButton = event.target.closest("[data-delete-project]");
+    if (deleteProjectButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      const project = projects.find(item => item.id === deleteProjectButton.dataset.deleteProject);
+      if (!project) return;
+      if (!window.confirm("Excluir permanentemente o projeto “" + project.name + "” desta lista? Esta ação não pode ser desfeita.")) return;
+      projects = projects.filter(item => item.id !== project.id);
+      if (selectedProjectId === project.id) selectedProjectId = projects[0]?.id || "";
+      persistProjects();
+      renderProjectList();
+      renderProjectSidebar();
+      recordActivity("Projeto excluído: " + project.name, "O projeto foi removido da lista local do Aurora.", "PROJETO");
+      notify("Projeto excluído da lista.");
+      return;
+    }
     const projectTrigger = event.target.closest("[data-open-project], .project-entry");
-    if (projectTrigger) { selectedProjectId = projectTrigger.dataset.projectId || "aurora-playground"; showPage("propriedades"); return; }
+    if (projectTrigger) { selectedProjectId = projectTrigger.dataset.projectId || ""; showPage("propriedades"); return; }
     if (event.target.closest("[data-back-projects]")) { showPage("projetos"); return; }
     if (event.target.closest("[data-save-project]")) {
       const name = document.getElementById("project-name")?.value.trim();
@@ -404,7 +419,7 @@
       event.target.click();
       return;
     }
-    if ((event.target.matches("[data-open-project]")) && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); showPage("propriedades"); }
+    if ((event.target.matches("[data-open-project]")) && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); selectedProjectId = event.target.dataset.projectId || ""; showPage("propriedades"); }
   });
   main.addEventListener("input", event => {
     if (event.target.id === "note-search") renderNotes();
