@@ -15,6 +15,7 @@ on:
       - "Front-End/WebSite/JavaScript/terminal.js"
       - "Front-End/WebSite/JavaScript/terminal-git.js"
       - "Front-End/WebSite/JavaScript/terminal-node-runtime.js"
+      - "Front-End/WebSite/JavaScript/terminal-python-runtime.js"
       - "Front-End/WebSite/JavaScript/terminal-linux-runtime.js"
       - "Front-End/WebSite/JavaScript/terminal-linux-project-bridge.js"
       - "Front-End/WebSite/JavaScript/tests/**"
@@ -48,6 +49,7 @@ jobs:
           node --check Front-End/WebSite/JavaScript/terminal.js
           node --check Front-End/WebSite/JavaScript/terminal-git.js
           node --check Front-End/WebSite/JavaScript/terminal-node-runtime.js
+          node --check Front-End/WebSite/JavaScript/terminal-python-runtime.js
           node --check Front-End/WebSite/JavaScript/terminal-linux-runtime.js
           node --check Front-End/WebSite/JavaScript/terminal-linux-project-bridge.js
           node --check Front-End/WebSite/JavaScript/editor-controls.js
