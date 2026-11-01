@@ -903,3 +903,10 @@ body.aurora-compact-ui .app-page .activity-event{padding-top:11px!important;padd
 .real-tree-row.is-folder>span:first-child{color:#a4c9a9}.real-tree-row small{color:#687b6e;font-size:9px}
 .real-project-identity{overflow-wrap:anywhere}
 @media(max-width:560px){.aurora-new-project-panel{padding:23px 20px}.real-language-legend{grid-template-columns:1fr 1fr}}
+
+
+.settings-storage-location{align-items:center}
+.settings-storage-actions{display:flex;align-items:center;gap:12px}
+.settings-storage-change{padding:9px 12px;border:1px solid rgba(139,199,160,.3);border-radius:6px;background:rgba(24,42,29,.5);color:#c8dfce;font:10px 'DM Mono',monospace;cursor:pointer;white-space:nowrap;transition:background .2s,border-color .2s}
+.settings-storage-change:hover{border-color:#91c69d;background:rgba(62,105,72,.25)}
+@media(max-width:600px){.settings-storage-location{align-items:flex-start;flex-direction:column;gap:12px}.settings-storage-actions{width:100%;justify-content:space-between}}
