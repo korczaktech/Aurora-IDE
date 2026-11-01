@@ -79,7 +79,7 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
   assert.equal(options.serial_console.type, "xtermjs");
   assert.equal(options.serial_console.container, consoleContainer);
   assert.equal(options.serial_console.xterm_lib.name, "Terminal");
-  assert.equal(options.bzimage.url, "https://i.copy.sh/buildroot-bzimage68.bin");
+  assert.equal(options.bzimage.url, "https://aurora.korczaktech.com.br/runtime/linux/kernel/buildroot-bzimage68.bin");
   assert.equal(options.bzimage.async, false);
   assert.deepEqual(Object.keys(options.filesystem), []);
   assert.equal(options.cmdline, "tsc=reliable mitigations=off random.trust_cpu=on");
