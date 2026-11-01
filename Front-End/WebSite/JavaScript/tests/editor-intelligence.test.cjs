@@ -22,8 +22,8 @@ test("loads cursor, selection and autocomplete after the editor API exists", () 
 
 test("keeps caret, selection direction and scroll position per open file", () => {
   assert.match(html, /const codeSelections = new Map\(\)/);
-  assert.match(html, /selectionStart: codeInput\.selectionStart/);
-  assert.match(html, /selectionEnd: codeInput\.selectionEnd/);
+  assert.match(html, /start: codeInput\.selectionStart/);
+  assert.match(html, /end: codeInput\.selectionEnd/);
   assert.match(html, /direction: codeInput\.selectionDirection/);
   assert.match(html, /codeInput\.scrollTop = savedSelection\.scrollTop/);
   assert.match(html, /codeInput\.scrollLeft = savedSelection\.scrollLeft/);
