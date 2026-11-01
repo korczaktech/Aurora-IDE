@@ -175,6 +175,13 @@ class AuroraLinuxRuntime {
     });
   }
 
+  restart() {
+    if (!this.emulator || this.state !== "running") throw new Error("O terminal Linux não está em execução.");
+    if (typeof this.emulator.restart !== "function") throw new Error("Esta versão do emulador não oferece reinicialização.");
+    this.emulator.restart();
+    this.callbacks.onStatus?.("Reiniciando o ambiente Linux…");
+  }
+
   async stop() {
     this.cancelRequested = true;
     this.state = "stopping";
