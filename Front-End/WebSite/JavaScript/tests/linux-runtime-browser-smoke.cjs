@@ -20,7 +20,7 @@ const { chromium } = require("playwright");
     await page.keyboard.press("Enter");
     await page.waitForFunction(() => {
       const output = document.querySelector("#terminal .xterm-rows")?.innerText || "";
-      return output.includes("AURORA_LINUX_READY");
+      return output.includes("AURORA_LINUX_READY") && (output.match(/~% /g) || []).length >= 2;
     }, null, { timeout: 30000 });
 
     if (pageErrors.length) throw new Error("Erros JavaScript no navegador: " + pageErrors.join(" | "));
