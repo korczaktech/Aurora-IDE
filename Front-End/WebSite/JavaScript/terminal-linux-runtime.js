@@ -7,7 +7,7 @@ const DEFAULT_CONFIG = Object.freeze({
   wasmUrl: "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm",
   biosUrl: "https://copy.sh/v86/bios/seabios.bin",
   vgaBiosUrl: "https://copy.sh/v86/bios/vgabios.bin",
-  imageUrl: "https://i.copy.sh/linux.iso",
+  kernelUrl: "https://i.copy.sh/buildroot-bzimage68.bin",
   memorySize: 128 * 1024 * 1024,
   vgaMemorySize: 8 * 1024 * 1024,
   startupTimeoutMs: 90000
@@ -17,7 +17,7 @@ let scriptPromise = null;
 
 function normalizeConfig(input = {}) {
   const config = { ...DEFAULT_CONFIG, ...input };
-  for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "imageUrl"]) {
+  for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "kernelUrl"]) {
     let url;
     try { url = new URL(config[key]); }
     catch (_) { throw new Error("URL inválida para o recurso Linux: " + key); }
@@ -121,8 +121,10 @@ class AuroraLinuxRuntime {
       vga_memory_size: this.config.vgaMemorySize,
       bios: { url: this.config.biosUrl },
       vga_bios: { url: this.config.vgaBiosUrl },
-      cdrom: { url: this.config.imageUrl },
-      cmdline: "console=ttyS0,115200",
+      bzimage: { url: this.config.kernelUrl, async: false },
+      filesystem: {},
+      cmdline: "tsc=reliable mitigations=off random.trust_cpu=on",
+      disable_keyboard: true,
       serial_console: {
         type: "xtermjs",
         container: this.callbacks.consoleContainer,
