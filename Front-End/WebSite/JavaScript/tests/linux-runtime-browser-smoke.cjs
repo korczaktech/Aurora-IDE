@@ -15,8 +15,7 @@ const { chromium } = require("playwright");
     const startupError = await page.locator("body").getAttribute("data-runtime-error");
     if (startupError) throw new Error("Falha no boot Linux: " + startupError);
 
-    const terminal = page.locator("#terminal .xterm-helper-textarea");
-    await terminal.click();
+    await page.locator("#terminal .xterm").click();
     await page.keyboard.type("echo AURORA_LINUX_READY");
     await page.keyboard.press("Enter");
     await page.waitForFunction(() => {
