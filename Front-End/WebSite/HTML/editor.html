@@ -377,7 +377,12 @@
         }
       }
       function openCodeFile(name) {
-        if (!(name in codeFiles)) return;
+        if (!Object.prototype.hasOwnProperty.call(codeFiles, name)) return;
+        if (activeCodeFile === name) {
+          openCodeFiles.add(name);
+          renderCodeTabs();
+          return;
+        }
         window.AuroraEditorIntelligence?.hideAutocomplete();
         if (activeCodeFile && activeCodeFile !== name) {
           codeSelections.set(activeCodeFile, {
