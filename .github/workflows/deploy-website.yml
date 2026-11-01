@@ -421,7 +421,7 @@ jobs:
                         rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
                       });
                       if (installResult.code === 0) {
-                        const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "npx", ["tsc", "--target", "es2020", "--outDir", "dist", "node-smoke.ts"], {
+                        const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "tsc", ["--target", "es2020", "--outDir", "dist", "node-smoke.ts"], {
                           rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
                         });
                         let compiled = "";
