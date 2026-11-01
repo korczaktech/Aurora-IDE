@@ -58,43 +58,27 @@
   <main class="editor-workspace" aria-label="Área de desenvolvimento">
     <aside class="file-sidebar" id="fileSidebar" aria-label="Explorador de arquivos">
       <div class="file-sidebar-heading">
-        <span>EXPLORADOR</span>
+        <span>GERENCIADOR DE PROJETOS</span>
         <button class="sidebar-action" id="collapseTree" type="button" aria-label="Recolher árvore" title="Recolher árvore">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5.5 8 10l5-4.5" /></svg>
         </button>
       </div>
-      <div class="project-tree">
-        <button class="tree-row tree-project" type="button" aria-expanded="true" data-tree-toggle="project">
-          <span class="tree-chevron" aria-hidden="true">⌄</span>
-          <span class="tree-folder-icon" aria-hidden="true"></span>
-          <span class="tree-label">Meu projeto</span>
-        </button>
-        <div class="tree-children" data-tree-children="project">
-          <button class="tree-row tree-folder" type="button" aria-expanded="true" data-tree-toggle="src">
-            <span class="tree-chevron" aria-hidden="true">⌄</span>
-            <span class="tree-folder-icon" aria-hidden="true"></span>
-            <span class="tree-label">src</span>
-          </button>
-          <div class="tree-children tree-nested" data-tree-children="src">
-            <button class="tree-row tree-file is-selected" type="button" data-tree-file="index.html">
-              <span class="tree-file-icon" data-file-icon="index.html" aria-hidden="true"></span><span class="tree-label">index.html</span>
-            </button>
-            <button class="tree-row tree-file" type="button" data-tree-file="style.css">
-              <span class="tree-file-icon" data-file-icon="style.css" aria-hidden="true"></span><span class="tree-label">style.css</span>
-            </button>
-            <button class="tree-row tree-file" type="button" data-tree-file="script.js">
-              <span class="tree-file-icon" data-file-icon="script.js" aria-hidden="true"></span><span class="tree-label">script.js</span>
-            </button>
-          </div>
-          <button class="tree-row tree-folder" type="button" aria-expanded="false" data-tree-toggle="assets">
-            <span class="tree-chevron" aria-hidden="true">›</span>
-            <span class="tree-folder-icon" aria-hidden="true"></span>
-            <span class="tree-label">assets</span>
-          </button>
-          <div class="tree-children tree-nested" data-tree-children="assets" hidden></div>
-        </div>
+      <div class="project-toolbar" aria-label="Ações do projeto">
+        <button type="button" id="createProject" title="Criar projeto">Novo projeto</button>
+        <button type="button" id="openProject" title="Abrir pasta">Abrir pasta</button>
       </div>
-      <div class="file-sidebar-footer"><span class="status-dot"></span> Arquivos do projeto</div>
+      <div class="project-toolbar project-item-toolbar" aria-label="Gerenciar arquivos e pastas">
+        <button type="button" id="newProjectFile" title="Criar arquivo">+ Arquivo</button>
+        <button type="button" id="newProjectFolder" title="Criar pasta">+ Pasta</button>
+        <button type="button" id="renameProjectItem" title="Renomear item">Renomear</button>
+        <button type="button" id="deleteProjectItem" title="Excluir item">Excluir</button>
+      </div>
+      <div class="project-tree" id="projectTree" role="tree" aria-label="Arquivos e diretórios do projeto"></div>
+      <div class="file-sidebar-footer" aria-live="polite">
+        <span class="status-dot"></span><span id="projectName">Nenhum projeto aberto</span>
+        <span id="projectStatus">Crie um projeto ou abra uma pasta.</span>
+        <span id="selectedProjectItem" class="visually-hidden">Raiz do projeto</span>
+      </div>
     </aside>
     <section class="editor-empty-area" aria-label="Editor de código">
       <div class="code-editor-shell">
@@ -489,7 +473,12 @@ startProject();`
         }
       });
       codeInput.addEventListener("input", () => {
-        if (activeCodeFile) codeFiles[activeCodeFile] = codeInput.value;
+        if (activeCodeFile) {
+          codeFiles[activeCodeFile] = codeInput.value;
+          window.dispatchEvent(new CustomEvent("aurora:editor-change", {
+            detail: { path: activeCodeFile, content: codeInput.value }
+          }));
+        }
         updateCodeSurface();
       });
       codeInput.addEventListener("scroll", syncCodeScroll, { passive: true });
@@ -545,6 +534,9 @@ startProject();`
         });
       });
 
+      const validEditorPath = name => typeof name === "string" && name.length > 0 &&
+        !name.startsWith("/") && !name.includes("\\\\") &&
+        name.split("/").every(part => part && part !== "." && part !== ".." && !/[<>:"|?*\\\\\\0]/.test(part));
       window.AuroraEditor = {
         get files() { return { ...codeFiles }; },
         get activeFile() { return activeCodeFile; },
@@ -552,11 +544,74 @@ startProject();`
         closeFile: closeCodeFile,
         get textarea() { return codeInput; },
         openFile: openCodeFile,
+        addFile(name, content = "") {
+          if (!validEditorPath(name) || Object.prototype.hasOwnProperty.call(codeFiles, name)) return false;
+          codeFiles[name] = String(content);
+          openCodeFile(name);
+          return true;
+        },
+        renameFile(oldName, newName) {
+          if (!validEditorPath(newName) || !Object.prototype.hasOwnProperty.call(codeFiles, oldName) ||
+              (oldName !== newName && Object.prototype.hasOwnProperty.call(codeFiles, newName))) return false;
+          const renamed = {};
+          Object.entries(codeFiles).forEach(([name, content]) => { renamed[name === oldName ? newName : name] = content; });
+          Object.keys(codeFiles).forEach(name => delete codeFiles[name]);
+          Object.assign(codeFiles, renamed);
+          if (openCodeFiles.has(oldName)) {
+            const next = new Set([...openCodeFiles].map(name => name === oldName ? newName : name));
+            openCodeFiles.clear();
+            next.forEach(name => openCodeFiles.add(name));
+          }
+          if (codeSelections.has(oldName)) {
+            codeSelections.set(newName, codeSelections.get(oldName));
+            codeSelections.delete(oldName);
+          }
+          if (activeCodeFile === oldName) {
+            activeCodeFile = newName;
+            document.getElementById("activeCodeFile").textContent = newName;
+            document.getElementById("codeFileStatus").textContent = newName;
+            const language = window.AuroraSyntaxHighlight ? window.AuroraSyntaxHighlight.labelFor(newName) : "TEXT";
+            document.getElementById("activeLanguage").textContent = language;
+            document.getElementById("codeLanguageStatus").textContent = language;
+            renderCodeTabs();
+            updateCodeSurface();
+          } else renderCodeTabs();
+          return true;
+        },
+        deleteFile(name) {
+          if (!Object.prototype.hasOwnProperty.call(codeFiles, name)) return false;
+          delete codeFiles[name];
+          codeSelections.delete(name);
+          if (openCodeFiles.has(name)) closeCodeFile(name);
+          return true;
+        },
+        replaceProject(files, projectName, activeName) {
+          Object.keys(codeFiles).forEach(name => delete codeFiles[name]);
+          Object.entries(files || {}).forEach(([name, content]) => {
+            if (typeof content === "string" && validEditorPath(name)) codeFiles[name] = content;
+          });
+          openCodeFiles.clear();
+          codeSelections.clear();
+          activeCodeFile = "";
+          if (activeName && Object.prototype.hasOwnProperty.call(codeFiles, activeName)) openCodeFile(activeName);
+          else {
+            codeInput.value = "";
+            codeInput.setSelectionRange(0, 0);
+            renderCodeTabs();
+            updateCodeSurface();
+            document.getElementById("activeCodeFile").textContent = "Nenhum arquivo aberto";
+            document.getElementById("activeLanguage").textContent = "—";
+            document.getElementById("codeLanguageStatus").textContent = "—";
+          }
+          const projectLabel = document.querySelector(".editor-breadcrumb > span:first-child");
+          if (projectLabel) projectLabel.textContent = projectName || "Projeto";
+        },
         setFiles(files, activeName) {
           Object.entries(files || {}).forEach(([name, content]) => {
-            if (typeof content === "string" && /^[\w.-]+$/.test(name)) codeFiles[name] = content;
+            if (typeof content === "string" && validEditorPath(name)) codeFiles[name] = content;
           });
-          openCodeFile(activeName && codeFiles[activeName] ? activeName : activeCodeFile);
+          const target = activeName && Object.prototype.hasOwnProperty.call(codeFiles, activeName) ? activeName : activeCodeFile;
+          if (target) openCodeFile(target);
         }
       };
 
@@ -573,5 +628,6 @@ startProject();`
   <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
   <script src="../JavaScript/terminal.js"></script>
+  <script src="../JavaScript/project-manager.js"></script>
 </body>
 </html>
