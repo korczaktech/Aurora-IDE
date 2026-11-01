@@ -10,6 +10,7 @@ const root = path.resolve(__dirname, "..");
 const html = fs.readFileSync(path.resolve(root, "..", "HTML", "editor.html"), "utf8");
 const css = fs.readFileSync(path.resolve(root, "..", "CSS", "editor.css"), "utf8");
 const intelligence = fs.readFileSync(path.join(root, "editor-intelligence.js"), "utf8");
+const typing = fs.readFileSync(path.join(root, "editor-typing.js"), "utf8");
 const controls = fs.readFileSync(path.join(root, "editor-controls.js"), "utf8");
 
 test("loads cursor, selection and autocomplete after the editor API exists", () => {
@@ -92,4 +93,20 @@ test("parses the editor page inline JavaScript", () => {
     .filter(source => source.includes("const codeInput"));
   assert.equal(scripts.length, 1, "expected one inline editor bootstrap script");
   assert.doesNotThrow(() => new vm.Script(scripts[0], { filename: "editor.html:inline-script" }));
+});
+
+
+test("loads automatic indentation and paired-character editing", () => {
+  assert.ok(html.indexOf("../JavaScript/editor-intelligence.js") < html.indexOf("../JavaScript/editor-typing.js"));
+  assert.match(html, /editor-typing\.js/);
+  for (const feature of ["handleEnter", "changeSelectionIndent", "shouldIncreaseIndent", "handleClosingBrace", "handlePair"]) {
+    assert.ok(typing.includes("function " + feature + "("), "missing " + feature);
+  }
+  for (const behavior of ["event.shiftKey", "matchingPair", "Backspace", "AuroraEditorTyping"]) {
+    assert.ok(typing.includes(behavior), "missing behavior " + behavior);
+  }
+});
+
+test("editor typing module parses as JavaScript", () => {
+  assert.doesNotThrow(() => new vm.Script(typing, { filename: "editor-typing.js" }));
 });
