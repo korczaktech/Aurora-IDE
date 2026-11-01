@@ -341,7 +341,7 @@
       if (!project) return;
       if (!window.confirm("Excluir permanentemente o projeto “" + project.name + "” desta lista? Esta ação não pode ser desfeita.")) return;
       notify("A exclusão de pastas físicas pode esperar; este controle não removerá arquivos do disco.");
-      return;\n      projects = projects.filter(item => item.id !== project.id);
+      return;
       if (selectedProjectId === project.id) selectedProjectId = projects[0]?.id || "";
       persistProjects();
       renderProjectList();
