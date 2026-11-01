@@ -93,7 +93,7 @@
           <div class="code-gutter" id="codeGutter" aria-hidden="true">1</div>
           <div class="code-input-wrap">
             <pre class="code-highlight" id="codeHighlight" aria-hidden="true"></pre>
-            <textarea class="code-input" id="codeInput" aria-label="Código-fonte" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
+            <textarea class="code-input" id="codeInput" disabled placeholder="Crie um projeto ou abra uma pasta para começar." aria-label="Código-fonte" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off"></textarea>
           </div>
         </div>
         <footer class="code-statusbar">
@@ -363,6 +363,7 @@
           } else {
             activeCodeFile = "";
             codeInput.value = "";
+            codeInput.disabled = true;
             codeInput.setSelectionRange(0, 0);
             document.getElementById("activeCodeFile").textContent = "Nenhum arquivo aberto";
             document.getElementById("activeLanguage").textContent = "—";
@@ -386,6 +387,7 @@
         }
         openCodeFiles.add(name);
         activeCodeFile = name;
+        codeInput.disabled = false;
         codeInput.value = codeFiles[name];
         const savedSelection = codeSelections.get(name);
         if (savedSelection) {
@@ -560,6 +562,7 @@
             renderCodeTabs();
           } else {
             codeInput.value = "";
+            codeInput.disabled = true;
             codeInput.setSelectionRange(0, 0);
             renderCodeTabs();
             updateCodeSurface();
