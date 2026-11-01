@@ -37,24 +37,28 @@ const current=()=>sessions.get(activeId)||null;
 function syncLinuxToggle(){
  const button=rootElement?.querySelector("[data-terminal-linux-toggle]");
  const restart=rootElement?.querySelector("[data-terminal-linux-restart]");
+ const sync=rootElement?.querySelector("[data-terminal-linux-sync]");
  const session=current();
  if(!button)return;
  const state=session?.linuxRuntime?.state;
  button.textContent=state==="starting"?"Iniciando Linux…":session?.linuxRuntime?"Desligar Linux":"Iniciar Linux";
  button.disabled=state==="starting"||state==="stopping";
  if(restart)restart.disabled=state!=="running";
+ if(sync)sync.disabled=state!=="running" || !session?.linuxRuntime;
 }
 function status(message){const n=rootElement?.querySelector("[data-terminal-status]");if(n)n.textContent=message;}
 function append(session,text){const value=String(text??"");if(!value)return;session.output=(session.output+value).slice(-OUTPUT_LIMIT);session.terminal?.write(value.replace(/\n/g,"\r\n"));if(view==="output"&&activeId===session.id)renderOutput();}
 const print=(session,text="")=>append(session,String(text)+"\n");
-function restartLinux(session=current()){
+async function restartLinux(session=current()){
  if(!session?.linuxRuntime)return;
- try{session.linuxRuntime.restart();}catch(error){print(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
+ try{await session.linuxRuntime.restart();}catch(error){print(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
+ syncLinuxToggle();
 }
 async function toggleLinux(session=current()){
  if(!session)return;
  if(session.linuxRuntime){
   const runtime=session.linuxRuntime;
+  try{const result=await runtime.syncProject();print(session,"Sincronização: "+result.written+" arquivo(s) atualizado(s), "+result.conflicts+" conflito(s).");}catch(error){print(session,"\\x1b[33mNão foi possível sincronizar antes de encerrar: "+(error?.message||String(error))+"\\x1b[0m");}
   try{await runtime.stop();}catch(error){print(session,"\\x1b[31m"+(error?.message||String(error))+"\\x1b[0m");}
   session.linuxRuntime=null;
   session.linuxHost=null;
@@ -209,9 +213,10 @@ function mount(container){
  const add=el("button","aurora-terminal-new","+ Novo terminal");add.type="button";add.onclick=createSession;
  const linuxToggle=el("button","aurora-terminal-new","Iniciar Linux");linuxToggle.type="button";linuxToggle.dataset.terminalLinuxToggle="";linuxToggle.title="Iniciar ou encerrar o ambiente Linux emulado no navegador";linuxToggle.onclick=()=>toggleLinux(current());
  const linuxRestart=el("button","aurora-terminal-new","Reiniciar");linuxRestart.type="button";linuxRestart.dataset.terminalLinuxRestart="";linuxRestart.title="Reiniciar o ambiente Linux ativo";linuxRestart.disabled=true;linuxRestart.onclick=()=>restartLinux(current());
+ const linuxSync=el("button","aurora-terminal-new","Sincronizar projeto");linuxSync.type="button";linuxSync.dataset.terminalLinuxSync="";linuxSync.title="Copiar alterações do Linux para o projeto autorizado";linuxSync.disabled=true;linuxSync.onclick=async()=>{const session=current();if(!session?.linuxRuntime)return;try{const result=await session.linuxRuntime.syncProject();print(session,"Sincronização concluída: "+result.written+" arquivo(s) atualizado(s), "+result.conflicts+" conflito(s), "+result.deletedInGuest+" exclusão(ões) preservada(s) no projeto.");}catch(error){print(session,"\\x1b[31mFalha na sincronização: "+(error?.message||String(error))+"\\x1b[0m");}};
  const picker=el("select","aurora-terminal-picker");picker.dataset.terminalPicker="";picker.setAttribute("aria-label","Terminais locais");
- const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=()=>{const s=current();if(!s)return;s.linuxRuntime?.stop().catch(()=>{});s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
- left.append(add,linuxToggle,linuxRestart,picker);right.append(close);toolbar.append(left,right);
+ const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=async()=>{const s=current();if(!s)return;if(s.linuxRuntime){try{await s.linuxRuntime.syncProject();}catch(error){print(s,"\\x1b[33mSincronização antes de fechar falhou: "+(error?.message||String(error))+"\\x1b[0m");}try{await s.linuxRuntime.stop();}catch(_){}}s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
+ left.append(add,linuxToggle,linuxRestart,linuxSync,picker);right.append(close);toolbar.append(left,right);
  const main=el("div","aurora-terminal-main"),rail=el("aside","aurora-terminal-sessions"),content=el("section","aurora-terminal-content"),tabs=el("div","aurora-terminal-tabs"),stage=el("div","aurora-terminal-stage"),footer=el("div","aurora-terminal-status","Preparando terminal local…");
  rail.dataset.terminalSessions="";tabs.dataset.terminalTabs="";stage.dataset.terminalStage="";footer.dataset.terminalStatus="";
  content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,footer);container.replaceChildren(shell);createSession();
