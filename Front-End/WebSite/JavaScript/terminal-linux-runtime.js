@@ -21,8 +21,8 @@ function normalizeConfig(input = {}) {
     let url;
     try { url = new URL(config[key]); }
     catch (_) { throw new Error("URL inválida para o recurso Linux: " + key); }
-    if (url.protocol !== "https:" && url.protocol !== "http:") {
-      throw new Error("O recurso Linux precisa usar HTTP ou HTTPS: " + key);
+    if (url.protocol !== "https:") {
+      throw new Error("O recurso Linux precisa usar HTTPS: " + key);
     }
     config[key] = url.href;
   }
@@ -158,7 +158,7 @@ class AuroraLinuxRuntime {
         this.callbacks.onStatus?.("Emulador iniciado · aguardando o console serial");
         finish();
       });
-      emulator.add_listener("emulator-error", error => finish(new Error(String(error || "Falha interna do emulador v86."))));
+      emulator.add_listener("download-error", error => finish(new Error("Falha ao baixar " + (error?.file_name || "um recurso do Linux") + ". Verifique a conexão e a disponibilidade do CDN.")));
     });
   }
 
