@@ -311,6 +311,7 @@
     renderEntries(entries);
     nameLabel.textContent = currentProjectName;
     selectedLabel.textContent = "Raiz do projeto";
+    updateActionAvailability();
     try {
       await persistRootHandle(handle);
     } catch (error) {
@@ -504,8 +505,17 @@
     updateSelectionLabel();
   }
 
+  function updateActionAvailability() {
+    const hasProject = Boolean(rootHandle);
+    document.getElementById("newProjectFile").disabled = !hasProject;
+    document.getElementById("newProjectFolder").disabled = !hasProject;
+    document.getElementById("renameProjectItem").disabled = !hasProject || !selectedPath;
+    document.getElementById("deleteProjectItem").disabled = !hasProject || !selectedPath;
+  }
+
   function updateSelectionLabel() {
     selectedLabel.textContent = selectedPath || "Raiz do projeto";
+    updateActionAvailability();
     tree.querySelectorAll("[data-project-path]").forEach(row => {
       row.classList.toggle("is-selected", row.dataset.projectPath === selectedPath);
     });
@@ -530,6 +540,7 @@
   }
 
   function bindActions() {
+    updateActionAvailability();
     document.getElementById("createProject").addEventListener("click", () => createProject().catch(error => handleActionError(error, "Criar projeto")));
     document.getElementById("openProject").addEventListener("click", () => openProjectFolder().catch(error => handleActionError(error, "Abrir pasta")));
     document.getElementById("newProjectFile").addEventListener("click", () => createFile().catch(error => handleActionError(error, "Criar arquivo")));
