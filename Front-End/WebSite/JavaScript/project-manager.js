@@ -19,7 +19,6 @@
   let selectedKind = "directory";
   let currentProjectName = "";
 
-  const ignoredDirectories = new Set([".git"]);
   const textExtensions = new Set([
     "txt","text","html","htm","xhtml","css","scss","sass","less","js","mjs","cjs","jsx","ts","tsx",
     "json","jsonc","json5","md","markdown","mdx","py","pyw","java","kt","kts","swift","go","rs",
@@ -151,7 +150,6 @@
     if (depth > 80) throw new Error("A estrutura de pastas excede o limite de profundidade.");
     const children = [];
     for await (const [name, child] of handle.entries()) {
-      if (child.kind === "directory" && ignoredDirectories.has(name)) continue;
       const childPath = path ? path + "/" + name : name;
       if (!validRelativePath(childPath)) continue;
       children.push({ name, path: childPath, kind: child.kind, handle: child });
@@ -335,7 +333,7 @@
     setStatus(entries.length + " itens • alterações salvas no dispositivo", "success");
   }
 
-  async function createProject() {
+  async function createProjectOnDevice() {
     const projectName = window.prompt("Nome do novo projeto:");
     if (projectName === null) return;
     const cleanName = projectName.trim();
@@ -355,6 +353,15 @@
     projectParentHandle = parent;
     await persistRootHandle(handle, parent);
     updateActionAvailability();
+  }
+
+  function createProject() {
+    const dialog = document.getElementById("projectStorageDialog");
+    if (!dialog || typeof dialog.showModal !== "function") {
+      window.alert("Não foi possível abrir a seleção do local de armazenamento neste navegador.");
+      return;
+    }
+    dialog.showModal();
   }
 
   async function deleteProject() {
@@ -590,7 +597,12 @@
 
   function bindActions() {
     updateActionAvailability();
-    document.getElementById("createProject").addEventListener("click", () => createProject().catch(error => handleActionError(error, "Criar projeto")));
+    document.getElementById("createProject").addEventListener("click", createProject);
+    document.getElementById("projectStorageDevice").addEventListener("click", () => {
+      document.getElementById("projectStorageDialog").close();
+      createProjectOnDevice().catch(error => handleActionError(error, "Criar projeto no dispositivo"));
+    });
+    document.getElementById("projectStorageCancel").addEventListener("click", () => document.getElementById("projectStorageDialog").close());
     document.getElementById("openProject").addEventListener("click", () => openProjectFolder().catch(error => handleActionError(error, "Abrir pasta")));
     document.getElementById("newProjectFile").addEventListener("click", () => createFile().catch(error => handleActionError(error, "Criar arquivo")));
     document.getElementById("newProjectFolder").addEventListener("click", () => createFolder().catch(error => handleActionError(error, "Criar pasta")));
