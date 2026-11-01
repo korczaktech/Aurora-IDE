@@ -79,7 +79,6 @@
       chooseButton.disabled = true;
       chooseButton.textContent = "Acesso a pastas indisponível";
       try { localStorage.setItem(PROMPT_SEEN_KEY, "true"); } catch (_) {}
-      if (!localStorage.getItem(PROMPT_SEEN_KEY + "-shown")) { dialog.showModal(); try { localStorage.setItem(PROMPT_SEEN_KEY + "-shown", "true"); } catch (_) {} }
       return;
     }
 
@@ -101,7 +100,7 @@
       setMessage("Vamos configurar o armazenamento local. Escolha uma pasta principal para criar .aurora.");
     }
 
-    if (!dialog.open) dialog.showModal();
+    // A configuração só é aberta após o usuário escolher Dispositivo.
   }
 
   async function chooseStorageLocation() {
