@@ -203,70 +203,86 @@ async function run(session, code, options = {}) {
   const snapshot = await scanProject(root);
   const cwd = safePath(options.cwd || "");
   if (cwd && !snapshot.directories.has(cwd)) throw new Error("Pasta atual não existe no projeto: " + cwd);
-  const files = [...snapshot.files].map(([path, bytes]) => ({ path, bytes: bytes.slice() }));
-  const transfer = files.map(item => item.bytes.buffer);
-  const blobUrl = URL.createObjectURL(new Blob([workerSource()], { type: "text/javascript" }));
-  let worker;
-  try { worker = new Worker(blobUrl, { type: "module" }); }
-  finally { URL.revokeObjectURL(blobUrl); }
-  session.worker = worker;
 
-  return new Promise((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      worker.terminate();
-      session.worker = null;
-      session.cancelExecution = null;
-      reject(new Error("Python excedeu o limite de 90 segundos."));
-    }, 90000);
-    let returnedFiles = null;
-    let output = "";
-    let settled = false;
-
-    const finish = async (success, error) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      worker.terminate();
-      session.worker = null;
-      session.cancelExecution = null;
-      let sync = { written: 0, deleted: 0, conflicts: 0 };
+  // Pyodide's stdin callback is synchronous. Run it on the window thread so
+  // input() can use the browser's native prompt without requiring COOP/COEP
+  // headers or SharedArrayBuffer support from the static host.
+  let py = null;
+  let output = "";
+  const emit = (type, value) => {
+    const chunk = String(value || "");
+    output += chunk;
+    options.onOutput?.(type === "err" ? "\x1b[31m" + chunk + "\x1b[0m" : chunk);
+  };
+  let returnedFiles = null;
+  let executionError = null;
+  try {
+    const module = await import(PYODIDE_MODULE);
+    py = await module.loadPyodide({
+      fullStdLib: true,
+      stdin: () => {
+        const value = window.prompt("Python input() — digite uma linha:");
+        return value === null ? null : value;
+      }
+    });
+    py.setStdout({ batched: text => emit("out", text) });
+    py.setStderr({ batched: text => emit("err", text) });
+    py.FS.mkdirTree("/workspace");
+    for (const [relative, bytes] of snapshot.files) {
+      const target = "/workspace/" + relative;
+      const slash = target.lastIndexOf("/");
+      if (slash > 0) py.FS.mkdirTree(target.slice(0, slash));
+      py.FS.writeFile(target, bytes);
+    }
+    const workingDirectory = cwd ? "/workspace/" + cwd : "/workspace";
+    py.FS.mkdirTree(workingDirectory);
+    py.FS.chdir(workingDirectory);
+    await py.loadPackagesFromImports(String(code));
+    await py.runPythonAsync(String(code));
+  } catch (error) {
+    executionError = error;
+  } finally {
+    if (py) {
       try {
-        if (returnedFiles) sync = await syncToProject(root, snapshot.files, returnedFiles);
-      } catch (syncError) {
-        if (!error) error = syncError;
-        success = false;
+        const files = [];
+        let total = 0;
+        const walk = (directory, prefix, depth) => {
+          if (depth > 18) throw new Error("Workspace Python excede 18 níveis.");
+          for (const name of py.FS.readdir(directory)) {
+            if (name === "." || name === ".." || name === ".git" || name === ".aurora" ||
+                name === "node_modules" || name === "__pycache__" || name.endsWith(".pyc")) continue;
+            const absolute = directory.endsWith("/") ? directory + name : directory + "/" + name;
+            const relative = prefix ? prefix + "/" + name : name;
+            const stat = py.FS.stat(absolute);
+            if (py.FS.isDir(stat.mode)) walk(absolute, relative, depth + 1);
+            else if (py.FS.isFile(stat.mode)) {
+              const bytes = py.FS.readFile(absolute);
+              if (bytes.byteLength > MAX_FILE_BYTES) throw new Error("Arquivo Python acima de 2 MiB: " + relative);
+              total += bytes.byteLength;
+              if (total > MAX_TOTAL_BYTES || files.length >= MAX_FILES) throw new Error("Workspace Python excedeu os limites de sincronização.");
+              files.push({ path: relative, bytes });
+            }
+          }
+        };
+        walk("/workspace", "", 0);
+        returnedFiles = files;
+      } catch (error) {
+        if (!executionError) executionError = error;
       }
-      if (error) reject(new Error((error?.message || String(error)) + (sync.conflicts ? " (" + sync.conflicts + " conflito(s) preservado(s))" : "")));
-      else resolve({ code: success ? 0 : 1, output, sync });
-    };
+    }
+  }
 
-    session.cancelExecution = () => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timeout);
-      worker.terminate();
-      session.worker = null;
-      session.cancelExecution = null;
-      resolve({ code: 130, output, sync: { written: 0, deleted: 0, conflicts: 0 } });
-    };
-
-    worker.onmessage = event => {
-      const data = event.data || {};
-      if (data.type === "out" || data.type === "err") {
-        const chunk = String(data.text || "");
-        output += chunk;
-        options.onOutput?.(data.type === "err" ? "\x1b[31m" + chunk + "\x1b[0m" : chunk);
-      } else if (data.type === "files") {
-        returnedFiles = data.files || [];
-      } else if (data.type === "done") {
-        finish(true, null);
-      } else if (data.type === "fail") {
-        finish(false, new Error(data.error || "Falha na execução Python."));
-      }
-    };
-    worker.onerror = event => finish(false, new Error(event.message || "Falha no Worker Python."));
-    worker.postMessage({ code: String(code), cwd, files }, transfer);
-  });
+  let sync = { written: 0, deleted: 0, conflicts: 0 };
+  try {
+    if (returnedFiles) sync = await syncToProject(root, snapshot.files, returnedFiles);
+  } catch (error) {
+    if (!executionError) executionError = error;
+  }
+  if (executionError) {
+    const message = executionError?.stack || executionError?.message || String(executionError);
+    throw new Error(message + (sync.conflicts ? " (" + sync.conflicts + " conflito(s) preservado(s))" : ""));
+  }
+  return { code: 0, output, sync };
 }
 
 window.AuroraPythonRuntime = Object.freeze({ run });
