@@ -248,14 +248,14 @@ async function run(session, command, args, options = {}) {
         saveDev,
         onLog: line => {
           logs.push(line);
-          options.onOutput?.(line + "\\n");
+          options.onOutput?.(line + "\n");
         }
       });
       const sync = await syncToProject(state);
-      return { code: 0, output: logs.join("\\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
+      return { code: 0, output: logs.join("\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
     } catch (error) {
       await syncToProject(state).catch(() => null);
-      throw new Error("npm install: " + (error?.message || String(error)) + (logs.length ? "\\n" + logs.join("\\n") : ""));
+      throw new Error("npm install: " + (error?.message || String(error)) + (logs.length ? "\n" + logs.join("\n") : ""));
     }
   }
   let process;
