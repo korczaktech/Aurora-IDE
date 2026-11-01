@@ -33,9 +33,51 @@
     return;
   }
 
-  document.getElementById("developButton")?.addEventListener("click", event => {
-    event.preventDefault();
-    window.location.href = "editor.html";
+  let createProjectForEditor = false;
+  const editorUrlFor = project => "editor.html?project=" + encodeURIComponent(project.name);
+  const openProjectInEditor = project => {
+    if (!project?.name) return;
+    window.location.href = editorUrlFor(project);
+  };
+  const projectPicker = document.getElementById("auroraProjectPicker");
+  const renderProjectPicker = () => {
+    const list = document.getElementById("auroraProjectPickerList");
+    const configure = document.getElementById("auroraPickerConfigure");
+    const create = document.getElementById("auroraPickerCreate");
+    if (!list) return;
+    const ready = Boolean(auroraStorageHandle && auroraProjectsHandle);
+    if (configure) configure.hidden = ready;
+    if (create) create.disabled = !ready;
+    list.innerHTML = projects.length
+      ? projects.map(project => '<button type="button" class="aurora-project-picker-item" data-picker-project="' + escapeHTML(project.id) + '"><span class="aurora-picker-folder">▰</span><span><strong>' + escapeHTML(project.name) + '</strong><small>' + escapeHTML(project.id) + ' · ' + (project.entryCount ? project.entryCount + ' itens' : 'Projeto vazio') + '</small></span><span class="aurora-picker-arrow">↗</span></button>').join("")
+      : '<div class="aurora-picker-empty"><strong>Nenhum projeto encontrado.</strong><span>Configure o armazenamento ou crie seu primeiro projeto.</span></div>';
+  };
+  const openProjectPicker = async () => {
+    if (!projectPicker) return;
+    try { await loadRealProjects(); } catch (_) {}
+    renderProjectPicker();
+    projectPicker.showModal();
+  };
+  document.getElementById("developButton")?.addEventListener("click", openProjectPicker);
+  document.getElementById("auroraPickerCancel")?.addEventListener("click", () => projectPicker?.close());
+  document.getElementById("auroraPickerCreate")?.addEventListener("click", () => {
+    if (!auroraStorageHandle || !auroraProjectsHandle) {
+      notify("Configure primeiro o armazenamento .aurora.");
+      return;
+    }
+    createProjectForEditor = true;
+    projectPicker?.close();
+    openNewProjectDialog();
+  });
+  document.getElementById("auroraPickerConfigure")?.addEventListener("click", () => {
+    projectPicker?.close();
+    window.dispatchEvent(new CustomEvent("aurora:change-storage-location"));
+  });
+  document.getElementById("auroraProjectPickerList")?.addEventListener("click", event => {
+    const item = event.target.closest("[data-picker-project]");
+    if (!item) return;
+    const project = projects.find(entry => entry.id === item.dataset.pickerProject);
+    if (project) openProjectInEditor(project);
   });
 
   const homeMarkup = main.innerHTML;
@@ -56,7 +98,7 @@
   const scanProjectDirectory = async(handle,prefix="",entries=[])=>{for await(const [name,child] of handle.entries()){const path=prefix?prefix+"/"+name:name;if(child.kind==="directory"){entries.push({name,path,kind:"directory"});await scanProjectDirectory(child,path,entries);}else{const file=await child.getFile();entries.push({name,path,kind:"file",size:file.size,lastModified:file.lastModified});}}return entries;};
   const languageFor = name=>{const ext=name.split(".").pop().toLowerCase();const map={js:"JavaScript",mjs:"JavaScript",cjs:"JavaScript",jsx:"JavaScript",ts:"TypeScript",tsx:"TypeScript",html:"HTML",htm:"HTML",css:"CSS",scss:"SCSS",sass:"Sass",rs:"Rust",py:"Python",java:"Java",kt:"Kotlin",go:"Go",php:"PHP",rb:"Ruby",sql:"SQL",json:"JSON",yaml:"YAML",yml:"YAML",md:"Markdown",sh:"Shell",c:"C",cpp:"C++",cs:"C#",swift:"Swift",vue:"Vue",svelte:"Svelte"};return map[ext]||null;};
   const loadRealProjects = async()=>{try{auroraStorageHandle=await readAuroraHandle();if(!auroraStorageHandle)return;let permission=await auroraStorageHandle.queryPermission({mode:"readwrite"});if(permission!=="granted")return;auroraProjectsHandle=await auroraStorageHandle.getDirectoryHandle("projects");const config=await auroraStorageHandle.getDirectoryHandle("config",{create:true});const index=await readProjectIndex(config);const actual=[];for await(const [name,handle] of auroraProjectsHandle.entries()){if(handle.kind!=="directory")continue;const id=index[name]?.id||("AUR-"+crypto.randomUUID().replace(/-/g,"").slice(0,12).toUpperCase());const entries=await scanProjectDirectory(handle);const last=entries.reduce((n,item)=>Math.max(n,item.lastModified||0),0);const modifiedAt=last?new Date(last).toISOString():(index[name]?.modifiedAt||null);if(!index[name])index[name]={id,createdAt:null,modifiedAt};actual.push({id,name,description:"",kind:"PROJETO",createdAt:index[name].createdAt||null,modifiedAt,entryCount:entries.length,handle,entries});}await writeProjectIndex(config,index);projects=actual;if(!projects.some(x=>x.id===selectedProjectId))selectedProjectId=projects[0]?.id||"";renderProjectSidebar();if(document.getElementById("project-list"))renderProjectList();}catch(error){console.warn("[Aurora] Falha ao ler projetos reais:",error);}};
-  const renderRealProperties = async project=>{const host=document.getElementById("real-project-properties");if(!host||!project)return;const pageTitle=main.querySelector(".page-title");if(pageTitle)pageTitle.textContent=project.name;document.title="Aurora EDS — "+project.name;host.innerHTML='<div class="real-project-loading">Lendo arquivos do projeto…</div>';try{const handle=project.handle||await auroraProjectsHandle.getDirectoryHandle(project.name);const entries=await scanProjectDirectory(handle);const files=entries.filter(x=>x.kind==="file");const counts={};let totalBytes=0;files.forEach(file=>{totalBytes+=file.size||0;const lang=languageFor(file.name);if(lang)counts[lang]=(counts[lang]||0)+(file.size||1);});const total=Object.values(counts).reduce((a,b)=>a+b,0);const langs=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,size])=>({name,pct:total?size/total*100:0}));const config=await auroraStorageHandle.getDirectoryHandle("config",{create:true});const index=await readProjectIndex(config);const meta=index[project.name]||{};const bar=langs.length?langs.map(x=>'<i style="width:'+x.pct+'%" title="'+escapeHTML(x.name)+'"></i>').join(""):"";const legend=langs.length?langs.map(x=>'<div><span>'+escapeHTML(x.name)+'</span><strong>'+x.pct.toFixed(1)+'%</strong></div>').join(""):'<p class="real-project-muted">A composição será formada conforme os arquivos forem adicionados.</p>';const tech=langs.length?langs.map(x=>'<span class="real-tech-chip">'+escapeHTML(x.name)+'</span>').join(""):'<span class="real-project-muted">Nenhuma tecnologia identificada ainda.</span>';const tree=entries.length?entries.map(x=>'<div class="real-tree-row '+(x.kind==="directory"?"is-folder":"is-file")+'" style="--depth:'+x.path.split("/").length+'"><span>'+(x.kind==="directory"?"▰":"·")+'</span><span>'+escapeHTML(x.path)+'</span><small>'+(x.kind==="file"?formatBytes(x.size):"PASTA")+'</small></div>').join(""):'<div class="real-project-empty"><strong>Vazio...</strong><p>Que tal começar seu projeto?</p></div>';host.innerHTML='<div class="property-toolbar"><button class="property-back" type="button" data-back-projects>← Voltar para projetos</button><span class="property-status"><i></i> PROJETO LOCAL</span></div><section class="property-identity"><div class="property-project-mark">⌘</div><div class="property-identity-copy"><span class="micro-label">PROJETO · '+escapeHTML(project.id)+'</span><h2>'+escapeHTML(project.name)+'</h2><p>Informações obtidas diretamente da pasta do projeto.</p></div><span class="property-kind">LOCAL</span></section><section class="property-section"><div class="section-heading"><span>IDENTIFICAÇÃO</span><span>DADOS REAIS</span></div><div class="property-fields"><div class="property-field"><span>AID · Aurora Identificator</span><strong class="property-mono">'+escapeHTML(project.id)+'</strong></div><div class="property-field"><span>Data de criação</span><strong>'+dateLabel(meta.createdAt||project.createdAt)+'</strong></div><div class="property-field"><span>Última modificação</span><strong>'+dateLabel(project.modifiedAt||meta.modifiedAt)+'</strong></div><div class="property-field"><span>Arquivos e pastas</span><strong>'+entries.length+' itens · '+formatBytes(totalBytes)+'</strong></div></div></section><section class="property-section"><div class="section-heading"><span>COMPOSIÇÃO DO PROJETO</span><span>'+(langs.length?"POR TAMANHO DE ARQUIVO":"SEM ARQUIVOS")+'</span></div><div class="language-bar real-language-bar '+(!langs.length?"is-empty":"")+'">'+bar+'</div><div class="language-legend real-language-legend">'+legend+'</div></section><section class="property-section"><div class="section-heading"><span>TECNOLOGIAS UTILIZADAS</span><span>DETECTADAS NOS ARQUIVOS</span></div><div class="technology-list real-technology-list">'+tech+'</div></section><section class="property-section"><div class="section-heading"><span>ESTRUTURA DO PROJETO</span><span>'+entries.length+' ITENS</span></div><div class="file-explorer"><div class="file-explorer-head"><span>⌘ &nbsp; '+escapeHTML(project.name.toUpperCase())+'</span><span>DISCO LOCAL</span></div><div class="file-tree real-file-tree">'+tree+'</div></div></section>';}catch(error){host.innerHTML='<div class="real-project-empty"><strong>Não foi possível ler o projeto.</strong><p>'+escapeHTML(error.message||String(error))+'</p></div>';}};
+  const renderRealProperties = async project=>{const host=document.getElementById("real-project-properties");if(!host||!project)return;const pageTitle=main.querySelector(".page-title");if(pageTitle)pageTitle.textContent=project.name;document.title="Aurora EDS — "+project.name;host.innerHTML='<div class="real-project-loading">Lendo arquivos do projeto…</div>';try{const handle=project.handle||await auroraProjectsHandle.getDirectoryHandle(project.name);const entries=await scanProjectDirectory(handle);const files=entries.filter(x=>x.kind==="file");const counts={};let totalBytes=0;files.forEach(file=>{totalBytes+=file.size||0;const lang=languageFor(file.name);if(lang)counts[lang]=(counts[lang]||0)+(file.size||1);});const total=Object.values(counts).reduce((a,b)=>a+b,0);const langs=Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([name,size])=>({name,pct:total?size/total*100:0}));const config=await auroraStorageHandle.getDirectoryHandle("config",{create:true});const index=await readProjectIndex(config);const meta=index[project.name]||{};const bar=langs.length?langs.map(x=>'<i style="width:'+x.pct+'%" title="'+escapeHTML(x.name)+'"></i>').join(""):"";const legend=langs.length?langs.map(x=>'<div><span>'+escapeHTML(x.name)+'</span><strong>'+x.pct.toFixed(1)+'%</strong></div>').join(""):'<p class="real-project-muted">A composição será formada conforme os arquivos forem adicionados.</p>';const tech=langs.length?langs.map(x=>'<span class="real-tech-chip">'+escapeHTML(x.name)+'</span>').join(""):'<span class="real-project-muted">Nenhuma tecnologia identificada ainda.</span>';const tree=entries.length?entries.map(x=>'<div class="real-tree-row '+(x.kind==="directory"?"is-folder":"is-file")+'" style="--depth:'+x.path.split("/").length+'"><span>'+(x.kind==="directory"?"▰":"·")+'</span><span>'+escapeHTML(x.path)+'</span><small>'+(x.kind==="file"?formatBytes(x.size):"PASTA")+'</small></div>').join(""):'<div class="real-project-empty"><strong>Vazio...</strong><p>Que tal começar seu projeto?</p></div>';host.innerHTML='<div class="property-toolbar"><button class="property-back" type="button" data-back-projects>← Voltar para projetos</button><div class="property-toolbar-actions"><span class="property-status"><i></i> PROJETO LOCAL</span><button type="button" class="property-enter-eds" data-enter-eds>Entrar no EDS <span aria-hidden="true">↗</span></button></div></div><section class="property-identity"><div class="property-project-mark">⌘</div><div class="property-identity-copy"><span class="micro-label">PROJETO · '+escapeHTML(project.id)+'</span><h2>'+escapeHTML(project.name)+'</h2><p>Informações obtidas diretamente da pasta do projeto.</p></div><span class="property-kind">LOCAL</span></section><section class="property-section"><div class="section-heading"><span>IDENTIFICAÇÃO</span><span>DADOS REAIS</span></div><div class="property-fields"><div class="property-field"><span>AID · Aurora Identificator</span><strong class="property-mono">'+escapeHTML(project.id)+'</strong></div><div class="property-field"><span>Data de criação</span><strong>'+dateLabel(meta.createdAt||project.createdAt)+'</strong></div><div class="property-field"><span>Última modificação</span><strong>'+dateLabel(project.modifiedAt||meta.modifiedAt)+'</strong></div><div class="property-field"><span>Arquivos e pastas</span><strong>'+entries.length+' itens · '+formatBytes(totalBytes)+'</strong></div></div></section><section class="property-section"><div class="section-heading"><span>COMPOSIÇÃO DO PROJETO</span><span>'+(langs.length?"POR TAMANHO DE ARQUIVO":"SEM ARQUIVOS")+'</span></div><div class="language-bar real-language-bar '+(!langs.length?"is-empty":"")+'">'+bar+'</div><div class="language-legend real-language-legend">'+legend+'</div></section><section class="property-section"><div class="section-heading"><span>TECNOLOGIAS UTILIZADAS</span><span>DETECTADAS NOS ARQUIVOS</span></div><div class="technology-list real-technology-list">'+tech+'</div></section><section class="property-section"><div class="section-heading"><span>ESTRUTURA DO PROJETO</span><span>'+entries.length+' ITENS</span></div><div class="file-explorer"><div class="file-explorer-head"><span>⌘ &nbsp; '+escapeHTML(project.name.toUpperCase())+'</span><span>DISCO LOCAL</span></div><div class="file-tree real-file-tree">'+tree+'</div></div></section>';}catch(error){host.innerHTML='<div class="real-project-empty"><strong>Não foi possível ler o projeto.</strong><p>'+escapeHTML(error.message||String(error))+'</p></div>';}};
   const renderProjectSidebar = () => {
     if (!projectsSidebar) return;
     const list = projectsSidebar.querySelector("#projects-sidebar-list");
@@ -340,6 +382,8 @@
     }
     const projectTrigger = event.target.closest("[data-open-project], .project-entry");
     if (projectTrigger) { selectedProjectId = projectTrigger.dataset.projectId || ""; showPage("propriedades"); return; }
+    const enterEds = event.target.closest("[data-enter-eds]");
+    if (enterEds) { openProjectInEditor(selectedProject()); return; }
     if (event.target.closest("[data-back-projects]")) { showPage("projetos"); return; }
     if (event.target.closest("[data-save-project]")) {
       const name = document.getElementById("project-name")?.value.trim();
@@ -487,6 +531,11 @@
       projects.push(project);selectedProjectId=id;
       renderProjectSidebar();dialog.close();
       recordActivity("Projeto criado: "+name,"Pasta vazia criada em .aurora/projects.","PROJETO");
+      if (createProjectForEditor) {
+        createProjectForEditor = false;
+        openProjectInEditor(project);
+        return;
+      }
       showPage("propriedades");notify("Projeto criado em .aurora/projects.");
     }catch(error){message.textContent=error.message||String(error);}
     finally{button.disabled=false;}
@@ -494,7 +543,11 @@
   renderProjectSidebar();
   loadRealProjects();
   recordActivity("Ambiente Aurora aberto", "A estação foi iniciada neste navegador.", "SISTEMA");
-  window.addEventListener("aurora:storage-ready", () => { loadRealProjects(); refreshStorageStatus(); });
+  window.addEventListener("aurora:storage-ready", async () => {
+    await loadRealProjects();
+    refreshStorageStatus();
+    if (projectPicker?.open) renderProjectPicker();
+  });
   const rememberedPage = storageGet("aurora-last-page", "inicio");
   const initialPage = getSetting("start-home") ? "inicio" : (Object.prototype.hasOwnProperty.call(pages, rememberedPage) ? rememberedPage : "inicio");
   showPage(initialPage);
