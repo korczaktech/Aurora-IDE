@@ -904,3 +904,61 @@ body {
 }
 .code-tab-icon { flex-basis: 18px; width: 18px; height: 18px; }
 .code-tab-icon .aurora-file-svg { width: 16px; height: 16px; flex-basis: 16px; }
+
+
+/* Gerenciador real de projetos e diretórios locais. */
+.project-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-bottom: 1px solid #172326;
+}
+.project-toolbar button {
+  min-width: 0;
+  min-height: 27px;
+  padding: 0 8px;
+  border: 1px solid #263638;
+  border-radius: 4px;
+  background: #0c1517;
+  color: #b8c9c4;
+  font: inherit;
+  font-size: 10px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.project-toolbar button:hover,
+.project-toolbar button:focus-visible {
+  border-color: #477b69;
+  background: #12211d;
+  color: #e5f4ed;
+  outline: none;
+}
+.project-toolbar button:focus-visible { outline: 1px solid var(--aurora-green); outline-offset: 1px; }
+.project-toolbar button:active { background: #183128; }
+.project-item-toolbar { gap: 4px; padding-top: 4px; padding-bottom: 6px; }
+.project-item-toolbar button { flex: 1 1 0; padding: 0 4px; font-size: 9px; }
+.project-tree { overscroll-behavior: contain; }
+.project-tree .tree-row { min-width: 0; }
+.project-tree .tree-row:focus-visible { outline: 1px solid var(--aurora-green); outline-offset: -1px; }
+.project-tree .tree-file-icon { flex-basis: 18px; width: 18px; height: 18px; }
+.project-tree .tree-file-icon .aurora-file-svg { display: block; width: 17px; height: 17px; }
+.file-sidebar-footer {
+  position: relative;
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 7px;
+  row-gap: 2px;
+  min-height: 42px;
+  padding: 5px 12px;
+}
+.file-sidebar-footer .status-dot { grid-row: 1 / span 2; align-self: center; }
+#projectName { overflow: hidden; color: #aebfba; text-overflow: ellipsis; white-space: nowrap; }
+#projectStatus { overflow: hidden; color: #728782; font-size: 9px; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+#projectStatus[data-state="success"] { color: #79c8a4; }
+#projectStatus[data-state="error"] { color: #e28b83; white-space: normal; overflow-wrap: anywhere; }
+.file-sidebar.is-collapsed .project-toolbar,
+.file-sidebar.is-collapsed .file-sidebar-footer { display: none; }
