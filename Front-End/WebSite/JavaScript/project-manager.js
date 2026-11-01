@@ -366,11 +366,11 @@
     if (fileHandles.has(relative) || directoryHandles.has(relative)) throw new Error("Já existe um item com esse nome.");
     const fileHandle = await handle.getFileHandle(name, { create: true });
     fileHandles.set(relative, fileHandle);
-    editor.addFile(relative, "");
+    if (isTextPath(relative)) editor.addFile(relative, "");
     selectedPath = relative;
     selectedKind = "file";
     await refreshProject();
-    editor.openFile(relative);
+    if (editor.files[relative] !== undefined) editor.openFile(relative);
     setStatus("Arquivo criado: " + relative, "success");
   }
 
