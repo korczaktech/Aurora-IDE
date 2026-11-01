@@ -1,3 +1,8 @@
+//! Adaptador único HTTP/WebSocket para o motor compartilhado do Terminal Aurora.
+//!
+//! Este módulo contém apenas a integração com autenticação, sessões da API e
+//! transporte de dados. A execução do shell permanece exclusivamente em
+//! `aurora-terminal`, sem motores ou caminhos específicos por plataforma.
 use crate::state::AppState;
 use aurora_terminal::{
     TerminalConfig, TerminalManager, TerminalSessionInfo, TerminalSessionOptions,
