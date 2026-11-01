@@ -52,7 +52,7 @@ test("escapes source safely when no grammar engine is available", () => {
   const api = loadHighlighter();
   assert.equal(
     api.highlight('<script>alert("x")</script>', "unknown.txt"),
-    '&lt;script&gt;alert("x")&lt;/script&gt;'
+    '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;'
   );
 });
 
