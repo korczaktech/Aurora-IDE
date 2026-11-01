@@ -1,0 +1,289 @@
+name: Deploy Aurora Website
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Front-End/WebSite/**"
+      - ".github/workflows/deploy-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect website entry point
+        id: detect
+        shell: bash
+        run: |
+          ROOT="Front-End/WebSite"
+          if [ -f "$ROOT/React/package.json" ]; then
+            echo "mode=react" >> "$GITHUB_OUTPUT"
+          elif [ -f "$ROOT/HTML/index.html" ]; then
+            echo "mode=static" >> "$GITHUB_OUTPUT"
+          elif [ -f "$ROOT/index.html" ]; then
+            echo "mode=root" >> "$GITHUB_OUTPUT"
+          else
+            echo "Nenhum index.html ou React/package.json encontrado em $ROOT."
+            echo "A estrutura atual será publicada como um placeholder até a criação da entrada do website."
+            echo "mode=placeholder" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Validate website JavaScript
+        if: steps.detect.outputs.mode == 'static' || steps.detect.outputs.mode == 'root'
+        shell: bash
+        run: |
+          while IFS= read -r file; do
+            echo "Validando $file"
+            node --check "$file"
+          done < <(find Front-End/WebSite -type f -name '*.js' -not -path '*/node_modules/*' | sort)
+
+
+      - name: Validate inline HTML JavaScript
+        if: steps.detect.outputs.mode == 'static' || steps.detect.outputs.mode == 'root'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          import subprocess
+          import tempfile
+
+          class InlineScriptParser(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.in_script = False
+                  self.is_javascript = False
+                  self.parts = []
+                  self.scripts = []
+
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() != "script":
+                      return
+                  attrs = dict(attrs)
+                  script_type = attrs.get("type", "").lower()
+                  self.in_script = True
+                  self.is_javascript = not script_type or script_type in (
+                      "text/javascript", "application/javascript", "module"
+                  )
+                  self.parts = []
+
+              def handle_data(self, data):
+                  if self.in_script and self.is_javascript:
+                      self.parts.append(data)
+
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.in_script:
+                      source = "".join(self.parts)
+                      if source.strip():
+                          self.scripts.append(source)
+                      self.in_script = False
+                      self.is_javascript = False
+                      self.parts = []
+
+          html_files = sorted(Path("Front-End/WebSite").rglob("*.html"))
+          checked = 0
+          with tempfile.TemporaryDirectory() as temp_dir:
+              for html_file in html_files:
+                  parser = InlineScriptParser()
+                  parser.feed(html_file.read_text(encoding="utf-8"))
+                  for index, source in enumerate(parser.scripts, 1):
+                      temp_file = Path(temp_dir) / f"inline-{checked + 1}.js"
+                      temp_file.write_text(source, encoding="utf-8")
+                      print(f"Validando script inline {index}: {html_file}")
+                      subprocess.run(["node", "--check", str(temp_file)], check=True)
+                      checked += 1
+          print(f"{checked} scripts inline validados.")
+          PY
+
+      - name: Setup Node.js
+        if: steps.detect.outputs.mode == 'react'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: Front-End/WebSite/React/package-lock.json
+
+      - name: Install React dependencies
+        if: steps.detect.outputs.mode == 'react'
+        working-directory: Front-End/WebSite/React
+        run: npm ci
+
+      - name: Build React website
+        if: steps.detect.outputs.mode == 'react'
+        working-directory: Front-End/WebSite/React
+        run: npm run build
+
+      - name: Prepare static website
+        if: steps.detect.outputs.mode == 'static'
+        shell: bash
+        run: |
+          mkdir -p _site
+          cp -a Front-End/WebSite/HTML/. _site/
+          for directory in CSS JavaScript TypeScript SVG; do
+            if [ -d "Front-End/WebSite/$directory" ]; then
+              mkdir -p "_site/$directory"
+              cp -a "Front-End/WebSite/$directory/." "_site/$directory/"
+            fi
+          done
+          if [ -d "Front-End/WebSite/React" ]; then
+            mkdir -p "_site/React"
+            cp -a "Front-End/WebSite/React/." "_site/React/"
+          fi
+
+      - name: Prepare root website
+        if: steps.detect.outputs.mode == 'root'
+        run: |
+          mkdir -p _site
+          cp -a Front-End/WebSite/. _site/
+          rm -rf _site/React/node_modules _site/React/.git
+
+      - name: Prepare React artifact
+        if: steps.detect.outputs.mode == 'react'
+        shell: bash
+        run: |
+          mkdir -p _site
+          if [ -d "Front-End/WebSite/React/dist" ]; then
+            cp -a Front-End/WebSite/React/dist/. _site/
+          elif [ -d "Front-End/WebSite/React/build" ]; then
+            cp -a Front-End/WebSite/React/build/. _site/
+          else
+            echo "Build React não gerou dist/ nem build/."
+            exit 1
+          fi
+
+      - name: Prepare initial placeholder
+        if: steps.detect.outputs.mode == 'placeholder'
+        run: |
+          mkdir -p _site
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>Aurora IDE</title>
+            </head>
+            <body>
+              <main>
+                <h1>Aurora IDE</h1>
+                <p>O website está em construção.</p>
+              </main>
+            </body>
+          </html>
+          HTML
+
+      - name: Validate SEO assets
+        if: steps.detect.outputs.mode == 'static'
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          import json
+          import re
+          import xml.etree.ElementTree as ET
+
+          root = Path("_site")
+          required = [
+              "robots.txt", "sitemap.xml", "llms.txt", "llms-full.txt",
+              "humans.txt", "favicon.svg", "og-image.svg", "site.webmanifest", "CNAME",
+              "sobre.html", "recursos.html", "404.html", "CSS/seo.css"
+          ]
+          missing = [name for name in required if not (root / name).is_file()]
+          if missing:
+              raise SystemExit("Arquivos SEO ausentes: " + ", ".join(missing))
+
+          manifest = json.loads((root / "site.webmanifest").read_text(encoding="utf-8"))
+          if manifest.get("name") != "Aurora EDS":
+              raise SystemExit("Manifesto inválido: nome inesperado.")
+
+          if (root / "CNAME").read_text(encoding="utf-8").strip() != "aurora.korczaktech.com.br":
+              raise SystemExit("CNAME não corresponde ao domínio personalizado.")
+
+          sitemap = ET.parse(root / "sitemap.xml").getroot()
+          ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+          urls = [node.text for node in sitemap.findall("sm:url/sm:loc", ns)]
+          expected = {
+              "https://aurora.korczaktech.com.br/index.html",
+              "https://aurora.korczaktech.com.br/sobre.html",
+              "https://aurora.korczaktech.com.br/recursos.html",
+              "https://aurora.korczaktech.com.br/planos.html",
+          }
+          if set(urls) != expected or len(urls) != len(expected):
+              raise SystemExit("Sitemap contém URLs inesperadas ou ausentes: " + repr(urls))
+
+          robots = (root / "robots.txt").read_text(encoding="utf-8")
+          if "https://aurora.korczaktech.com.br/sitemap.xml" not in robots:
+              raise SystemExit("robots.txt não referencia o sitemap publicado.")
+
+          canonical_expected = {
+              "index.html": "https://aurora.korczaktech.com.br/index.html",
+              "sobre.html": "https://aurora.korczaktech.com.br/sobre.html",
+              "recursos.html": "https://aurora.korczaktech.com.br/recursos.html",
+              "planos.html": "https://aurora.korczaktech.com.br/planos.html",
+          }
+          for filename, canonical in canonical_expected.items():
+              html = (root / filename).read_text(encoding="utf-8")
+              if not re.search(r"<title>[^<]+</title>", html, re.I):
+                  raise SystemExit(f"{filename}: title ausente.")
+              if not re.search(r'<meta name="description" content="[^"]+"', html, re.I):
+                  raise SystemExit(f"{filename}: meta description ausente.")
+              match = re.search(r'<link rel="canonical" href="([^"]+)"', html, re.I)
+              if not match or match.group(1) != canonical:
+                  raise SystemExit(f"{filename}: canonical incorreto.")
+              blocks = re.findall(r'<script type="application/ld\+json">\s*(.*?)\s*</script>', html, re.S | re.I)
+              if not blocks:
+                  raise SystemExit(f"{filename}: JSON-LD ausente.")
+              for block in blocks:
+                  json.loads(block)
+
+          for filename in ["editor.html", "entrar.html", "criar-conta.html"]:
+              html = (root / filename).read_text(encoding="utf-8")
+              if not re.search(r'<meta name="robots" content="noindex,follow"', html, re.I):
+                  raise SystemExit(f"{filename}: deveria estar marcado noindex,follow.")
+
+          profile = (root / "perfil.html").read_text(encoding="utf-8")
+          if not re.search(r'<meta name="robots" content="noindex,nofollow"', profile, re.I):
+              raise SystemExit("perfil.html: deveria permanecer privado com noindex,nofollow.")
+          if any("perfil.html" in url for url in urls):
+              raise SystemExit("perfil.html: página privada incluída no sitemap.")
+              if any(filename in url for url in urls):
+                  raise SystemExit(f"{filename}: página noindex incluída no sitemap.")
+
+          print("SEO validado: sitemap, robots, manifesto, metadados, JSON-LD e noindex.")
+          PY
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
