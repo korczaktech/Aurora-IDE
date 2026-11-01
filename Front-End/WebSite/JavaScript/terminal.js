@@ -169,8 +169,8 @@ async function runCommand(session,raw){
  case "unset":args.forEach(k=>delete session.environment[k]);break;
  case "js":case "javascript":{let code;if(args[0]==="-e"||args[0]==="--eval")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: node arquivo.js ou node -e \"código\"");await runWorker(session,code,false);break;}
  case "git":{if(!window.AuroraGit)throw new Error("Módulo Git não carregado. Recarregue o editor.");const result=await window.AuroraGit.run(args,{cwd:session.cwd,environment:session.environment,rootHandle:await projectRoot()});if(result)emit(result);break;}
- case "node":throw new Error("Node.js completo não está disponível no navegador. Use js arquivo.js para executar JavaScript sem APIs do Node.js.");
- case "npm":case "cargo":case "bash":throw new Error("Este comando exige um ambiente de sistema operacional e não pode ser executado diretamente no navegador.");
+ case "node":case "npm":case "npx":case "sh":{if(!window.AuroraNodeRuntime)throw new Error("Runtime Node WebAssembly não carregado. Recarregue o editor.");const result=await window.AuroraNodeRuntime.run(session,command,args,{cwd:session.cwd,environment:session.environment,rootHandle:await projectRoot(),onOutput:chunk=>{if(!redirect)append(session,chunk);}});if(redirect&&result.output)emit(result.output);if(result.code!==0)emit("Processo encerrado com código "+result.code+".");if(result.sync?.conflicts)emit(result.sync.conflicts+" conflito(s) preservado(s) na sincronização do projeto.");if(result.persistenceWarning)emit("Aviso: persistência OPFS indisponível; arquivos do projeto continuam sendo sincronizados.");break;}
+ case "cargo":case "bash":throw new Error("Cargo e Bash não estão incluídos neste runtime. Use sh para o shell compatível quando necessário.");
  case "python":case "python3":case "py":{let code;if(args[0]==="-c")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: python arquivo.py ou python -c \"código\"");await runWorker(session,code,true);break;}
  default:throw new Error("Comando não encontrado: "+command+". Digite help.");
  }
@@ -196,7 +196,7 @@ function attach(session,stage){
  term.onData(data=>{
   if(data==="\r"){const line=input;input="";executeLine(session,line);}
   else if(data==="\u007f"){if(input.length){input=input.slice(0,-1);term.write("\b \b");}}
-  else if(data==="\u0003"){if(session.worker){session.cancelExecution?.();session.worker?.terminate();session.worker=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
+  else if(data==="\u0003"){if(session.worker||session.nodeProcess){session.cancelExecution?.();session.worker?.terminate();session.worker=null;session.nodeProcess=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
   else if(data==="\u000c")term.clear();
   else if(data==="\u001b[A"||data==="\u001b[B"){const up=data==="\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\r\x1b[2K");prompt(session);term.write(input);}
   else if(data==="\t"){term.write("  ");input+="  ";}
@@ -213,7 +213,7 @@ function render(){
  const tabs=rootElement.querySelector("[data-terminal-tabs]");tabs.replaceChildren();[["terminal","TERMINAL"],["output","OUTPUT"],["debug","DEBUG CONSOLE"],["problems","PROBLEMS"],["ports","PORTS"]].forEach(([key,label])=>{const b=el("button","aurora-terminal-tab"+(view===key?" is-active":""),label);b.type="button";b.onclick=()=>{view=key;renderStage();tabs.querySelectorAll("button").forEach(x=>x.classList.toggle("is-active",x===b));};tabs.append(b);});
  renderStage();status("Local no navegador · "+(window.AuroraProjectManager?.projectName||"projeto"));
 }
-function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,linuxRuntime:null,terminal:null,fitAddon:null,host:null,dispose:null};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
+function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,nodeRuntime:null,nodeProcess:null,linuxRuntime:null,terminal:null,fitAddon:null,host:null,dispose:null};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
 function mount(container){
  rootElement=container;
  if(!window.AuroraProjectManager?.rootHandle){container.replaceChildren(el("p","editor-empty-message","Abra um projeto em .aurora/projects antes de iniciar o terminal."));return;}
@@ -223,13 +223,13 @@ function mount(container){
  const linuxRestart=el("button","aurora-terminal-new","Reiniciar");linuxRestart.type="button";linuxRestart.dataset.terminalLinuxRestart="";linuxRestart.title="Reiniciar o ambiente Linux ativo";linuxRestart.disabled=true;linuxRestart.onclick=()=>restartLinux(current());
  const linuxSync=el("button","aurora-terminal-new","Sincronizar projeto");linuxSync.type="button";linuxSync.dataset.terminalLinuxSync="";linuxSync.title="Copiar alterações do Linux para o projeto autorizado";linuxSync.disabled=true;linuxSync.onclick=async()=>{const session=current();if(!session?.linuxRuntime)return;try{const result=await session.linuxRuntime.syncProject();print(session,"Sincronização concluída: "+result.written+" arquivo(s) atualizado(s), "+result.conflicts+" conflito(s), "+result.deletedInGuest+" exclusão(ões) preservada(s) no projeto, "+result.skippedTooLarge+" arquivo(s) acima dos limites ignorados.");}catch(error){print(session,"\\x1b[31mFalha na sincronização: "+(error?.message||String(error))+"\\x1b[0m");}};
  const picker=el("select","aurora-terminal-picker");picker.dataset.terminalPicker="";picker.setAttribute("aria-label","Terminais locais");
- const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=async()=>{const s=current();if(!s)return;if(s.linuxRuntime){try{await s.linuxRuntime.syncProject();}catch(error){print(s,"\\x1b[33mSincronização antes de fechar falhou: "+(error?.message||String(error))+"\\x1b[0m");}try{await s.linuxRuntime.stop();}catch(_){}}s.worker?.terminate();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
+ const close=el("button","aurora-terminal-icon","×");close.type="button";close.title="Encerrar terminal";close.onclick=async()=>{const s=current();if(!s)return;if(s.linuxRuntime){try{await s.linuxRuntime.syncProject();}catch(error){print(s,"\\x1b[33mSincronização antes de fechar falhou: "+(error?.message||String(error))+"\\x1b[0m");}try{await s.linuxRuntime.stop();}catch(_){}}s.worker?.terminate();s.nodeProcess?.kill?.();s.dispose?.();sessions.delete(s.id);activeId=sessions.keys().next().value||null;if(!activeId)createSession();else render();};
  left.append(add,linuxToggle,linuxRestart,linuxSync,picker);right.append(close);toolbar.append(left,right);
  const main=el("div","aurora-terminal-main"),rail=el("aside","aurora-terminal-sessions"),content=el("section","aurora-terminal-content"),tabs=el("div","aurora-terminal-tabs"),stage=el("div","aurora-terminal-stage"),footer=el("div","aurora-terminal-status","Preparando terminal local…");
  rail.dataset.terminalSessions="";tabs.dataset.terminalTabs="";stage.dataset.terminalStage="";footer.dataset.terminalStatus="";
  content.append(tabs,stage);main.append(rail,content);shell.append(toolbar,main,footer);container.replaceChildren(shell);createSession();
 }
-function unmount(){for(const s of sessions.values()){if(s.linuxRuntime){const runtime=s.linuxRuntime;runtime.syncProject().catch(()=>{}).finally(()=>runtime.stop().catch(()=>{}));}s.worker?.terminate();s.dispose?.();}sessions.clear();rootElement=null;activeId=null;}
+function unmount(){for(const s of sessions.values()){if(s.linuxRuntime){const runtime=s.linuxRuntime;runtime.syncProject().catch(()=>{}).finally(()=>runtime.stop().catch(()=>{}));}s.worker?.terminate();s.nodeProcess?.kill?.();s.dispose?.();}window.AuroraNodeRuntime?.dispose?.();sessions.clear();rootElement=null;activeId=null;}
 window.AuroraTerminalInternals=Object.freeze({tokenize,resolvePath});
 window.AuroraTerminal=Object.freeze({mount,unmount});
 })();
