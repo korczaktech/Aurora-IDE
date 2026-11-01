@@ -12,7 +12,7 @@ Executar um ambiente Linux emulado dentro da aba do navegador. O usuário acessa
 4. **v86** emula uma máquina x86 no navegador, usando JavaScript e WebAssembly.
 5. **Imagem Linux** é carregada como recurso estático; não há servidor de execução de comandos.
 
-O runtime é carregado sob demanda, somente quando o usuário seleciona **Iniciar Linux**. O terminal local já existente permanece disponível e não é substituído durante esta fase.
+O runtime é carregado sob demanda, somente quando o usuário seleciona **Iniciar Linux**. A barra permite reiniciar ou encerrar a máquina virtual. O terminal local já existente permanece disponível e não é substituído durante esta fase.
 
 ## Recursos fixados
 
