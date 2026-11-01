@@ -11,7 +11,7 @@ const {normalizePath,createFileSystem}=windowMock.AuroraGitInternals;
 class FakeFile {
   constructor(name,bytes=new Uint8Array()){this.name=name;this.kind="file";this.bytes=new Uint8Array(bytes);this.lastModified=1;}
   async getFile(){const bytes=this.bytes.slice();return {size:bytes.length,lastModified:this.lastModified,arrayBuffer:async()=>bytes.buffer};}
-  async createWritable(){const file=this;let next=file.bytes.slice();return {async write(value){next=value instanceof Uint8Array?value.slice():new Uint8Array(value);},async close(){file.bytes=next;file.lastModified++;},async abort(){}};}
+  async createWritable(){const file=this;let next=file.bytes.slice();return {async write(value){next=typeof value==="string"?new TextEncoder().encode(value):value instanceof Uint8Array?value.slice():new Uint8Array(value);},async close(){file.bytes=next;file.lastModified++;},async abort(){}};}
 }
 class FakeDirectory {
   constructor(name=""){this.name=name;this.kind="directory";this.children=new Map();}
