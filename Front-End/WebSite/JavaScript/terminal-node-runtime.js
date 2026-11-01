@@ -235,6 +235,7 @@ async function run(session, command, args, options = {}) {
   await syncFromProject(state);
 
   const rest = args.slice();
+  if (options.debug) options.onOutput?.("DEBUG command=" + command + " args=" + JSON.stringify(rest) + "\\n");
   if (command === "node" && !rest.length) throw new Error("Uso: node arquivo.js ou node -e \"código\".");
   if (command === "npm" && !rest.length) rest.push("--help");
   const cwd = state.projectPath + (options.cwd ? "/" + safePath(options.cwd) : "");
