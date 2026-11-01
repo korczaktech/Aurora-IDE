@@ -8,7 +8,9 @@ on:
       - "Front-End/WebSite/HTML/editor.html"
       - "Front-End/WebSite/CSS/editor.css"
       - "Front-End/WebSite/JavaScript/syntax-highlighting.js"
+      - "Front-End/WebSite/JavaScript/editor-intelligence.js"
       - "Front-End/WebSite/JavaScript/tests/**"
+      - "Front-End/WebSite/JavaScript/editor-controls.js"
       - ".github/workflows/editor-validation.yml"
   workflow_dispatch:
 
@@ -29,7 +31,10 @@ jobs:
           node-version: "22"
 
       - name: Check JavaScript syntax
-        run: node --check Front-End/WebSite/JavaScript/syntax-highlighting.js
+        run: |
+          node --check Front-End/WebSite/JavaScript/syntax-highlighting.js
+          node --check Front-End/WebSite/JavaScript/editor-intelligence.js
+          node --check Front-End/WebSite/JavaScript/editor-controls.js
 
-      - name: Run syntax highlighting tests
-        run: node --test Front-End/WebSite/JavaScript/tests/syntax-highlighting.test.cjs
+      - name: Run editor tests
+        run: node --test Front-End/WebSite/JavaScript/tests/*.test.cjs
