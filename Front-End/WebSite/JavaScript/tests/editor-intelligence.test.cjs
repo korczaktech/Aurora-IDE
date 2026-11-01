@@ -225,6 +225,9 @@ test("rejects unsafe project paths while allowing nested source paths", () => {
   const api = window.AuroraProjectManager;
   assert.equal(api.validSegment("index.html"), true);
   assert.equal(api.validSegment("component.tsx"), true);
+  assert.equal(api.validSegment("CON"), false);
+  assert.equal(api.validSegment("LPT1.txt"), false);
+  assert.equal(api.validSegment("bad\\u0001name"), false);
   assert.equal(api.validSegment("../escape"), false);
   assert.equal(api.validSegment("folder/file.js"), false);
   assert.equal(api.validSegment("bad\\name.js"), false);
