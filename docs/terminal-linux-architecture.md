@@ -18,17 +18,17 @@ O runtime é carregado sob demanda, somente quando o usuário seleciona **Inicia
 
 - v86: versão npm `0.5.473`.
 - Biblioteca e WebAssembly: jsDelivr, pacote npm versionado.
-- BIOS e imagem inicial de Linux: distribuição pública do projeto v86 em `copy.sh/v86`.
+- BIOS e kernel inicial: distribuição pública do projeto v86 em `copy.sh/v86` e `i.copy.sh`.
 - Memória padrão: 128 MiB para a máquina virtual e 8 MiB para vídeo.
 - Limites configuráveis: 64–512 MiB de RAM, 1–16 MiB de vídeo e timeout de inicialização entre 10 e 180 segundos.
 
-A imagem upstream é uma imagem mínima de demonstração para validar o boot/console. Não representa ainda a imagem final de desenvolvimento com toolchain; a seleção e construção dessa imagem fazem parte da evolução do ambiente na Fase 2.
+O bootstrap atual usa o kernel Buildroot publicado para o exemplo serial oficial do v86, com filesystem 9p vazio. Ele fornece um shell BusyBox mínimo para validar o console serial, não um ambiente de desenvolvimento com toolchain ou gerenciador de pacotes. A imagem final de desenvolvimento será definida e preparada na Fase 2.
 
 ## Limites conhecidos
 
 - v86 emula x86 de 32 bits; não oferece kernel convidado de 64 bits nem múltiplos núcleos.
 - Desempenho depende da CPU, memória e navegador do usuário.
-- O console xterm.js depende de a imagem convidada oferecer saída serial em `ttyS0`; a inicialização do emulador não garante, sozinha, que o shell convidado já esteja pronto.
+- O kernel Buildroot selecionado é o mesmo usado no exemplo serial oficial do v86 e disponibiliza um shell BusyBox pelo console serial. A inicialização do emulador não garante, sozinha, que o shell convidado já esteja pronto.
 - Rede do sistema convidado e compartilhamento do projeto ainda não são ativados nesta fase.
 - A disponibilidade de recursos externos depende de conectividade, CORS e dos respectivos CDNs.
 - O ambiente não deve ser anunciado como compatível com todos os programas Linux.
