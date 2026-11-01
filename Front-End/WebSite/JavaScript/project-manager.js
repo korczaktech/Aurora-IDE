@@ -11,11 +11,12 @@
   const directoryHandles = new Map();
   const expanded = new Set([""]);
   const pendingWrites = new Map();
+  const writeTimers = new Map();
+  const latestContents = new Map();
   let rootHandle = null;
   let selectedPath = "";
   let selectedKind = "directory";
   let currentProjectName = "";
-  let writeError = null;
 
   const ignoredDirectories = new Set([".git"]);
   const textExtensions = new Set([
@@ -25,7 +26,7 @@
     "xml","svg","toml","ini","conf","env","gitignore","gitattributes","editorconfig","graphql","gql",
         "vue","svelte","astro","wasm","wat","r","R","lua","pl","ex","exs","erl","hrl","hs","lhs",
     "dart","scala","sc","clj","cljs","cljc","edn","fs","fsx","fsi","vb","vbs","ps1","psm1",
-    "bat","cmd"," Makefile","mk","cmake","gradle","properties","dockerfile","lock","csv"
+    "bat","cmd","mk","cmake","gradle","properties","dockerfile","lock","csv"
   ]);
   const binaryExtensions = new Set([
     "png","jpg","jpeg","gif","webp","avif","ico","bmp","tif","tiff","mp3","wav","ogg","mp4","mov",
@@ -250,7 +251,36 @@
     appendChildren("", 0, rootChildren);
   }
 
+  async function commitWrite(path) {
+    const content = latestContents.get(path);
+    if (content === undefined) return pendingWrites.get(path);
+    latestContents.delete(path);
+    writeTimers.delete(path);
+    const handle = fileHandles.get(path);
+    if (!handle) throw new Error("O arquivo não está mais disponível: " + path);
+    const previous = pendingWrites.get(path) || Promise.resolve();
+    const write = previous.catch(() => {}).then(async () => {
+      const writable = await handle.createWritable();
+      await writable.write(content);
+      await writable.close();
+    });
+    pendingWrites.set(path, write);
+    try {
+      await write;
+      if (pendingWrites.get(path) === write) pendingWrites.delete(path);
+      if (!latestContents.has(path)) setStatus("Salvo • " + path, "success");
+    } catch (error) {
+      if (pendingWrites.get(path) === write) pendingWrites.delete(path);
+      showError(error, "Falha ao salvar " + path);
+      throw error;
+    }
+  }
+
   async function flushWrites() {
+    for (const [path, timer] of writeTimers) {
+      clearTimeout(timer);
+      await commitWrite(path);
+    }
     await Promise.all([...pendingWrites.values()]);
   }
 
@@ -286,6 +316,12 @@
       return;
     }
     const parent = await requestDirectoryPicker();
+    try {
+      await parent.getDirectoryHandle(cleanName);
+      throw new Error("Já existe uma pasta com esse nome no local escolhido.");
+    } catch (error) {
+      if (error.name !== "NotFoundError") throw error;
+    }
     const handle = await parent.getDirectoryHandle(cleanName, { create: true });
     await openProject(handle);
   }
@@ -434,28 +470,17 @@
     });
   }
 
-  async function saveEditorChange(event) {
+  function saveEditorChange(event) {
     const detail = event.detail || {};
     const path = detail.path;
-    const handle = fileHandles.get(path);
-    if (!handle || typeof detail.content !== "string") return;
-    const previous = pendingWrites.get(path) || Promise.resolve();
-    const write = previous.catch(() => {}).then(async () => {
-      const writable = await handle.createWritable();
-      await writable.write(detail.content);
-      await writable.close();
-    });
-    pendingWrites.set(path, write);
-    setStatus("Salvando " + path + "…");
-    try {
-      await write;
-      if (pendingWrites.get(path) === write) pendingWrites.delete(path);
-      setStatus("Salvo • " + path, "success");
-    } catch (error) {
-      if (pendingWrites.get(path) === write) pendingWrites.delete(path);
-      writeError = error;
-      showError(error, "Falha ao salvar " + path);
-    }
+    if (!fileHandles.has(path) || typeof detail.content !== "string") return;
+    latestContents.set(path, detail.content);
+    const previousTimer = writeTimers.get(path);
+    if (previousTimer) clearTimeout(previousTimer);
+    writeTimers.set(path, setTimeout(() => {
+      commitWrite(path).catch(() => {});
+    }, 280));
+    setStatus("Alterações pendentes • " + path);
   }
 
   function bindActions() {
