@@ -6,7 +6,7 @@
     css: "css", scss: "scss", less: "less",
     js: "javascript", mjs: "javascript", cjs: "javascript", jsx: "javascript",
     ts: "typescript", mts: "typescript", cts: "typescript", tsx: "typescript",
-    rs: "rust", c: "c", h: "c", cc: "cpp", cpp: "cpp", cxx: "cpp",
+    dockerfile: "dockerfile", rs: "rust", c: "c", h: "c", cc: "cpp", cpp: "cpp", cxx: "cpp",
     hpp: "cpp", hh: "cpp", hxx: "cpp", cs: "csharp", java: "java",
     kt: "kotlin", kts: "kotlin", swift: "swift", py: "python", pyw: "python",
     json: "json", jsonc: "json", sh: "bash", bash: "bash", zsh: "bash",
@@ -22,7 +22,7 @@
     swift: "SWIFT", python: "PYTHON", json: "JSON", bash: "SHELL",
     sql: "SQL", markdown: "MARKDOWN", yaml: "YAML", ini: "TOML / INI",
     go: "GO", php: "PHP", ruby: "RUBY", lua: "LUA", dart: "DART",
-    diff: "DIFF", plaintext: "TEXTO"
+    diff: "DIFF", makefile: "MAKEFILE", dockerfile: "DOCKERFILE", plaintext: "TEXTO"
   });
 
   function extensionOf(filename) {
