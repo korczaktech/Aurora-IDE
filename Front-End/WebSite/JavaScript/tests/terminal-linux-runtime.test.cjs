@@ -17,7 +17,7 @@ const { DEFAULT_CONFIG, normalizeConfig } = windowMock.AuroraLinuxRuntimeInterna
 
 test("runtime usa versão v86 fixa e recursos HTTPS", () => {
   assert.equal(DEFAULT_CONFIG.version, "0.5.473");
-  for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "imageUrl"]) {
+  for (const key of ["scriptUrl", "wasmUrl", "biosUrl", "vgaBiosUrl", "kernelUrl"]) {
     assert.equal(new URL(DEFAULT_CONFIG[key]).protocol, "https:");
   }
 });
@@ -34,8 +34,8 @@ test("runtime rejeita memória fora dos limites", () => {
 });
 
 test("runtime rejeita URLs inseguras ou inválidas", () => {
-  assert.throws(() => normalizeConfig({ imageUrl: "javascript:alert(1)" }), /HTTPS/);
-  assert.throws(() => normalizeConfig({ imageUrl: "http://example.com/linux.iso" }), /HTTPS/);
+  assert.throws(() => normalizeConfig({ kernelUrl: "javascript:alert(1)" }), /HTTPS/);
+  assert.throws(() => normalizeConfig({ kernelUrl: "http://example.com/kernel.bin" }), /HTTPS/);
   assert.throws(() => normalizeConfig({ wasmUrl: "não-é-url" }), /URL inválida/);
 });
 
@@ -78,7 +78,11 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
   assert.equal(options.serial_console.type, "xtermjs");
   assert.equal(options.serial_console.container, consoleContainer);
   assert.equal(options.serial_console.xterm_lib.name, "Terminal");
-  assert.equal(options.cmdline, "console=ttyS0,115200");
+  assert.equal(options.bzimage.url, "https://i.copy.sh/buildroot-bzimage68.bin");
+  assert.equal(options.bzimage.async, false);
+  assert.deepEqual(Object.keys(options.filesystem), []);
+  assert.equal(options.cmdline, "tsc=reliable mitigations=off random.trust_cpu=on");
+  assert.equal(options.disable_keyboard, true);
   await runtime.stop();
   assert.equal(destroyed, true);
   assert.equal(runtime.state, "idle");
