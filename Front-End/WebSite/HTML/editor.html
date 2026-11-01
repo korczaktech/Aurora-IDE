@@ -387,12 +387,16 @@ startProject();`
       function renderCodeTabs() {
         codeTabs.replaceChildren();
         openCodeFiles.forEach(name => {
-          const tab = document.createElement("button");
-          tab.type = "button";
+          const tab = document.createElement("div");
           tab.className = "code-tab" + (name === activeCodeFile ? " is-active" : "");
           tab.dataset.codeFile = name;
-          tab.setAttribute("role", "tab");
-          tab.setAttribute("aria-selected", String(name === activeCodeFile));
+          tab.setAttribute("role", "presentation");
+          const select = document.createElement("button");
+          select.type = "button";
+          select.className = "code-tab-select";
+          select.setAttribute("role", "tab");
+          select.setAttribute("aria-selected", String(name === activeCodeFile));
+          select.setAttribute("aria-label", "Abrir " + name);
           const [kind, glyph] = iconForFile(name);
           const icon = document.createElement("span");
           icon.className = "code-tab-icon " + kind;
@@ -400,15 +404,15 @@ startProject();`
           const label = document.createElement("span");
           label.className = "code-tab-name";
           label.textContent = name;
-          const close = document.createElement("span");
+          select.append(icon, label);
+          const close = document.createElement("button");
+          close.type = "button";
           close.className = "tab-close";
           close.dataset.closeCodeFile = name;
-          close.setAttribute("role", "button");
-          close.setAttribute("tabindex", "0");
           close.setAttribute("aria-label", "Fechar " + name);
           close.title = "Fechar";
           close.textContent = "×";
-          tab.append(icon, label, close);
+          tab.append(select, close);
           codeTabs.append(tab);
         });
       }
