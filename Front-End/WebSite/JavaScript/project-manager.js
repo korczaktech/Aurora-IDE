@@ -460,6 +460,7 @@
       rootHandle = null;
       projectParentHandle = null;
       currentProjectName = "";
+      await clearPersistedRootHandle();
       tree.replaceChildren();
       nameLabel.textContent = ".aurora";
       setStatus("Armazenamento Aurora configurado. Crie seu primeiro projeto.", "success");
