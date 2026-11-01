@@ -43,3 +43,63 @@ test("runtime rejeita limites de inicialização inválidos", () => {
   assert.throws(() => normalizeConfig({ startupTimeoutMs: 1000 }), /entre 10 e 180 segundos/);
   assert.throws(() => normalizeConfig({ startupTimeoutMs: 200000 }), /entre 10 e 180 segundos/);
 });
+
+function createRuntimeHarness(Starter) {
+  const window = { V86Starter: Starter, isSecureContext: true };
+  const document = {
+    createElement() { return { dataset: {}, remove() {} }; },
+    head: { append() {} },
+    querySelector() { return null; }
+  };
+  vm.runInNewContext(source, {
+    window, document, URL, location: { hostname: "localhost" },
+    setTimeout, clearTimeout
+  });
+  return window;
+}
+
+test("runtime inicia v86 com console serial xterm.js e encerra a máquina", async () => {
+  let options;
+  let destroyed = false;
+  class FakeV86 {
+    constructor(config) {
+      options = config;
+      this.listeners = {};
+      setTimeout(() => this.listeners["emulator-ready"]?.(), 0);
+    }
+    add_listener(name, callback) { this.listeners[name] = callback; }
+    async destroy() { destroyed = true; }
+  }
+  const window = createRuntimeHarness(FakeV86);
+  const runtime = new window.AuroraLinuxRuntime();
+  const consoleContainer = { append() {} };
+  await runtime.start({ consoleContainer, xtermLib: function Terminal() {} });
+  assert.equal(runtime.state, "running");
+  assert.equal(options.serial_console.type, "xtermjs");
+  assert.equal(options.serial_console.container, consoleContainer);
+  assert.equal(options.serial_console.xterm_lib.name, "Terminal");
+  assert.equal(options.cmdline, "console=ttyS0,115200");
+  await runtime.stop();
+  assert.equal(destroyed, true);
+  assert.equal(runtime.state, "idle");
+});
+
+test("runtime cancela a inicialização e libera a máquina sem esperar o timeout", async () => {
+  let destroyed = false;
+  class FakeV86 {
+    constructor() { this.listeners = {}; }
+    add_listener(name, callback) { this.listeners[name] = callback; }
+    async destroy() { destroyed = true; }
+  }
+  const window = createRuntimeHarness(FakeV86);
+  const runtime = new window.AuroraLinuxRuntime();
+  const starting = runtime.start({
+    consoleContainer: { append() {} },
+    xtermLib: function Terminal() {}
+  });
+  await new Promise(resolve => setTimeout(resolve, 0));
+  await runtime.stop();
+  await assert.rejects(starting, /cancelada/);
+  assert.equal(destroyed, true);
+  assert.equal(runtime.state, "idle");
+});
