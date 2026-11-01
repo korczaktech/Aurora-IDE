@@ -281,7 +281,7 @@ async function run(session, command, args, options = {}) {
     try {
       await Promise.race([
         installPromise,
-        new Promise((_, reject) => { installTimer = setTimeout(() => reject(new Error("npm install excedeu 60 segundos; verifique a conexão com registry.npmjs.org.")), 60000); })
+        new Promise((_, reject) => { installTimer = setTimeout(() => reject(new Error("npm install excedeu 120 segundos; verifique a conexão com registry.npmjs.org.")), 120000); })
       ]);
       const sync = await syncToProject(state);
       if (options.debug) {
@@ -293,7 +293,7 @@ async function run(session, command, args, options = {}) {
       }
       return { code: 0, output: logs.join("\n"), sync, persistenceWarning: session.nodeRuntimePersistenceWarning || null };
     } catch (error) {
-      if (String(error?.message || error).includes("excedeu 60 segundos")) {
+      if (String(error?.message || error).includes("excedeu 120 segundos")) {
         try { state.runtime.teardown(); } catch (_) {}
         activeStates.delete(state);
         session.nodeRuntime = null;
