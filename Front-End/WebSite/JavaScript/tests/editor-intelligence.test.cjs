@@ -99,7 +99,7 @@ test("parses the editor page inline JavaScript", () => {
 test("loads automatic indentation and paired-character editing", () => {
   assert.ok(html.indexOf("../JavaScript/editor-intelligence.js") < html.indexOf("../JavaScript/editor-typing.js"));
   assert.match(html, /editor-typing\.js/);
-  for (const feature of ["handleEnter", "changeSelectionIndent", "shouldIncreaseIndent", "handleClosingBrace", "handlePair"]) {
+  for (const feature of ["handleEnter", "changeSelectionIndent", "shouldIncreaseIndent", "handleClosingBrace", "handlePair", "hasExistingHtmlCloser", "autoCloseHtmlTag"]) {
     assert.ok(typing.includes("function " + feature + "("), "missing " + feature);
   }
   for (const behavior of ["event.shiftKey", "matchingPair", "Backspace", "AuroraEditorTyping"]) {
