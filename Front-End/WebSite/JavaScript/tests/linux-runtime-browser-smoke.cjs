@@ -5,12 +5,31 @@ const { chromium } = require("playwright");
   try {
     const page = await browser.newPage();
     const pageErrors = [];
+    const browserDiagnostics = [];
     page.on("pageerror", error => pageErrors.push(error.message));
+    page.on("console", message => {
+      if (message.type() === "error" || message.type() === "warning") browserDiagnostics.push("console." + message.type() + ": " + message.text());
+    });
+    page.on("requestfailed", request => browserDiagnostics.push("request failed: " + request.url() + " — " + request.failure()?.errorText));
+    page.on("response", response => {
+      if (response.status() >= 400) browserDiagnostics.push("HTTP " + response.status() + ": " + response.url());
+    });
     await page.goto(process.env.AURORA_SMOKE_URL || "http://127.0.0.1:4173/linux-runtime-smoke.html", { waitUntil: "load" });
-    await page.waitForFunction(() => {
-      const output = document.querySelector("#terminal .xterm-rows")?.innerText || "";
-      return Boolean(document.body.dataset.runtimeError) || output.includes("~% ");
-    }, null, { timeout: 120000 });
+    try {
+      await page.waitForFunction(() => {
+        const output = document.querySelector("#terminal .xterm-rows")?.innerText || "";
+        return Boolean(document.body.dataset.runtimeError) || output.includes("~% ");
+      }, null, { timeout: 45000 });
+    } catch (error) {
+      const diagnostic = await page.evaluate(() => ({
+        runtimeError: document.body.dataset.runtimeError || null,
+        bodyText: document.body.innerText,
+        terminalText: document.querySelector("#terminal .xterm-rows")?.innerText || null,
+        xtermPresent: Boolean(document.querySelector("#terminal .xterm")),
+        runtimeState: window.smokeRuntime?.state || null
+      }));
+      throw new Error("Linux boot did not produce a shell prompt. " + JSON.stringify(diagnostic) + " Browser diagnostics: " + browserDiagnostics.join(" | "));
+    }
 
     const startupError = await page.locator("body").getAttribute("data-runtime-error");
     if (startupError) throw new Error("Falha no boot Linux: " + startupError);
@@ -23,7 +42,7 @@ const { chromium } = require("playwright");
       return output.includes("AURORA_LINUX_READY") && (output.match(/~% /g) || []).length >= 2;
     }, null, { timeout: 30000 });
 
-    if (pageErrors.length) throw new Error("Erros JavaScript no navegador: " + pageErrors.join(" | "));
+    if (pageErrors.length) throw new Error("Erros JavaScript no navegador: " + pageErrors.join(" | ") + " Browser diagnostics: " + browserDiagnostics.join(" | "));
     await page.evaluate(async () => window.smokeRuntime?.stop());
     process.stdout.write("Linux browser smoke test passed: boot serial, shell prompt, command input/output, and shutdown.\n");
   } finally {
