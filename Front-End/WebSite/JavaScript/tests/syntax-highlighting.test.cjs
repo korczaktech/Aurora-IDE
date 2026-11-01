@@ -33,6 +33,8 @@ test("detects the language from common source-file extensions", () => {
     ["query.sql", "sql"],
     ["config.yaml", "yaml"],
     ["README.md", "markdown"],
+    ["Dockerfile", "dockerfile"],
+    ["Makefile", "makefile"],
     ["unknown.file", "plaintext"]
   ]);
 
@@ -45,7 +47,9 @@ test("provides a readable language label", () => {
   const api = loadHighlighter();
   assert.equal(api.labelFor("main.rs"), "RUST");
   assert.equal(api.labelFor("index.html"), "HTML / XML");
-  assert.equal(api.labelFor("unknown.bin"), "TEXTO");\n  assert.equal(api.labelFor("Dockerfile"), "DOCKERFILE");\n  assert.equal(api.labelFor("Makefile"), "MAKEFILE");
+  assert.equal(api.labelFor("unknown.bin"), "TEXTO");
+  assert.equal(api.labelFor("Dockerfile"), "DOCKERFILE");
+  assert.equal(api.labelFor("Makefile"), "MAKEFILE");
 });
 
 test("escapes source safely when no grammar engine is available", () => {
@@ -101,4 +105,5 @@ test("renders the highlight layer and keeps the textarea text transparent", () =
   assert.match(editorCSS, /\.code-input\s*\{[^}]*-webkit-text-fill-color:\s*transparent/s);
   assert.match(editorCSS, /\.code-highlight \.hljs-keyword/);
   assert.match(editorCSS, /\.code-highlight \.hljs-string/);
+  assert.match(editorCSS, /editor-word-wrap \.code-highlight/);
 });
