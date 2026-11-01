@@ -338,7 +338,7 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" | grep -Eq '^(Front-End/WebSite/JavaScript/(terminal-linux-runtime\.js|terminal-linux-project-bridge\.js|terminal-git\.js|terminal-node-runtime\.js|project-manager\.js|tests/linux-runtime-browser-smoke\.cjs))
+          if git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" | grep -Eq '^(Front-End/WebSite/JavaScript/(terminal-linux-runtime.js|terminal-linux-project-bridge.js|terminal-git.js|terminal-node-runtime.js|project-manager.js|tests/linux-runtime-browser-smoke.cjs))$'; then
             echo "run=true" >> "$GITHUB_OUTPUT"
           else
             echo "run=false" >> "$GITHUB_OUTPUT"
@@ -356,7 +356,13 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          if git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" | grep -Eq '^(Front-End/WebSite/JavaScript/(terminal\.js|terminal-python-runtime\.js|tests/python-runtime-browser-smoke\.cjs|tests/python-runtime-smoke\.html))
+          if git diff --name-only "$BEFORE_SHA" "$GITHUB_SHA" | grep -Eq '^(Front-End/WebSite/JavaScript/(terminal.js|terminal-python-runtime.js|tests/python-runtime-browser-smoke.cjs|tests/python-runtime-smoke.html))$'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Verify Linux terminal in a real browser
         if: steps.detect.outputs.mode == 'static' && steps.terminal-smoke.outputs.run == 'true'
         shell: bash
         run: |
@@ -529,191 +535,6 @@ jobs:
             sleep 1
           done
           node Front-End/WebSite/JavaScript/tests/python-runtime-browser-smoke.cjs
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-  deploy:
-    name: Deploy to GitHub Pages
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
-; then
-            echo "run=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Verify Linux terminal in a real browser
-        if: steps.detect.outputs.mode == 'static' && steps.terminal-smoke.outputs.run == 'true'
-        shell: bash
-        run: |
-          npm install --no-save playwright
-          npx playwright install chromium --with-deps
-          cat > _site/linux-runtime-smoke.html <<'HTML'
-          <!doctype html>
-          <html lang="en">
-          <head>
-            <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
-            <title>Aurora Linux Runtime Smoke Test</title>
-            <style>html,body,#terminal{width:100%;height:100%;margin:0;background:#050a0b}#terminal{padding:8px;box-sizing:border-box}</style>
-            <script type="importmap">
-              {"imports":{"esbuild-wasm":"/runtime/nodebrowser/esbuild-wasm/package/esm/browser.min.js"}}
-            </script>
-            <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
-            <script src="/JavaScript/terminal-linux-project-bridge.js"></script>
-            <script src="/JavaScript/terminal-linux-runtime.js"></script>
-            <script src="/JavaScript/terminal-git.js"></script>
-            <script src="/JavaScript/terminal-node-runtime.js"></script>
-            <script src="/JavaScript/terminal-python-runtime.js"></script>
-          </head>
-          <body>
-            <div id="terminal"></div>
-            <script>
-              function smokeDirectory(name) {
-                const children = new Map();
-                return {
-                  name, kind: "directory",
-                  async queryPermission() { return "granted"; },
-                  async *entries() { for (const item of children) yield item; },
-                  async getDirectoryHandle(childName, options = {}) {
-                    let item = children.get(childName);
-                    if (!item && options.create) { item = smokeDirectory(childName); children.set(childName, item); }
-                    if (!item || item.kind !== "directory") { const error = new Error("Directory not found"); error.name = "NotFoundError"; throw error; }
-                    return item;
-                  },
-                  async getFileHandle(childName, options = {}) {
-                    let item = children.get(childName);
-                    if (!item && options.create) {
-                      let bytes = new Uint8Array();
-                      item = {
-                        name: childName, kind: "file",
-                        async getFile() { const copy = bytes.slice(); return { size: copy.length, arrayBuffer: async () => copy.buffer, text: async () => new TextDecoder().decode(copy) }; },
-                        async createWritable() { return { async write(value) { bytes = typeof value === "string" ? new TextEncoder().encode(value) : value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value); }, async close() {} }; },
-                        get bytes() { return bytes.slice(); }
-                      };
-                      children.set(childName, item);
-                    }
-                    if (!item || item.kind !== "file") { const error = new Error("File not found"); error.name = "NotFoundError"; throw error; }
-                    return item;
-                  },
-                  addFile(childName, text) {
-                    let bytes = new TextEncoder().encode(text);
-                    children.set(childName, {
-                      name: childName, kind: "file",
-                      async getFile() { const copy = bytes.slice(); return { size: copy.length, arrayBuffer: async () => copy.buffer, text: async () => new TextDecoder().decode(copy) }; },
-                      async createWritable() { return { async write(value) { bytes = typeof value === "string" ? new TextEncoder().encode(value) : value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value); }, async close() {} }; },
-                      get bytes() { return bytes.slice(); }
-                    });
-                  }
-                };
-              }
-              window.smokeProjectHandle = smokeDirectory("aurora-smoke");
-              window.smokeProjectHandle.addFile("README.md", "Aurora Linux workspace bridge smoke test");
-              window.addEventListener("load", async () => {
-                window.smokeRuntime = new window.AuroraLinuxRuntime({ memorySize: 64 * 1024 * 1024 });
-                try {
-                  await window.smokeRuntime.start({
-                    consoleContainer: document.getElementById("terminal"),
-                    xtermLib: window.Terminal,
-                    projectHandle: window.smokeProjectHandle
-                  });
-                  const gitContext = { rootHandle: window.smokeProjectHandle, cwd: "", environment: {} };
-                  await window.AuroraGit.run(["init"], gitContext);
-                  await window.AuroraGit.run(["config", "user.name", "Aurora Smoke"], gitContext);
-                  await window.AuroraGit.run(["config", "user.email", "smoke@aurora.invalid"], gitContext);
-                  await window.AuroraGit.run(["add", "-A"], gitContext);
-                  await window.AuroraGit.run(["commit", "-m", "browser Git smoke test"], gitContext);
-                  const gitStatus = await window.AuroraGit.run(["status"], gitContext);
-                  document.body.dataset.gitSmoke = gitStatus.includes("Árvore de trabalho limpa.") ? "passed" : gitStatus;
-                  try {
-                    window.smokeProjectHandle.addFile("node-smoke.js", "console.log('AURORA_NODE_READY:' + typeof require('fs').readFileSync);");
-                    window.smokeProjectHandle.addFile("package.json", JSON.stringify({ name: "aurora-smoke", version: "1.0.0" }));
-                    window.smokeProjectHandle.addFile("node-smoke.ts", "const answer: number = 42;\nconsole.log(answer);\n");
-                    const nodeSession = { cwd: "", environment: {}, nodeRuntime: null, nodeProcess: null };
-                    const nodeResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["node-smoke.js"], {
-                      rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
-                    });
-                    document.body.dataset.nodeSmoke = nodeResult.code === 0 && nodeResult.output.includes("AURORA_NODE_READY:function") ? "passed" : "failed: " + nodeResult.output + " (exit " + nodeResult.code + ")";
-                    if (nodeResult.code === 0) {
-                      try {
-                      let installTrace = "";
-                      document.body.dataset.npmStatus = "installing";
-                      const installResult = await window.AuroraNodeRuntime.run(nodeSession, "npm", ["install", "ms@2.1.3"], {
-                        rootHandle: window.smokeProjectHandle, cwd: "", environment: {}, debug: true,
-                        onOutput: chunk => { installTrace += chunk; document.body.dataset.npmTrace = installTrace.slice(-2000); }
-                      });
-                      document.body.dataset.npmStatus = "installed:" + installResult.code;
-                      if (installResult.code === 0) {
-                        window.smokeProjectHandle.addFile("npm-smoke.js", "console.log('AURORA_NPM_READY:' + require('ms')('2 days'));");
-                        const npmRunResult = await window.AuroraNodeRuntime.run(nodeSession, "node", ["npm-smoke.js"], {
-                          rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
-                        });
-                        if (npmRunResult.code !== 0 || !npmRunResult.output.includes("AURORA_NPM_READY:172800000")) {
-                          document.body.dataset.npmSmoke = "failed: trace=" + installTrace + " install=" + installResult.code + " npmRun=" + npmRunResult.code + " npmOutput=" + npmRunResult.output;
-                        } else {
-                          const compileResult = await window.AuroraNodeRuntime.run(nodeSession, "esbuild", ["node-smoke.ts", "--outfile=dist/node-smoke.js", "--format=esm"], {
-                            rootHandle: window.smokeProjectHandle, cwd: "", environment: {}
-                          });
-                          let compiled = "";
-                          try { compiled = await (await (await window.smokeProjectHandle.getDirectoryHandle("dist")).getFileHandle("node-smoke.js")).getFile().then(file => file.text()); } catch (_) {}
-                          document.body.dataset.npmSmoke = compileResult.code === 0 && compiled.includes("42") ? "passed" : "failed: compile=" + compileResult.code + " output=" + compileResult.output + " compiled=" + compiled;
-                        }
-                      } else {
-                        document.body.dataset.npmSmoke = "failed: npm install exit " + installResult.code + " " + installResult.output;
-                      }
-                      } catch (npmError) {
-                        document.body.dataset.npmStatus = "error";
-                        document.body.dataset.npmSmoke = "failed: " + (npmError?.stack || npmError?.message || String(npmError));
-                      }
-                    } else {
-                      document.body.dataset.npmSmoke = "skipped: Node smoke failed";
-                    }
-                    window.AuroraNodeRuntime.dispose(nodeSession);
-                    const pythonSession = { worker: null, cancelExecution: null };
-                    let pythonOutput = "";
-                    const pythonCode = "with open('README.md') as f:\n    print('AURORA_PYTHON_READ:' + f.read().strip())\nwith open('python-smoke.txt', 'w') as f:\n    f.write('AURORA_PYTHON_READY')";
-                    const pythonResult = await window.AuroraPythonRuntime.run(pythonSession, pythonCode, {
-                      rootHandle: window.smokeProjectHandle, cwd: "",
-                      onOutput: chunk => { pythonOutput += chunk; }
-                    });
-                    let pythonFile = "";
-                    try { pythonFile = await (await window.smokeProjectHandle.getFileHandle("python-smoke.txt")).getFile().then(file => file.text()); } catch (_) {}
-                    document.body.dataset.pythonSmoke = pythonResult.code === 0 && pythonOutput.includes("AURORA_PYTHON_READ:Aurora Linux workspace bridge smoke test") && pythonFile === "AURORA_PYTHON_READY" && pythonResult.sync.written === 1 ? "passed" : "failed: code=" + pythonResult.code + " output=" + pythonOutput + " file=" + pythonFile + " sync=" + JSON.stringify(pythonResult.sync);
-                  } catch (nodeError) {
-                    document.body.dataset.nodeSmoke = "failed: " + (nodeError?.stack || nodeError?.message || String(nodeError));
-                  }
-                } catch (error) {
-                  document.body.dataset.runtimeError = error?.stack || error?.message || String(error);
-                  document.body.dataset.gitSmoke = "failed: " + (error?.message || String(error));
-                }
-              });
-            </script>
-          </body>
-          </html>
-          HTML
-          python3 -m http.server 4173 --directory _site >/tmp/aurora-linux-smoke-server.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill "$SERVER_PID" 2>/dev/null || true; rm -f _site/linux-runtime-smoke.html' EXIT
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4173/linux-runtime-smoke.html >/dev/null; then break; fi
-            sleep 1
-          done
-          node Front-End/WebSite/JavaScript/tests/linux-runtime-browser-smoke.cjs
-
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
