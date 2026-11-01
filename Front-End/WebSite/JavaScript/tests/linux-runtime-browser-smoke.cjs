@@ -36,7 +36,10 @@ const { chromium } = require("playwright");
 
     await page.waitForFunction(() => Boolean(document.body.dataset.gitSmoke), null, { timeout: 45000 });
     const gitSmoke = await page.locator("body").getAttribute("data-git-smoke");
-    if (gitSmoke !== "passed") throw new Error("Git browser smoke test failed: " + gitSmoke);
+    if (gitSmoke !== "passed") {
+      const runtimeDiagnostic = await page.locator("body").getAttribute("data-runtime-error");
+      throw new Error("Git browser smoke test failed: " + gitSmoke + (runtimeDiagnostic ? " | " + runtimeDiagnostic : "") + " | Browser diagnostics: " + browserDiagnostics.join(" | "));
+    }
 
     await page.locator("#terminal .xterm").click();
     await page.keyboard.type("cat README.md && echo AURORA_LINUX_READY");
