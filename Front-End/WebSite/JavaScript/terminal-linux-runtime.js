@@ -302,14 +302,19 @@ class AuroraLinuxRuntime {
     if (typeof this.emulator.restart !== "function") throw new Error("Esta versão do emulador não oferece reinicialização.");
     this.state = "starting";
     this.callbacks.onStatus?.("Reiniciando o ambiente Linux…");
-    this.emulator.restart();
-    if (this.projectSession) {
-      await this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs);
-      await this._mountProject();
+    try {
+      const promptReady = this._waitForSerialText(/(?:~% |# )/, this.config.startupTimeoutMs);
+      this.emulator.restart();
+      await promptReady;
+      if (this.projectSession) await this._mountProject();
+      this.state = "running";
+      this.callbacks.onStatus?.(this.projectSession ? "Linux reiniciado · projeto montado em /workspace" : "Linux reiniciado");
+      return this;
+    } catch (error) {
+      this.state = "error";
+      this.callbacks.onError?.(error);
+      throw error;
     }
-    this.state = "running";
-    this.callbacks.onStatus?.("Linux reiniciado · projeto montado em /workspace");
-    return this;
   }
 
   async stop() {
