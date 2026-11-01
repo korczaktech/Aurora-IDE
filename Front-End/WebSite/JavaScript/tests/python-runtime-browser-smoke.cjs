@@ -11,7 +11,7 @@ const { chromium } = require("playwright");
     const terminalStatus = await page.locator("body").getAttribute("data-terminal-input-smoke");
     const details = await page.locator("#result").innerText();
     if (status !== "passed" || terminalStatus !== "passed") throw new Error("Python terminal browser smoke failed: " + details);
-    process.stdout.write("Python browser smoke passed: execution, xterm input(), stdout, escaped newlines, and project file synchronization.\\n");
+    process.stdout.write("Python browser smoke passed: execution, xterm input(), stdout, escaped newlines, and project file synchronization.\n");
   } finally {
     await browser.close();
   }
