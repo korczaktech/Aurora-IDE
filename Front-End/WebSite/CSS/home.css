@@ -541,7 +541,7 @@
 /* Ações principais da página inicial */
 .welcome-actions{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:31px}
 .welcome-actions .learn-button{margin-top:0}
-.develop-button{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:12px 19px;border:1px solid rgba(130,203,176,.23);border-radius:5px;background:rgba(9,17,14,.58);color:#b7c9bf;font:600 11px Manrope,system-ui,sans-serif;letter-spacing:.12px;cursor:default;box-shadow:inset 0 1px rgba(204,239,214,.025)}
+.develop-button{display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:12px 19px;border:1px solid rgba(130,203,176,.23);border-radius:5px;background:rgba(9,17,14,.58);color:#b7c9bf;font:600 11px Manrope,system-ui,sans-serif;letter-spacing:.12px;cursor:pointer;box-shadow:inset 0 1px rgba(204,239,214,.025);transition:border-color .2s,background .2s,color .2s}.develop-button:hover{border-color:rgba(139,199,160,.55);background:rgba(23,42,29,.8);color:#e0eee3}
 @media(max-width:460px){.welcome-actions{gap:9px}.welcome-actions .learn-button,.develop-button{padding:11px 12px;font-size:10px}}
 
 
