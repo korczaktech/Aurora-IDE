@@ -85,6 +85,9 @@ async function toggleLinux(session=current()){
   await runtime.start({
    consoleContainer:linuxHost,
    xtermLib:window.Terminal,
+   projectHandle:window.AuroraProjectManager?.rootHandle,
+   flushProject:()=>window.AuroraProjectManager?.flush?.(),
+   refreshProject:()=>window.AuroraProjectManager?.refresh?.({force:true}),
    onStatus:status
   });
  }catch(error){
