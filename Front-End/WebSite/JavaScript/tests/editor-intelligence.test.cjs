@@ -11,6 +11,7 @@ const html = fs.readFileSync(path.resolve(root, "..", "HTML", "editor.html"), "u
 const css = fs.readFileSync(path.resolve(root, "..", "CSS", "editor.css"), "utf8");
 const intelligence = fs.readFileSync(path.join(root, "editor-intelligence.js"), "utf8");
 const typing = fs.readFileSync(path.join(root, "editor-typing.js"), "utf8");
+const fileIcons = fs.readFileSync(path.join(root, "file-icons.js"), "utf8");
 const controls = fs.readFileSync(path.join(root, "editor-controls.js"), "utf8");
 
 test("loads cursor, selection and autocomplete after the editor API exists", () => {
@@ -109,4 +110,58 @@ test("loads automatic indentation and paired-character editing", () => {
 
 test("editor typing module parses as JavaScript", () => {
   assert.doesNotThrow(() => new vm.Script(typing, { filename: "editor-typing.js" }));
+});
+
+
+test("provides individually drawn SVG identities for major languages and frameworks", () => {
+  const sandbox = { window: {}, document: { readyState: "complete", querySelectorAll: () => [] } };
+  vm.runInNewContext(fileIcons, sandbox, { filename: "file-icons.js" });
+  const api = sandbox.window.AuroraFileIcons;
+  assert.ok(api, "file icon API must be exposed");
+  const examples = {
+    "index.html": "html",
+    "style.css": "css",
+    "app.js": "javascript",
+    "app.ts": "typescript",
+    "App.jsx": "react",
+    "App.tsx": "react",
+    "native.tsx": "react",
+    "main.py": "python",
+    "Main.java": "java",
+    "Main.kt": "kotlin",
+    "main.swift": "swift",
+    "main.go": "go",
+    "main.rs": "rust",
+    "main.cpp": "cpp",
+    "Program.cs": "csharp",
+    "index.php": "php",
+    "app.rb": "ruby",
+    "component.vue": "vue",
+    "component.svelte": "svelte",
+    "query.graphql": "graphql",
+    "Dockerfile": "docker",
+    "schema.sql": "sql",
+    "config.yaml": "yaml",
+    "README.md": "markdown"
+  };
+  for (const [filename, expected] of Object.entries(examples)) {
+    assert.equal(api.kindForFile(filename), expected, filename);
+    assert.match(api.svgForFile(filename), /<svg[\\s\\S]*<path|<svg[\\s\\S]*<circle/);
+  }
+  const uniqueDrawings = new Set(Object.keys(examples).map(filename => api.svgForFile(filename)));
+  assert.ok(uniqueDrawings.size >= 15, "language SVG drawings should be distinct");
+  assert.equal(api.kindForFile("unknown.extension"), "generic");
+});
+
+test("loads the custom SVG icon module before the editor bootstrap", () => {
+  const iconScript = html.indexOf("../JavaScript/file-icons.js");
+  const inlineBootstrap = html.indexOf("const codeInput");
+  assert.ok(iconScript >= 0 && iconScript < inlineBootstrap);
+  assert.match(html, /data-file-icon="index\.html"/);
+  assert.match(html, /icon\.innerHTML = iconForFile\(name\)/);
+  assert.match(css, /\.aurora-file-svg/);
+});
+
+test("file icon module parses as JavaScript", () => {
+  assert.doesNotThrow(() => new vm.Script(fileIcons, { filename: "file-icons.js" }));
 });
