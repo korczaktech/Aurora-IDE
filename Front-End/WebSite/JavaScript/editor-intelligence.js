@@ -140,9 +140,29 @@
     if (!match) return [];
     const prefix = match[1];
     const lang = language();
-    const pool = dictionaries[lang] || dictionaries.javascript;
+    const pool = [...(dictionaries[lang] || dictionaries.javascript)];
+    const allFiles = editor.files || {};
+    if (lang === "javascript") {
+      const source = String(allFiles[editor.activeFile] || value);
+      const declarationPattern = /\b(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/g;
+      let declaration;
+      while ((declaration = declarationPattern.exec(source))) pool.push(declaration[1]);
+    } else if (lang === "css") {
+      Object.entries(allFiles).filter(([name]) => /\.css$/i.test(name)).forEach(([, source]) => {
+        const propertyPattern = /(?:^|[;{]\s*)([a-z-]{2,})\s*:/gim;
+        let property;
+        while ((property = propertyPattern.exec(String(source)))) pool.push(property[1]);
+      });
+    } else {
+      Object.entries(allFiles).filter(([name]) => /\.html?$/i.test(name)).forEach(([, source]) => {
+        const tagPattern = /<([a-z][a-z0-9-]*)/gi;
+        let tag;
+        while ((tag = tagPattern.exec(String(source)))) pool.push(tag[1]);
+      });
+    }
     const lower = prefix.toLowerCase();
-    const items = pool.filter(item => item.toLowerCase().startsWith(lower) && item !== prefix).slice(0, 7);
+    const unique = [...new Set(pool)];
+    const items = unique.filter(item => item.toLowerCase().startsWith(lower) && item !== prefix).slice(0, 7);
     if (!items.length) return [];
     return items.map(label => ({ label, start: cursor - prefix.length, end: cursor }));
   }
@@ -155,6 +175,7 @@
     popup.replaceChildren();
     current = [];
     textarea.removeAttribute("aria-activedescendant");
+    textarea.setAttribute("aria-expanded", "false");
   }
 
   function positionPopup() {
@@ -232,7 +253,7 @@
       if (event.key === "Escape") { event.preventDefault(); hide(); return; }
     }
     if (event.defaultPrevented || !(event.ctrlKey || event.metaKey) || event.altKey) {
-      if (event.key === "Home" && !event.ctrlKey && !event.metaKey) { event.preventDefault(); smartHome(); }
+      if (event.key === "Home" && !event.ctrlKey && !event.metaKey && !event.shiftKey) { event.preventDefault(); smartHome(); }
       return;
     }
     const key = event.key.toLowerCase();
