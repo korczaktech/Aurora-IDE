@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aurora Python Runtime Smoke Test</title>
+  <script src="../terminal-python-runtime.js"></script>
+</head>
+<body>
+  <pre id="result">Aguardando runtime Python…</pre>
+  <script>
+    function makeFile(name, initial = "") {
+      let bytes = new TextEncoder().encode(initial);
+      return {
+        name, kind: "file",
+        async getFile() {
+          const copy = bytes.slice();
+          return { name, size: copy.length, arrayBuffer: async () => copy.buffer, text: async () => new TextDecoder().decode(copy) };
+        },
+        async createWritable() {
+          return {
+            async write(value) {
+              bytes = typeof value === "string" ? new TextEncoder().encode(value) :
+                value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value);
+            },
+            async close() {}
+          };
+        }
+      };
+    }
+    function makeDirectory(name) {
+      const children = new Map();
+      return {
+        name, kind: "directory",
+        async queryPermission() { return "granted"; },
+        async requestPermission() { return "granted"; },
+        async *entries() { for (const entry of children) yield entry; },
+        async getDirectoryHandle(child, options = {}) {
+          let item = children.get(child);
+          if (!item && options.create) { item = makeDirectory(child); children.set(child, item); }
+          if (!item || item.kind !== "directory") { const error = new Error("Directory not found"); error.name = "NotFoundError"; throw error; }
+          return item;
+        },
+        async getFileHandle(child, options = {}) {
+          let item = children.get(child);
+          if (!item && options.create) { item = makeFile(child); children.set(child, item); }
+          if (!item || item.kind !== "file") { const error = new Error("File not found"); error.name = "NotFoundError"; throw error; }
+          return item;
+        },
+        async removeEntry(child) { children.delete(child); }
+      };
+    }
+    window.addEventListener("load", async () => {
+      const root = makeDirectory("python-smoke");
+      const output = [];
+      try {
+        const result = await window.AuroraPythonRuntime.run({}, [
+          "print('AURORA_PYTHON_READY')",
+          "with open('python-smoke.txt', 'w') as file:",
+          "    file.write('AURORA_FILE_SYNC_OK')"
+        ].join("\n"), {
+          rootHandle: root, cwd: "",
+          onOutput: chunk => output.push(String(chunk))
+        });
+        const file = await (await root.getFileHandle("python-smoke.txt")).getFile();
+        const contents = await file.text();
+        const printed = output.join("");
+        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
+        document.body.dataset.pythonSmoke = passed ? "passed" : "failed";
+        document.getElementById("result").textContent = passed
+          ? "Python execution and project file synchronization passed."
+          : JSON.stringify({ result, printed, contents });
+      } catch (error) {
+        document.body.dataset.pythonSmoke = "failed";
+        document.getElementById("result").textContent = error?.stack || String(error);
+      }
+    });
+  </script>
+</body>
+</html>
