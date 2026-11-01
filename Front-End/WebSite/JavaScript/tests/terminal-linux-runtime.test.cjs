@@ -54,7 +54,8 @@ function createRuntimeHarness(Starter) {
   };
   vm.runInNewContext(source, {
     window, document, URL, location: { hostname: "localhost" },
-    setTimeout, clearTimeout
+    setTimeout, clearTimeout, AbortController,
+    fetch: async () => ({ ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(8) })
   });
   return window;
 }
@@ -81,8 +82,7 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
   assert.equal(options.serial_console.type, "xtermjs");
   assert.equal(options.serial_console.container, consoleContainer);
   assert.equal(options.serial_console.xterm_lib.name, "Terminal");
-  assert.equal(options.bzimage.url, "https://i.copy.sh/buildroot-bzimage68.bin");
-  assert.equal(options.bzimage.async, false);
+  assert.equal(options.bzimage.buffer.byteLength, 8);
   assert.deepEqual(Object.keys(options.filesystem), []);
   assert.equal(options.cmdline, "tsc=reliable mitigations=off random.trust_cpu=on");
   assert.equal(options.disable_keyboard, true);
