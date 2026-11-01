@@ -307,7 +307,11 @@
     renderEntries(entries);
     nameLabel.textContent = currentProjectName;
     selectedLabel.textContent = "Raiz do projeto";
-    await persistRootHandle(handle);
+    try {
+      await persistRootHandle(handle);
+    } catch (error) {
+      console.warn("[Aurora Project Manager] Projeto aberto, mas não foi possível salvar o atalho recente:", error);
+    }
     setStatus(entries.length + " itens • alterações salvas no dispositivo", "success");
   }
 
@@ -516,13 +520,18 @@
     setStatus("Alterações pendentes • " + path);
   }
 
+  function handleActionError(error, action) {
+    if (error && error.name === "AbortError") return;
+    showError(error, action);
+  }
+
   function bindActions() {
-    document.getElementById("createProject").addEventListener("click", () => createProject().catch(error => showError(error, "Criar projeto")));
-    document.getElementById("openProject").addEventListener("click", () => openProjectFolder().catch(error => showError(error, "Abrir pasta")));
-    document.getElementById("newProjectFile").addEventListener("click", () => createFile().catch(error => showError(error, "Criar arquivo")));
-    document.getElementById("newProjectFolder").addEventListener("click", () => createFolder().catch(error => showError(error, "Criar pasta")));
-    document.getElementById("renameProjectItem").addEventListener("click", () => renameSelected().catch(error => showError(error, "Renomear")));
-    document.getElementById("deleteProjectItem").addEventListener("click", () => deleteSelected().catch(error => showError(error, "Excluir")));
+    document.getElementById("createProject").addEventListener("click", () => createProject().catch(error => handleActionError(error, "Criar projeto")));
+    document.getElementById("openProject").addEventListener("click", () => openProjectFolder().catch(error => handleActionError(error, "Abrir pasta")));
+    document.getElementById("newProjectFile").addEventListener("click", () => createFile().catch(error => handleActionError(error, "Criar arquivo")));
+    document.getElementById("newProjectFolder").addEventListener("click", () => createFolder().catch(error => handleActionError(error, "Criar pasta")));
+    document.getElementById("renameProjectItem").addEventListener("click", () => renameSelected().catch(error => handleActionError(error, "Renomear")));
+    document.getElementById("deleteProjectItem").addEventListener("click", () => deleteSelected().catch(error => handleActionError(error, "Excluir")));
     tree.addEventListener("click", event => {
       const row = event.target.closest("[data-project-root], [data-project-path]");
       if (!row) return;
@@ -573,8 +582,10 @@
   }
 
   bindActions();
-  if (!window.showDirectoryPicker) {
-    setStatus("Use Chrome ou Edge atualizado para abrir e editar pastas locais.");
+  if (!window.showDirectoryPicker || !window.isSecureContext) {
+    setStatus("Use Chrome ou Edge atualizado em HTTPS para abrir e editar pastas locais.", "error");
+    document.getElementById("openProject").disabled = true;
+    document.getElementById("createProject").disabled = true;
     document.getElementById("openProject").title = "Requer Chrome ou Edge atualizado em HTTPS";
     document.getElementById("createProject").title = "Requer Chrome ou Edge atualizado em HTTPS";
   } else {
