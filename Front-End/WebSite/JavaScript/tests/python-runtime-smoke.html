@@ -71,6 +71,16 @@
           "newline = 'linha1\\nlinha2'",
           "assert name == 'Raphael' and answer == 42",
           "assert newline == 'linha1\\nlinha2'",
+          "import time as clock",
+          "from time import sleep as pause",
+          "sleep_started = clock.perf_counter()",
+          "clock.sleep(0.03)",
+          "assert clock.perf_counter() - sleep_started >= 0.02",
+          "def wait_inside_function():",
+          "    pause(0.02)",
+          "    return 'AURORA_SLEEP_FUNCTION_OK'",
+          "sleep_function_result = wait_inside_function()",
+          "assert sleep_function_result == 'AURORA_SLEEP_FUNCTION_OK'",
           "def decorate(fn):",
           "    def wrapped(*args, **kwargs): return fn(*args, **kwargs)",
           "    return wrapped",
@@ -100,6 +110,7 @@
           "print('AURORA_NUMPY_OK')",
           "print('AURORA_INPUT_OK')",
           "print('AURORA_NEWLINE_OK')",
+          "print('AURORA_TIME_SLEEP_OK')",
           "print('AURORA_PRINT_LINE_1\\nAURORA_PRINT_LINE_2')",
           "with open('python-smoke.txt', 'w') as file:",
           "    file.write('AURORA_FILE_SYNC_OK')"
@@ -111,7 +122,7 @@
         const file = await (await root.getFileHandle("python-smoke.txt")).getFile();
         const contents = await file.text();
         const printed = output.join("");
-        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && printed.includes("AURORA_NEWLINE_OK") && printed.includes("AURORA_PRINT_LINE_1\nAURORA_PRINT_LINE_2\n") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
+        const passed = result.code === 0 && printed.includes("AURORA_PYTHON_READY") && printed.includes("AURORA_LANGUAGE_FEATURES_OK") && printed.includes("AURORA_NUMPY_OK") && printed.includes("AURORA_INPUT_OK") && printed.includes("AURORA_NEWLINE_OK") && printed.includes("AURORA_TIME_SLEEP_OK") && printed.includes("AURORA_PRINT_LINE_1\nAURORA_PRINT_LINE_2\n") && inputValues.length === 0 && contents === "AURORA_FILE_SYNC_OK" && result.sync.written === 1;
         document.body.dataset.pythonSmoke = passed ? "running" : "failed";
         document.body.dataset.terminalInputSmoke = "running";
         document.getElementById("result").textContent = passed
