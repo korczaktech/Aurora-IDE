@@ -34,6 +34,16 @@ test("runtime rejeita memória fora dos limites", () => {
   assert.throws(() => normalizeConfig({ memorySize: 1024 * 1024 * 1024 }), /entre 64 MB e 512 MB/);
 });
 
+test("runtime permite recursos HTTP somente em localhost", () => {
+  const config = normalizeConfig({
+    scriptUrl: "http://127.0.0.1:4173/runtime/linux/v86/libv86.js"
+  });
+  assert.equal(new URL(config.scriptUrl).hostname, "127.0.0.1");
+  assert.throws(() => normalizeConfig({
+    scriptUrl: "http://example.com/libv86.js"
+  }), /HTTPS/);
+});
+
 test("runtime rejeita URLs inseguras ou inválidas", () => {
   assert.throws(() => normalizeConfig({ kernelUrl: "javascript:alert(1)" }), /HTTPS/);
   assert.throws(() => normalizeConfig({ kernelUrl: "http://example.com/kernel.bin" }), /HTTPS/);
