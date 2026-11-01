@@ -62,6 +62,7 @@ function createRuntimeHarness(Starter) {
 test("runtime inicia v86 com console serial xterm.js e encerra a máquina", async () => {
   let options;
   let destroyed = false;
+  let restarted = false;
   class FakeV86 {
     constructor(config) {
       options = config;
@@ -69,6 +70,7 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
       setTimeout(() => this.listeners["emulator-ready"]?.(), 0);
     }
     add_listener(name, callback) { this.listeners[name] = callback; }
+    restart() { restarted = true; }
     async destroy() { destroyed = true; }
   }
   const window = createRuntimeHarness(FakeV86);
@@ -84,6 +86,8 @@ test("runtime inicia v86 com console serial xterm.js e encerra a máquina", asyn
   assert.deepEqual(Object.keys(options.filesystem), []);
   assert.equal(options.cmdline, "tsc=reliable mitigations=off random.trust_cpu=on");
   assert.equal(options.disable_keyboard, true);
+  runtime.restart();
+  assert.equal(restarted, true);
   await runtime.stop();
   assert.equal(destroyed, true);
   assert.equal(runtime.state, "idle");
