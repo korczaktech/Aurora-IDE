@@ -206,3 +206,38 @@ test("project manager and editor APIs parse as JavaScript", () => {
   assert.equal(scripts.length, 1);
   assert.doesNotThrow(() => new vm.Script(scripts[0], { filename: "editor.html:inline-script" }));
 });
+
+
+test("rejects unsafe project paths while allowing nested source paths", () => {
+  const elements = new Map();
+  const element = () => ({
+    dataset: {}, title: "", textContent: "",
+    addEventListener() {},
+  });
+  const document = {
+    getElementById(id) {
+      if (!elements.has(id)) elements.set(id, element());
+      return elements.get(id);
+    }
+  };
+  const window = { AuroraEditor: {}, addEventListener() {} };
+  vm.runInNewContext(projectManager, { window, document, console, setTimeout, clearTimeout });
+  const api = window.AuroraProjectManager;
+  assert.equal(api.validSegment("index.html"), true);
+  assert.equal(api.validSegment("component.tsx"), true);
+  assert.equal(api.validSegment("../escape"), false);
+  assert.equal(api.validSegment("folder/file.js"), false);
+  assert.equal(api.validSegment("bad\\\\name.js"), false);
+  assert.equal(api.validRelativePath("src/components/App.tsx"), true);
+  assert.equal(api.validRelativePath("assets/icons/logo.svg"), true);
+  assert.equal(api.validRelativePath("../outside.txt"), false);
+  assert.equal(api.validRelativePath("/absolute/path.js"), false);
+  assert.equal(api.validRelativePath("src\\\\App.js"), false);
+});
+
+test("project refresh keeps tabs and selection state available", () => {
+  assert.match(html, /replaceProject\(files, projectName, activeName, openNames = \[\], preserveState = false\)/);
+  assert.match(html, /codeSelections\.set\(activeCodeFile/);
+  assert.match(projectManager, /editor\.replaceProject\(files, currentProjectName, active, open, true\)/);
+  assert.match(projectManager, /previousOpen\.filter/);
+});
