@@ -321,7 +321,7 @@ class AuroraLinuxRuntime {
     await this.callbacks.flushProject?.();
     const result = await window.AuroraLinuxProjectBridge.syncToProject(this.emulator.fs9p, this.projectSession);
     await this.callbacks.refreshProject?.();
-    this.callbacks.onStatus?.("Sincronização concluída · " + result.written + " arquivo(s) atualizado(s)");
+    this.callbacks.onStatus?.("Sincronização concluída · " + result.written + " atualizado(s) · " + result.conflicts + " conflito(s) · " + result.skippedTooLarge + " acima dos limites");
     return result;
   }
 
