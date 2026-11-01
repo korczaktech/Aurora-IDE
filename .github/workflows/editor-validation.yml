@@ -12,6 +12,7 @@ on:
       - "Front-End/WebSite/JavaScript/editor-typing.js"
       - "Front-End/WebSite/JavaScript/file-icons.js"
       - "Front-End/WebSite/JavaScript/project-manager.js"
+      - "Front-End/WebSite/JavaScript/terminal.js"
       - "Front-End/WebSite/JavaScript/tests/**"
       - "Front-End/WebSite/JavaScript/editor-controls.js"
       - "Front-End/WebSite/JavaScript/tests/**"
@@ -41,6 +42,7 @@ jobs:
           node --check Front-End/WebSite/JavaScript/editor-typing.js
           node --check Front-End/WebSite/JavaScript/file-icons.js
           node --check Front-End/WebSite/JavaScript/project-manager.js
+          node --check Front-End/WebSite/JavaScript/terminal.js
           node --check Front-End/WebSite/JavaScript/editor-controls.js
 
       - name: Run editor tests
