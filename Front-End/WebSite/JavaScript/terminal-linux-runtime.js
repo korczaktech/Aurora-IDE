@@ -1,13 +1,21 @@
 (() => {
 "use strict";
 
+const ASSET_ROOT = (() => {
+  try {
+    const source = document.currentScript?.src || new URL("../JavaScript/terminal-linux-runtime.js", location.href).href;
+    return new URL("../runtime/linux/", source).href;
+  } catch (_) {
+    return "https://aurora.korczaktech.com.br/runtime/linux/";
+  }
+})();
 const DEFAULT_CONFIG = Object.freeze({
   version: "0.5.473",
-  scriptUrl: "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/libv86.js",
-  wasmUrl: "https://cdn.jsdelivr.net/npm/v86@0.5.473/build/v86.wasm",
-  biosUrl: "https://copy.sh/v86/bios/seabios.bin",
-  vgaBiosUrl: "https://copy.sh/v86/bios/vgabios.bin",
-  kernelUrl: "https://i.copy.sh/buildroot-bzimage68.bin",
+  scriptUrl: new URL("v86/libv86.js", ASSET_ROOT).href,
+  wasmUrl: new URL("v86/v86.wasm", ASSET_ROOT).href,
+  biosUrl: new URL("bios/seabios.bin", ASSET_ROOT).href,
+  vgaBiosUrl: new URL("bios/vgabios.bin", ASSET_ROOT).href,
+  kernelUrl: new URL("kernel/buildroot-bzimage68.bin", ASSET_ROOT).href,
   memorySize: 128 * 1024 * 1024,
   vgaMemorySize: 8 * 1024 * 1024,
   startupTimeoutMs: 90000
