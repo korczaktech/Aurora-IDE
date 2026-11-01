@@ -8,7 +8,7 @@ Executar um ambiente Linux emulado dentro da aba do navegador. O usuário acessa
 
 1. **Aurora IDE** mantém a interface, sessões e o painel de terminal.
 2. **xterm.js** continua sendo a camada visual e de entrada.
-3. **AuroraLinuxRuntime** controla o ciclo de vida do emulador e faz a ponte com o console serial.
+3. **AuroraLinuxRuntime** controla o ciclo de vida do emulador e configura o console serial xterm.js nativo do v86.
 4. **v86** emula uma máquina x86 no navegador, usando JavaScript e WebAssembly.
 5. **Imagem Linux** é carregada como recurso estático; não há servidor de execução de comandos.
 
@@ -28,7 +28,7 @@ A imagem upstream é uma imagem mínima de demonstração para validar o boot/co
 
 - v86 emula x86 de 32 bits; não oferece kernel convidado de 64 bits nem múltiplos núcleos.
 - Desempenho depende da CPU, memória e navegador do usuário.
-- O terminal serial só terá prompt utilizável se a imagem convidada oferecer console serial compatível.
+- O console xterm.js depende de a imagem convidada oferecer saída serial em `ttyS0`; a inicialização do emulador não garante, sozinha, que o shell convidado já esteja pronto.
 - Rede do sistema convidado e compartilhamento do projeto ainda não são ativados nesta fase.
 - A disponibilidade de recursos externos depende de conectividade, CORS e dos respectivos CDNs.
 - O ambiente não deve ser anunciado como compatível com todos os programas Linux.
@@ -38,7 +38,7 @@ A imagem upstream é uma imagem mínima de demonstração para validar o boot/co
 - O runtime não recebe nem enumera o diretório local do usuário.
 - Nenhum handle da File System Access API é passado ao emulador.
 - Não há ponte de arquivos, montagem 9p ou acesso ao restante do dispositivo nesta fase.
-- Os recursos externos são carregados por HTTPS e a versão do pacote v86 é fixada.
+- Os recursos externos são carregados exclusivamente por HTTPS e a versão do pacote v86 é fixada.
 - O emulador roda na aba; encerrar o terminal chama o encerramento do emulador.
 - A autorização do projeto continua controlada pelo gerenciador de projetos existente.
 
