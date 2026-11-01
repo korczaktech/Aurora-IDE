@@ -55,6 +55,28 @@
     </div>
   </header>
 
+
+  <dialog class="project-storage-dialog" id="projectStorageDialog" aria-labelledby="projectStorageTitle">
+    <div class="project-storage-content">
+      <div class="project-storage-eyebrow">NOVO PROJETO</div>
+      <h2 id="projectStorageTitle">Onde deseja armazenar?</h2>
+      <p>Escolha o local em que os arquivos do projeto serão mantidos.</p>
+      <div class="project-storage-options">
+        <button class="project-storage-option is-unavailable" id="projectStorageVault" type="button" disabled aria-describedby="projectStorageVaultStatus">
+          <span class="project-storage-icon" aria-hidden="true">☁</span>
+          <span class="project-storage-option-copy"><strong>Korczak Vault</strong><small>Nuvem</small></span>
+          <span class="project-storage-status" id="projectStorageVaultStatus">Em breve</span>
+        </button>
+        <button class="project-storage-option" id="projectStorageDevice" type="button">
+          <span class="project-storage-icon" aria-hidden="true">▣</span>
+          <span class="project-storage-option-copy"><strong>Dispositivo</strong><small>Armazenar em uma pasta deste dispositivo</small></span>
+          <span class="project-storage-status is-available">Disponível</span>
+        </button>
+      </div>
+      <button class="project-storage-cancel" id="projectStorageCancel" type="button">Cancelar</button>
+    </div>
+  </dialog>
+
   <main class="editor-workspace" aria-label="Área de desenvolvimento">
     <aside class="file-sidebar" id="fileSidebar" aria-label="Explorador de arquivos">
       <div class="file-sidebar-heading">
