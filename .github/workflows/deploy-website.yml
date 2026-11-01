@@ -145,6 +145,24 @@ jobs:
             cp -a "Front-End/WebSite/React/." "_site/React/"
           fi
 
+      - name: Prepare browser Node runtime assets
+        if: steps.detect.outputs.mode == 'static'
+        shell: bash
+        run: |
+          ROOT="_site/runtime/nodebrowser"
+          mkdir -p "$ROOT"
+          NODE_PACKAGE="$(npm pack @foisal/nodebrowser@1.3.3 --pack-destination /tmp)"
+          ESBUILD_PACKAGE="$(npm pack esbuild-wasm@0.25.0 --pack-destination /tmp)"
+          tar -xzf "/tmp/$NODE_PACKAGE" -C "$ROOT"
+          mkdir -p "$ROOT/esbuild-wasm"
+          tar -xzf "/tmp/$ESBUILD_PACKAGE" -C "$ROOT/esbuild-wasm"
+          test -s "$ROOT/package/dist/index.js"
+          test -s "$ROOT/package/wasm/browsernode_kernel.js"
+          test -s "$ROOT/package/wasm/browsernode_kernel.wasm"
+          test -s "$ROOT/esbuild-wasm/package/lib/browser.js"
+          test -s "$ROOT/esbuild-wasm/package/lib/browser.wasm"
+          (cd "$ROOT" && sha256sum package/dist/index.js package/wasm/browsernode_kernel.js package/wasm/browsernode_kernel.wasm esbuild-wasm/package/lib/browser.js esbuild-wasm/package/lib/browser.wasm > SHA256SUMS.txt)
+
       - name: Prepare browser Linux runtime assets
         if: steps.detect.outputs.mode == 'static'
         shell: bash
