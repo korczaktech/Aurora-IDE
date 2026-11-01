@@ -103,11 +103,11 @@
     });
   }
 
-  async function persistRootHandle(handle) {
+  async function persistRootHandle(handle, parentHandle = null) {
     const db = await openDatabase();
     await new Promise((resolve, reject) => {
       const tx = db.transaction("workspace", "readwrite");
-      tx.objectStore("workspace").put(handle, "lastProject");
+      tx.objectStore("workspace").put({ handle, parentHandle }, "lastProject");
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error || new Error("Falha ao salvar o projeto recente."));
       tx.onabort = () => reject(tx.error || new Error("Salvamento do projeto recente cancelado."));
@@ -129,13 +129,14 @@
 
   async function restoreRootHandle() {
     const db = await openDatabase();
-    const handle = await new Promise((resolve, reject) => {
+    const saved = await new Promise((resolve, reject) => {
       const request = db.transaction("workspace", "readonly").objectStore("workspace").get("lastProject");
       request.onsuccess = () => resolve(request.result || null);
       request.onerror = () => reject(request.error);
     });
     db.close();
-    return handle;
+    if (!saved) return null;
+    return saved.handle ? saved : { handle: saved, parentHandle: null };
   }
 
   async function permissionGranted(handle, request = false) {
@@ -352,6 +353,7 @@
     const handle = await parent.getDirectoryHandle(cleanName, { create: true });
     await openProject(handle);
     projectParentHandle = parent;
+    await persistRootHandle(handle, parent);
     updateActionAvailability();
   }
 
@@ -637,10 +639,13 @@
 
   async function restoreLastProject() {
     try {
-      const handle = await restoreRootHandle();
-      if (!handle) return;
-      if (await permissionGranted(handle, false)) await openProject(handle);
-      else setStatus("Projeto recente: " + handle.name + " • reabra a pasta para conceder acesso.");
+      const saved = await restoreRootHandle();
+      if (!saved) return;
+      if (await permissionGranted(saved.handle, false)) {
+        await openProject(saved.handle);
+        projectParentHandle = saved.parentHandle || null;
+        updateActionAvailability();
+      } else setStatus("Projeto recente: " + saved.handle.name + " • reabra a pasta para conceder acesso.");
     } catch (error) {
       console.warn("[Aurora Project Manager] Não foi possível restaurar o projeto:", error);
     }
