@@ -79,6 +79,7 @@ class AuroraLinuxRuntime {
     this.startPromise = null;
     this.cancelRequested = false;
     this.finishBoot = null;
+    this.abortController = null;
   }
 
   async start(callbacks = {}) {
@@ -123,6 +124,35 @@ class AuroraLinuxRuntime {
   async _boot() {
     await loadV86(this.config.scriptUrl);
     if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
+    if (typeof fetch !== "function" || typeof AbortController !== "function") {
+      throw new Error("Este navegador não oferece Fetch e AbortController para carregar o kernel com segurança.");
+    }
+    this.callbacks.onStatus?.("Baixando kernel Linux…");
+    this.abortController = new AbortController();
+    let downloadTimedOut = false;
+    const downloadTimer = setTimeout(() => {
+      downloadTimedOut = true;
+      this.abortController?.abort();
+    }, this.config.startupTimeoutMs);
+    let kernelBuffer;
+    try {
+      const response = await fetch(this.config.kernelUrl, {
+        mode: "cors",
+        credentials: "omit",
+        signal: this.abortController.signal
+      });
+      if (!response.ok) throw new Error("O servidor do kernel respondeu HTTP " + response.status + ".");
+      kernelBuffer = await response.arrayBuffer();
+      if (!kernelBuffer.byteLength) throw new Error("O arquivo do kernel Linux está vazio.");
+    } catch (error) {
+      if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
+      if (downloadTimedOut) throw new Error("O download do kernel Linux excedeu o tempo limite.");
+      throw error;
+    } finally {
+      clearTimeout(downloadTimer);
+      this.abortController = null;
+    }
+    if (this.cancelRequested) throw Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" });
     const Starter = window.V86Starter || window.V86;
     if (typeof Starter !== "function") throw new Error("A API do emulador v86 não está disponível.");
 
@@ -132,7 +162,7 @@ class AuroraLinuxRuntime {
       vga_memory_size: this.config.vgaMemorySize,
       bios: { url: this.config.biosUrl },
       vga_bios: { url: this.config.vgaBiosUrl },
-      bzimage: { url: this.config.kernelUrl, async: false },
+      bzimage: { buffer: kernelBuffer },
       filesystem: {},
       cmdline: "tsc=reliable mitigations=off random.trust_cpu=on",
       disable_keyboard: true,
@@ -185,6 +215,7 @@ class AuroraLinuxRuntime {
   async stop() {
     this.cancelRequested = true;
     this.state = "stopping";
+    this.abortController?.abort();
     this.finishBoot?.(Object.assign(new Error("Inicialização do Linux cancelada."), { name: "AbortError" }));
     const emulator = this.emulator;
     this.emulator = null;
