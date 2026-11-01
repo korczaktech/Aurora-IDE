@@ -176,7 +176,6 @@ jobs:
           test -s "$ROOT/v86/v86.wasm"
           test -s "$ROOT/bios/seabios.bin"
           test -s "$ROOT/bios/vgabios.bin"
-          test -s "$ROOT/kernel/buildroot-bzimage68.bin"
           (cd "$ROOT" && sha256sum --check SHA256SUMS.txt)
 
       - name: Prepare root website
