@@ -15,6 +15,8 @@
   const latestContents = new Map();
   let rootHandle = null;
   let projectParentHandle = null;
+  let auroraRootHandle = null;
+  let auroraProjectsHandle = null;
   let selectedPath = "";
   let selectedKind = "directory";
   let currentProjectName = "";
@@ -102,11 +104,11 @@
     });
   }
 
-  async function persistRootHandle(handle, parentHandle = null) {
+  async function persistRootHandle(handle, parentHandle = null, storageHandle = auroraRootHandle) {
     const db = await openDatabase();
     await new Promise((resolve, reject) => {
       const tx = db.transaction("workspace", "readwrite");
-      tx.objectStore("workspace").put({ handle, parentHandle }, "lastProject");
+      tx.objectStore("workspace").put({ handle, parentHandle, auroraHandle: storageHandle }, "lastProject");
       tx.oncomplete = resolve;
       tx.onerror = () => reject(tx.error || new Error("Falha ao salvar o projeto recente."));
       tx.onabort = () => reject(tx.error || new Error("Salvamento do projeto recente cancelado."));
@@ -304,8 +306,10 @@
     await Promise.all([...pendingWrites.values()]);
   }
 
-  async function openProject(handle) {
-    projectParentHandle = null;
+  async function openProject(handle, parentHandle = null, storageHandle = auroraRootHandle) {
+    projectParentHandle = parentHandle;
+    auroraRootHandle = storageHandle;
+    auroraProjectsHandle = storageHandle ? await storageHandle.getDirectoryHandle("projects") : null;
     if (!(await permissionGranted(handle, true))) {
       throw new Error("Permissão de leitura e gravação não concedida para esta pasta.");
     }
@@ -326,11 +330,23 @@
     selectedLabel.textContent = "Raiz do projeto";
     updateActionAvailability();
     try {
-      await persistRootHandle(handle);
+      await persistRootHandle(handle, projectParentHandle, auroraRootHandle);
     } catch (error) {
       console.warn("[Aurora Project Manager] Projeto aberto, mas não foi possível salvar o atalho recente:", error);
     }
     setStatus(entries.length + " itens • alterações salvas no dispositivo", "success");
+  }
+
+  async function prepareAuroraStorage(locationHandle) {
+    const storage = await locationHandle.getDirectoryHandle(".aurora", { create: true });
+    const granted = await permissionGranted(storage, true);
+    if (!granted) throw new Error("Permissão de leitura e gravação para .aurora não concedida.");
+    const projects = await storage.getDirectoryHandle("projects", { create: true });
+    await storage.getDirectoryHandle("config", { create: true });
+    await storage.getDirectoryHandle("workspace", { create: true });
+    auroraRootHandle = storage;
+    auroraProjectsHandle = projects;
+    return { storage, projects };
   }
 
   async function createProjectOnDevice() {
@@ -341,17 +357,17 @@
       window.alert("Nome inválido. Evite barras, caracteres especiais e nomes reservados.");
       return;
     }
-    const parent = await requestDirectoryPicker();
+    const location = await requestDirectoryPicker();
+    const { storage, projects } = await prepareAuroraStorage(location);
     try {
-      await parent.getDirectoryHandle(cleanName);
-      throw new Error("Já existe uma pasta com esse nome no local escolhido.");
+      await projects.getDirectoryHandle(cleanName);
+      throw new Error("Já existe um projeto com esse nome em .aurora/projects.");
     } catch (error) {
       if (error.name !== "NotFoundError") throw error;
     }
-    const handle = await parent.getDirectoryHandle(cleanName, { create: true });
-    await openProject(handle);
-    projectParentHandle = parent;
-    await persistRootHandle(handle, parent);
+    const handle = await projects.getDirectoryHandle(cleanName, { create: true });
+    await openProject(handle, projects, storage);
+    await persistRootHandle(handle, projects, storage);
     updateActionAvailability();
   }
 
@@ -395,8 +411,36 @@
   }
 
   async function openProjectFolder() {
-    const handle = await requestDirectoryPicker();
-    await openProject(handle);
+    const selected = await requestDirectoryPicker();
+    if (selected.name !== ".aurora") {
+      throw new Error("Selecione a pasta .aurora para abrir o ambiente compartilhado do Aurora.");
+    }
+    const { storage, projects } = await prepareAuroraStorage(selected);
+    const projectNames = [];
+    for await (const [name, handle] of projects.entries()) {
+      if (handle.kind === "directory") projectNames.push(name);
+    }
+    projectNames.sort((a, b) => a.localeCompare(b, "pt-BR", { numeric: true }));
+    if (!projectNames.length) {
+      auroraRootHandle = storage;
+      auroraProjectsHandle = projects;
+      rootHandle = null;
+      projectParentHandle = null;
+      currentProjectName = "";
+      tree.replaceChildren();
+      nameLabel.textContent = ".aurora";
+      setStatus("Armazenamento Aurora configurado. Crie seu primeiro projeto.", "success");
+      return;
+    }
+    const newline = String.fromCharCode(10);
+    const choice = window.prompt("Projetos disponíveis em .aurora/projects:" + newline +
+      projectNames.map((name, index) => (index + 1) + ". " + name).join(newline) +
+      newline + newline + "Digite o nome do projeto que deseja abrir:");
+    if (choice === null) return;
+    const projectName = choice.trim();
+    if (!projectNames.includes(projectName)) throw new Error("Projeto não encontrado em .aurora/projects.");
+    const handle = await projects.getDirectoryHandle(projectName);
+    await openProject(handle, projects, storage);
   }
 
   async function targetDirectory() {
@@ -653,11 +697,14 @@
     try {
       const saved = await restoreRootHandle();
       if (!saved) return;
-      if (await permissionGranted(saved.handle, false)) {
-        await openProject(saved.handle);
-        projectParentHandle = saved.parentHandle || null;
+      if (!saved.auroraHandle || saved.auroraHandle.name !== ".aurora") {
+        setStatus("Configure o armazenamento: selecione o local onde o Aurora criará .aurora.");
+        return;
+      }
+      if (await permissionGranted(saved.auroraHandle, false) && await permissionGranted(saved.handle, false)) {
+        await openProject(saved.handle, saved.parentHandle, saved.auroraHandle);
         updateActionAvailability();
-      } else setStatus("Projeto recente: " + saved.handle.name + " • reabra a pasta para conceder acesso.");
+      } else setStatus("Armazenamento .aurora encontrado • clique em Abrir pasta para conceder acesso novamente.");
     } catch (error) {
       console.warn("[Aurora Project Manager] Não foi possível restaurar o projeto:", error);
     }
