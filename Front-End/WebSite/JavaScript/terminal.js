@@ -4,18 +4,20 @@ const sessions=new Map(), OUTPUT_LIMIT=524288, MAX_FILE=2097152;
 let activeId=null, rootElement=null, view="terminal", nextId=1;
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 function tokenize(source){
- const out=[];let value="",quote="",escape=false,started=false;
+ const out=[];let value="",quote="",started=false;
  for(let i=0;i<source.length;i++){
   const c=source[i];
-  if(escape){value+=c;escape=false;started=true;continue;}
-  if(c==="\\"&&quote!=="'"){escape=true;started=true;continue;}
-  if(quote){if(c===quote)quote="";else value+=c;started=true;continue;}
+  if(quote==="'"){if(c===quote)quote="";else value+=c;started=true;continue;}
+  if(quote==='"'){
+   if(c==="\\"){const next=source[i+1];if(next==='"'||next==="\\"){value+=next;i++;}else value+="\\";started=true;continue;}
+   if(c===quote)quote="";else value+=c;started=true;continue;
+  }
+  if(c==="\\"){if(i+1<source.length)value+=source[++i];else value+="\\";started=true;continue;}
   if(c==="'"||c==='"'){quote=c;started=true;continue;}
   if(/\s/.test(c)){if(started){out.push(value);value="";started=false;}continue;}
   if(c===">"||c==="|"){if(started){out.push(value);value="";started=false;}if(c===">"&&source[i+1]===">"){out.push(">>");i++;}else out.push(c);continue;}
   value+=c;started=true;
  }
- if(escape)value+="\\";
  if(quote)throw new Error("Aspas não foram fechadas.");
  if(started)out.push(value);
  return out;
@@ -169,7 +171,7 @@ async function runCommand(session,raw){
  case "unset":args.forEach(k=>delete session.environment[k]);break;
  case "js":case "javascript":{let code;if(args[0]==="-e"||args[0]==="--eval")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: node arquivo.js ou node -e \"código\"");await runWorker(session,code,false);break;}
  case "git":{if(!window.AuroraGit)throw new Error("Módulo Git não carregado. Recarregue o editor.");const result=await window.AuroraGit.run(args,{cwd:session.cwd,environment:session.environment,rootHandle:await projectRoot()});if(result)emit(result);break;}
- case "node":case "npm":case "esbuild":case "sh":{if(!window.AuroraNodeRuntime)throw new Error("Runtime Node WebAssembly não carregado. Recarregue o editor.");const result=await window.AuroraNodeRuntime.run(session,command,args,{cwd:session.cwd,environment:session.environment,rootHandle:await projectRoot(),onOutput:chunk=>{if(!redirect)append(session,chunk);}});if(redirect&&result.output)emit(result.output);if(result.code!==0)emit("Processo encerrado com código "+result.code+".");if(result.sync?.conflicts)emit(result.sync.conflicts+" conflito(s) preservado(s) na sincronização do projeto.");if(result.persistenceWarning)emit("Aviso: persistência OPFS indisponível; arquivos do projeto continuam sendo sincronizados.");break;}
+ case "node":case "npm":case "esbuild":case "sh":{if(!window.AuroraNodeRuntime)throw new Error("Runtime Node WebAssembly não carregado. Recarregue o editor.");const result=await window.AuroraNodeRuntime.run(session,command,args,{cwd:session.cwd,environment:session.environment,rootHandle:await projectRoot(),onOutput:chunk=>{if(!redirect)append(session,chunk);},onInput:promptText=>requestPythonInput(session,promptText)});if(redirect&&result.output)emit(result.output);if(result.code!==0)emit("Processo encerrado com código "+result.code+".");if(result.sync?.conflicts)emit(result.sync.conflicts+" conflito(s) preservado(s) na sincronização do projeto.");if(result.persistenceWarning)emit("Aviso: persistência OPFS indisponível; arquivos do projeto continuam sendo sincronizados.");break;}
  case "cargo":case "bash":throw new Error("Cargo e Bash não estão incluídos neste runtime. Use sh para o shell compatível quando necessário.");
  case "python":case "python3":case "py":{let code;if(args[0]==="-c")code=args.slice(1).join(" ");else if(args[0])code=await readText(path(args[0]));else throw new Error("Uso: python arquivo.py ou python -c \"código\"");if(!window.AuroraPythonRuntime)throw new Error("Runtime Python do projeto não carregado. Recarregue o editor.");const result=await window.AuroraPythonRuntime.run(session,code,{rootHandle:await projectRoot(),cwd:session.cwd||"",onOutput:chunk=>{if(!redirect)append(session,chunk);}});if(redirect&&result.output)emit(result.output);if(result.code!==0)emit("Python encerrado com código "+result.code+".");if(result.sync?.written||result.sync?.deleted)emit("Python sincronizou "+result.sync.written+" arquivo(s) e removeu "+result.sync.deleted+".");if(result.sync?.conflicts)emit(result.sync.conflicts+" conflito(s) preservado(s) na sincronização do projeto.");break;}
  default:throw new Error("Comando não encontrado: "+command+". Digite help.");
@@ -187,6 +189,29 @@ async function executeLine(session,line){
  }catch(error){print(session,"\x1b[31m"+(error?.message||String(error))+"\x1b[0m");status("Erro no comando");}
  prompt(session);
 }
+function requestPythonInput(session,promptText){
+ if(promptText)append(session,promptText);
+ if(session.pythonInputQueue?.length)return Promise.resolve(session.pythonInputQueue.shift());
+ if(session.pythonInput)return Promise.reject(new Error("Já existe uma leitura Python aguardando entrada."));
+ return new Promise((resolve,reject)=>{session.pythonInput={buffer:"",resolve,reject};session.terminal?.focus();});
+}
+function handlePythonInput(session,data){
+ const state=session.pythonInput;if(!state)return false;
+ for(let i=0;i<data.length;i++){
+  const ch=data[i];
+  if(ch==="\\r"||ch==="\\n"){
+   session.pythonInput=null;append(session,"\\r\\n");state.resolve(state.buffer);
+   const rest=data.slice(i+1);
+   if(rest){const pieces=rest.split(/\\r\\n|\\r|\\n/);session.pythonInputQueue=session.pythonInputQueue||[];for(let n=0;n<pieces.length-1;n++)session.pythonInputQueue.push(pieces[n]);if(pieces.length>1&&pieces[pieces.length-1])session.pythonInputQueue.push(pieces[pieces.length-1]);}
+   break;
+  }
+  if(ch==="\\u0003"){session.pythonInput=null;append(session,"^C\\r\\n");state.reject(new Error("KeyboardInterrupt"));break;}
+  if(ch==="\\u0004"){session.pythonInput=null;append(session,"^D\\r\\n");state.resolve(null);break;}
+  if(ch==="\\u007f"||ch==="\\b"){if(state.buffer.length){state.buffer=state.buffer.slice(0,-1);session.terminal?.write("\\b \\b");}continue;}
+  if(ch>=" "){state.buffer+=ch;session.terminal?.write(ch);}
+ }
+ return true;
+}
 function prompt(session){if(session.linuxRuntime)return;session.terminal?.write("\r\n\x1b[38;2;143;224;180m"+session.name+"\x1b[0m:\x1b[38;2;130;149;140m/"+session.cwd+"\x1b[0m$ ");}
 function attach(session,stage){
  if(!window.Terminal||!window.FitAddon?.FitAddon){stage.append(el("p","editor-empty-message","Emulador de terminal indisponível."));return;}
@@ -194,14 +219,15 @@ function attach(session,stage){
  const term=new window.Terminal({cursorBlink:true,convertEol:true,scrollback:5000,fontSize:12,fontFamily:'"SFMono-Regular",Consolas,"Liberation Mono",monospace',theme:{background:"#050a0b",foreground:"#c5d5cd",cursor:"#8fe0b4",selectionBackground:"#315343"}});
  const fit=new window.FitAddon.FitAddon();term.loadAddon(fit);term.open(host);session.terminal=term;session.fitAddon=fit;session.host=host;let input="";
  term.onData(data=>{
-  if(data==="\r"){const line=input;input="";executeLine(session,line);}
-  else if(data==="\u007f"){if(input.length){input=input.slice(0,-1);term.write("\b \b");}}
-  else if(data==="\u0003"){if(session.worker||session.nodeProcess){session.cancelExecution?.();session.worker?.terminate();session.worker=null;session.nodeProcess=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
-  else if(data==="\u000c")term.clear();
-  else if(data==="\u001b[A"||data==="\u001b[B"){const up=data==="\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\r\x1b[2K");prompt(session);term.write(input);}
-  else if(data==="\t"){term.write("  ");input+="  ";}
-  else if(data>=" "&&data!=="\u007f"){input+=data;term.write(data);}
- });
+  if(session.pythonInput){handlePythonInput(session,data);return;}
+  if(data==="\\r"){const line=input;input="";executeLine(session,line);}
+  else if(data==="\\u007f"){if(input.length){input=input.slice(0,-1);term.write("\\b \\b");}}
+  else if(data==="\\u0003"){if(session.worker||session.nodeProcess){session.cancelExecution?.();session.worker?.terminate();session.worker=null;session.nodeProcess=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
+  else if(data==="\\u000c")term.clear();
+  else if(data==="\\u001b[A"||data==="\\u001b[B"){const up=data==="\\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\\r\\x1b[2K");prompt(session);term.write(input);}
+  else if(data==="\\t"){term.write("  ");input+="  ";}
+  else if(data>=" "&&data!=="\\u007f"){input+=data;term.write(data);}
+ });;
  const observer=new ResizeObserver(()=>{try{fit.fit();}catch(_){}});observer.observe(host);session.dispose=()=>{observer.disconnect();term.dispose();};requestAnimationFrame(()=>{try{fit.fit();}catch(_){}term.focus();prompt(session);});
 }
 function renderOutput(){const s=current(),stage=rootElement?.querySelector("[data-terminal-stage]");if(!s||!stage)return;const pre=el("pre","aurora-terminal-output",s.output||"Nenhuma saída nesta sessão.");pre.dataset.terminalOutput="";stage.replaceChildren(pre);pre.scrollTop=pre.scrollHeight;}
@@ -213,7 +239,7 @@ function render(){
  const tabs=rootElement.querySelector("[data-terminal-tabs]");tabs.replaceChildren();[["terminal","TERMINAL"],["output","OUTPUT"],["debug","DEBUG CONSOLE"],["problems","PROBLEMS"],["ports","PORTS"]].forEach(([key,label])=>{const b=el("button","aurora-terminal-tab"+(view===key?" is-active":""),label);b.type="button";b.onclick=()=>{view=key;renderStage();tabs.querySelectorAll("button").forEach(x=>x.classList.toggle("is-active",x===b));};tabs.append(b);});
  renderStage();status("Local no navegador · "+(window.AuroraProjectManager?.projectName||"projeto"));
 }
-function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,nodeRuntime:null,nodeProcess:null,linuxRuntime:null,terminal:null,fitAddon:null,host:null,dispose:null};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
+function createSession(){const s={id:"local-"+nextId++,name:"terminal-"+(sessions.size+1),cwd:"",history:[],historyIndex:0,environment:Object.create(null),output:"",worker:null,nodeRuntime:null,nodeProcess:null,linuxRuntime:null,terminal:null,fitAddon:null,host:null,dispose:null,pythonInput:null,pythonInputQueue:[]};sessions.set(s.id,s);activeId=s.id;view="terminal";render();}
 function mount(container){
  rootElement=container;
  if(!window.AuroraProjectManager?.rootHandle){container.replaceChildren(el("p","editor-empty-message","Abra um projeto em .aurora/projects antes de iniciar o terminal."));return;}
