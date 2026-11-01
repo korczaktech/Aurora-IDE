@@ -63,11 +63,11 @@ async function runWorker(session,code,python=false){
  const source=python
  ? "import {loadPyodide} from 'https://cdn.jsdelivr.net/pyodide/v0.27.7/full/pyodide.mjs';let py;self.onmessage=async(e)=>{try{if(!py)py=await loadPyodide({stdout:{batched:t=>postMessage({type:'out',text:t})},stderr:{batched:t=>postMessage({type:'err',text:t})}});await py.runPythonAsync(e.data.code);postMessage({type:'done'});}catch(x){postMessage({type:'fail',error:String(x)});}};"
  : "self.onmessage=async(e)=>{let lines=[];const out=(...a)=>lines.push(a.map(x=>typeof x==='string'?x:JSON.stringify(x)).join(' '));const c={log:out,info:out,warn:(...a)=>out('[aviso]',...a),error:(...a)=>out('[erro]',...a),table:out};try{const A=Object.getPrototypeOf(async function(){}).constructor;await new A('console','args',e.data.code)(c,[]);postMessage({type:'done',text:lines.join('\\n')});}catch(x){postMessage({type:'fail',error:x.stack||String(x),text:lines.join('\\n')});}};";
- const worker=new Worker(URL.createObjectURL(new Blob([source],{type:"text/javascript"})),python?{type:"module"}:undefined);session.worker=worker;
+ const blobUrl=URL.createObjectURL(new Blob([source],{type:"text/javascript"}));const worker=new Worker(blobUrl,python?{type:"module"}:undefined);URL.revokeObjectURL(blobUrl);session.worker=worker;
  return new Promise((resolve,reject)=>{
-  const timeout=setTimeout(()=>{worker.terminate();session.worker=null;reject(new Error("Tempo limite de execução excedido."));},python?60000:10000);
-  worker.onmessage=e=>{const d=e.data||{};if(d.type==="out")append(session,d.text);else if(d.type==="err")append(session,"\x1b[31m"+d.text+"\x1b[0m");else if(d.type==="done"||d.type==="fail"){clearTimeout(timeout);worker.terminate();session.worker=null;if(d.text)print(session,d.text);if(d.type==="fail")reject(new Error(d.error));else resolve();}};
-  worker.onerror=e=>{clearTimeout(timeout);worker.terminate();session.worker=null;reject(new Error(e.message||"Falha no Worker."));};
+  const timeout=setTimeout(()=>{worker.terminate();session.worker=null;session.cancelExecution=null;reject(new Error("Tempo limite de execução excedido."));},python?60000:10000);session.cancelExecution=()=>{clearTimeout(timeout);worker.terminate();session.worker=null;session.cancelExecution=null;resolve();};
+  worker.onmessage=e=>{const d=e.data||{};if(d.type==="out")append(session,d.text);else if(d.type==="err")append(session,"\x1b[31m"+d.text+"\x1b[0m");else if(d.type==="done"||d.type==="fail"){clearTimeout(timeout);worker.terminate();session.worker=null;session.cancelExecution=null;if(d.text)print(session,d.text);if(d.type==="fail")reject(new Error(d.error));else resolve();}};
+  worker.onerror=e=>{clearTimeout(timeout);worker.terminate();session.worker=null;session.cancelExecution=null;reject(new Error(e.message||"Falha no Worker."));};
   worker.postMessage({code});
  });
 }
@@ -127,7 +127,7 @@ function attach(session,stage){
  term.onData(data=>{
   if(data==="\r"){const line=input;input="";executeLine(session,line);}
   else if(data==="\u007f"){if(input.length){input=input.slice(0,-1);term.write("\b \b");}}
-  else if(data==="\u0003"){if(session.worker){session.worker.terminate();session.worker=null;print(session,"^C");prompt(session);}else{input="";term.write("^C");prompt(session);}}
+  else if(data==="\u0003"){if(session.worker){session.cancelExecution?.();session.worker?.terminate();session.worker=null;print(session,"^C");}else{input="";term.write("^C");prompt(session);}}
   else if(data==="\u000c")term.clear();
   else if(data==="\u001b[A"||data==="\u001b[B"){const up=data==="\u001b[A";if(up&&session.historyIndex>0)session.historyIndex--;if(!up&&session.historyIndex<session.history.length)session.historyIndex++;input=session.history[session.historyIndex]||"";term.write("\r\x1b[2K");prompt(session);term.write(input);}
   else if(data==="\t"){term.write("  ");input+="  ";}
