@@ -161,7 +161,6 @@ async fn logout(
     aurora_auth::logout(database, token)
         .await
         .map_err(auth_error)?;
-    state.terminal.close_account_sessions(&account.id);
     Ok(StatusCode::NO_CONTENT)
 }
 
