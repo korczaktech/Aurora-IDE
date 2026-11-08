@@ -7,6 +7,7 @@ pub struct AppConfig {
     pub accounts_database: String,
     pub sessions_database: String,
     pub cors_allowed_origins: Vec<String>,
+    pub release_repository: String,
 }
 
 impl AppConfig {
@@ -34,12 +35,23 @@ impl AppConfig {
             .map(str::to_owned)
             .collect();
 
+        let release_repository = env::var("AURORA_RELEASE_REPOSITORY")
+            .unwrap_or_else(|_| "korczaktech/Aurora-IDE".to_owned());
+        if release_repository.split('/').count() != 2
+            || !release_repository
+                .chars()
+                .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '/'))
+        {
+            return Err("AURORA_RELEASE_REPOSITORY precisa estar no formato proprietário/repositorio".to_owned());
+        }
+
         Ok(Self {
             port,
             mongodb_uri,
             accounts_database,
             sessions_database,
             cors_allowed_origins,
+            release_repository,
         })
     }
 }
