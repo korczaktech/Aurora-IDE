@@ -4,4 +4,5 @@ use aurora_storage_mongodb::MongoStorage;
 #[derive(Clone)]
 pub struct AppState {
     pub database: Option<MongoStorage>,
+    pub release_repository: String,
 }
