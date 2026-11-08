@@ -1,6 +1,7 @@
 mod config;
 mod routes;
 mod state;
+mod updates;
 
 use axum::http::{header, HeaderValue, Method};
 use config::AppConfig;
@@ -57,7 +58,10 @@ async fn main() {
         }
     };
 
-    let state = AppState { database };
+    let state = AppState {
+        database,
+        release_repository: config.release_repository,
+    };
     let app = routes::router(state)
         .layer(cors_layer(&config.cors_allowed_origins))
         .layer(TraceLayer::new_for_http());
