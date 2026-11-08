@@ -189,5 +189,6 @@ pub fn router(state: AppState) -> Router {
         .route("/auth/me", get(current_account))
         .route("/auth/logout", post(logout))
         .route("/admin/health", get(admin_health))
+        .route("/app/update", get(crate::updates::check_update))
         .with_state(state)
 }
