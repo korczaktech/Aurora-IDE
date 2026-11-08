@@ -38,11 +38,14 @@ impl AppConfig {
         let release_repository = env::var("AURORA_RELEASE_REPOSITORY")
             .unwrap_or_else(|_| "korczaktech/Aurora-IDE".to_owned());
         if release_repository.split('/').count() != 2
-            || !release_repository
-                .chars()
-                .all(|character| character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '/'))
+            || !release_repository.chars().all(|character| {
+                character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '/')
+            })
         {
-            return Err("AURORA_RELEASE_REPOSITORY precisa estar no formato proprietário/repositorio".to_owned());
+            return Err(
+                "AURORA_RELEASE_REPOSITORY precisa estar no formato proprietário/repositorio"
+                    .to_owned(),
+            );
         }
 
         Ok(Self {
