@@ -1,0 +1,44 @@
+name: Aurora Android Validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "Front-End/Android/**"
+      - ".github/workflows/android-validation.yml"
+  pull_request:
+    paths:
+      - "Front-End/Android/**"
+      - ".github/workflows/android-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aurora-android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-android:
+    name: Compile Android application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Compile debug application
+        working-directory: Front-End/Android
+        run: gradle --no-daemon :app:assembleDebug
